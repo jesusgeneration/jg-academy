@@ -1,0 +1,37 @@
+name: "jg-lead"
+
+services:
+  jg-lead:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+
+    volumes:
+      - ..:/app:cached
+      - opencode-data-jg-lead:/home/vscode/.local/share/opencode
+
+    command: sleep infinity
+
+    # override the default user to vscode, so that the container can write to the mounted volumes
+    # user: vscode
+    
+    # Use forwardPorts in devcontainer.json to forward ports from the container to the host
+
+    depends_on:
+      postgres:
+        condition: service_started
+
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data-jg-lead:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+
+volumes:
+  opencode-data-jg-lead:
+  postgres-data-jg-lead:

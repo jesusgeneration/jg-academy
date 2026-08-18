@@ -1,0 +1,8 @@
+.env
+.env.local
+/bundle
+/log
+/tmp
+.DS_Store
+.DS_Store
+node_modules/
