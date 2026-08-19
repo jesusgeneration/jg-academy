@@ -31,6 +31,8 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+    networks:
+    - default
 
 volumes:
   opencode-data-jg-lead:
