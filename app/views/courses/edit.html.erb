@@ -1,0 +1,9 @@
+<% content_for :page_title, "Edit Course" %>
+
+<nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
+  <ul><li><%= link_to "Courses", courses_path %></li><li>Edit: <%= @course.name %></li></ul>
+</nav>
+
+<div class="max-w-2xl">
+  <%= render "form", course: @course %>
+</div>

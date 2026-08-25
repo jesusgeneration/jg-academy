@@ -1,0 +1,104 @@
+<% content_for :page_title, "User Progress" %>
+
+<nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
+  <% if policy(User).index? %>
+    <ul><li><%= link_to "Users", users_path %></li><li><%= @user.email %></li></ul>
+  <% end %>
+</nav>
+
+<div class="card bg-base-100 shadow mb-6">
+  <div class="card-body flex-row flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="card-title"><%= @user.email %></h1>
+      <p class="text-sm opacity-70">
+        <span class="badge capitalize mr-2 <%= role_badge_class(@user.role) %>"><%= @user.role %></span>
+        <% if @user.organizations.any? %>
+          <%= @user.organizations.map(&:name).join(", ") %>
+        <% else %>
+          No organization
+        <% end %>
+      </p>
+    </div>
+    <div>
+      <% if policy(@user).update? && @user != current_user %>
+        <%= link_to "Edit", edit_user_path(@user), class: "btn btn-outline btn-sm" %>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<h2 class="text-xl font-semibold mb-3">Juleica Progress</h2>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+  <% @progress.each do |result| %>
+    <%
+      badge_class, badge_text = requirement_status_badge(result)
+      credits = Array(@credits_by_requirement[result.requirement.id])
+    %>
+    <div class="card bg-base-100 shadow">
+      <div class="card-body p-5">
+        <div class="flex items-start justify-between gap-2">
+          <h3 class="font-semibold"><%= result.requirement.name %></h3>
+          <span class="badge <%= badge_class %>"><%= badge_text %></span>
+        </div>
+
+        <div class="flex items-baseline justify-between text-sm">
+          <span><strong><%= format_hours(result.earned_hours) %></strong> / <%= format_hours(result.required_hours) %> hours</span>
+          <% unless result.completed? %>
+            <span class="opacity-60"><%= format_hours(result.remaining_hours) %> hours remaining</span>
+          <% end %>
+        </div>
+
+        <progress class="progress <%= result.completed? ? "progress-success" : "progress-primary" %> w-full"
+                  value="<%= result.earned_hours %>" max="<%= result.required_hours %>"></progress>
+
+        <% if credits.any? %>
+          <div class="mt-2">
+            <p class="text-xs uppercase opacity-50 mb-1">Credited by</p>
+            <ul class="text-sm space-y-1">
+              <% credits.each do |credit| %>
+                <li class="flex justify-between items-center">
+                  <span>
+                    <%= link_to credit.course.name, course_path(credit.course), class: "link link-hover" %>
+                    <span class="opacity-50 text-xs ml-1"><%= credit.course.organization.name %></span>
+                  </span>
+                  <span class="badge badge-ghost badge-sm">+ <%= format_hours(credit.hours) %> h</span>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<div class="card bg-base-100 shadow">
+  <div class="card-body">
+    <h2 class="card-title">Recommended Upcoming Courses</h2>
+    <p class="text-sm opacity-60">Future courses that could help complete missing requirements.</p>
+    <% if @recommended_courses.any? %>
+      <table class="table table-sm">
+        <thead>
+          <tr><th>Course</th><th>Date</th><th>Covers</th></tr>
+        </thead>
+        <tbody>
+          <% @recommended_courses.each do |course| %>
+            <tr>
+              <td><%= link_to course.name, course_path(course), class: "link link-hover font-medium" %></td>
+              <td class="whitespace-nowrap"><%= format_datetime(course.starts_at) %></td>
+              <td>
+                <% course.course_requirements.each do |course_requirement| %>
+                  <span class="badge badge-ghost badge-sm mr-1">
+                    <%= course_requirement.juleica_requirement.name %> +<%= format_hours(course_requirement.hours) %> h
+                  </span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="opacity-60">No upcoming courses matching missing requirements.</p>
+    <% end %>
+  </div>
+</div>

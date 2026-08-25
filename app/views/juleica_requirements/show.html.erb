@@ -1,0 +1,37 @@
+<% content_for :page_title, @juleica_requirement.name %>
+
+<nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
+  <ul><li><%= link_to "Juleica Requirements", juleica_requirements_path %></li><li><%= @juleica_requirement.name %></li></ul>
+</nav>
+
+<div class="card bg-base-100 shadow mb-6 max-w-xl">
+  <div class="card-body">
+    <h1 class="card-title"><%= @juleica_requirement.name %></h1>
+    <p><span class="font-medium">Required hours:</span> <%= format_hours(@juleica_requirement.required_hours) %></p>
+    <% if @juleica_requirement.description.present? %>
+      <p class="opacity-80"><%= simple_format(@juleica_requirement.description) %></p>
+    <% end %>
+  </div>
+</div>
+
+<div class="card bg-base-100 shadow">
+  <div class="card-body">
+    <h2 class="card-title">Courses covering this requirement</h2>
+    <% if @courses.any? %>
+      <table class="table table-sm">
+        <thead><tr><th>Course</th><th>Date</th><th>Credit hours</th></tr></thead>
+        <tbody>
+          <% @courses.each do |course| %>
+            <tr>
+              <td><%= link_to course.name, course_path(course), class: "link link-hover" %></td>
+              <td><%= format_datetime(course.starts_at) %></td>
+              <td>+ <%= format_hours(course.course_requirements.find { |cr| cr.juleica_requirement_id == @juleica_requirement.id }&.hours || 0) %> h</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="opacity-60">No courses cover this requirement yet.</p>
+    <% end %>
+  </div>
+</div>

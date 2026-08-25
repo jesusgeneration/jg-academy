@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html data-theme="corporate">
+  <head>
+    <title><%= content_for(:title) || "Juleica Tracker" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-base-200 min-h-screen flex items-center justify-center">
+    <main class="w-full max-w-md px-4 py-10">
+      <h1 class="text-center text-2xl font-bold mb-6">Juleica Tracker</h1>
+      <%= render "shared/flash" %>
+      <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+          <%= yield %>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

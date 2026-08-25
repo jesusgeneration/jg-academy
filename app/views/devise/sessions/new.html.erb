@@ -1,0 +1,21 @@
+<h2 class="card-title mb-4">Sign in</h2>
+
+<%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+  <fieldset class="fieldset space-y-3">
+    <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "Email", class: "input w-full", required: true %>
+    <%= f.password_field :password, autocomplete: "current-password", placeholder: "Password", class: "input w-full", required: true %>
+  </fieldset>
+
+  <% if devise_mapping.rememberable? %>
+    <label class="label cursor-pointer justify-start gap-2 mt-2">
+      <%= f.check_box :remember_me, class: "checkbox checkbox-sm" %>
+      <span>Remember me</span>
+    </label>
+  <% end %>
+
+  <div class="mt-4">
+    <%= f.submit "Sign in", class: "btn btn-primary w-full" %>
+  </div>
+<% end %>
+
+<%= render "devise/shared/links" %>

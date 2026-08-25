@@ -1,0 +1,9 @@
+<% content_for :page_title, "Edit Juleica Requirement" %>
+
+<nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
+  <ul><li><%= link_to "Juleica Requirements", juleica_requirements_path %></li><li>Edit: <%= @juleica_requirement.name %></li></ul>
+</nav>
+
+<div class="max-w-xl">
+  <%= render "form", juleica_requirement: @juleica_requirement %>
+</div>

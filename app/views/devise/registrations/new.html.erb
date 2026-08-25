@@ -1,0 +1,17 @@
+<h2 class="card-title mb-4">Sign up</h2>
+
+<%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+  <%= render "devise/shared/error_messages", resource: resource %>
+
+  <fieldset class="fieldset space-y-3">
+    <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "Email", class: "input w-full", required: true %>
+    <%= f.password_field :password, autocomplete: "new-password", placeholder: "Password#{@minimum_password_length ? " (#{@minimum_password_length} characters minimum)" : ""}", class: "input w-full", required: true %>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "Confirm password", class: "input w-full", required: true %>
+  </fieldset>
+
+  <div class="mt-4">
+    <%= f.submit "Sign up", class: "btn btn-primary w-full" %>
+  </div>
+<% end %>
+
+<%= render "devise/shared/links" %>

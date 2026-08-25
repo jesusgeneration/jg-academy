@@ -1,33 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="corporate">
   <head>
-    <title><%= content_for(:title) || "App" %></title>
+    <title><%= content_for(:title) || "Juleica Tracker" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="App">
+    <meta name="application-name" content="Juleica Tracker">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <main class="container mx-auto mt-28 px-5 flex">
-      <p class="notice"><%= notice %></p>
-      <p class="alert"><%= alert %></p>
-      <%= yield %>
-    </main>
+  <body class="bg-base-200 min-h-screen">
+    <div class="drawer lg:drawer-open">
+      <input id="portal-drawer" type="checkbox" class="drawer-toggle" />
+
+      <div class="drawer-content flex flex-col min-h-screen">
+        <header class="navbar bg-base-100 border-b border-base-300 sticky top-0 z-30">
+          <div class="flex-none lg:hidden">
+            <label for="portal-drawer" aria-label="open sidebar" class="btn btn-square btn-ghost">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </label>
+          </div>
+          <div class="flex-1 px-2">
+            <span class="text-lg font-semibold"><%= content_for(:page_title) || "Juleica Tracker" %></span>
+          </div>
+          <div class="flex-none">
+            <div class="dropdown dropdown-end">
+              <div tabindex="0" role="button" class="btn btn-ghost btn-sm normal-case">
+                <span class="hidden sm:inline"><%= current_user.email %></span>
+                <div class="badge badge-sm ml-1 capitalize <%= role_badge_class(current_user.role) %>"><%= current_user.role %></div>
+              </div>
+              <ul tabindex="0" class="menu dropdown-content bg-base-100 rounded-box z-50 mt-2 w-52 p-2 shadow">
+                <% unless current_user.staff? %>
+                  <li><%= link_to "My Progress", user_path(current_user) %></li>
+                <% end %>
+                <li><%= link_to "Edit profile", edit_user_registration_path %></li>
+                <li><%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "w-full text-left", form: { class: "contents" } %></li>
+              </ul>
+            </div>
+          </div>
+        </header>
+
+        <main class="flex-1 p-4 lg:p-6 max-w-7xl w-full mx-auto">
+          <%= render "shared/flash" %>
+          <%= yield %>
+        </main>
+      </div>
+
+      <aside class="drawer-side z-40">
+        <label for="portal-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+        <div class="menu bg-base-100 min-h-full w-72 p-4 gap-2">
+          <div class="px-2 py-4 mb-2 border-b border-base-300">
+            <span class="text-xl font-bold">Juleica Tracker</span>
+            <p class="text-xs opacity-60">Training progress portal</p>
+          </div>
+          <ul class="w-full gap-1">
+            <% portal_nav_items.each do |item| %>
+              <li>
+                <%= link_to item[:path], class: item[:active] ? "menu-active" : "" do %>
+                  <%= item[:label] %>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      </aside>
+    </div>
   </body>
 </html>

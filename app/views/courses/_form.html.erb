@@ -1,0 +1,74 @@
+<%= form_with model: course, class: "space-y-4" do |f| %>
+  <% if course.errors.any? %>
+    <div role="alert" class="alert alert-error">
+      <span><%= pluralize(course.errors.count, "error") %> prevented saving:</span>
+    </div>
+  <% end %>
+
+  <fieldset class="fieldset">
+    <legend class="fieldset-legend">Name</legend>
+    <%= f.text_field :name, class: "input w-full", required: true, autofocus: true %>
+  </fieldset>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend">Organization</legend>
+      <%= f.collection_select :organization_id, @permitted_organizations, :id, :name,
+            { prompt: "Select organization" }, { class: "select w-full", required: true } %>
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend">Location</legend>
+      <%= f.text_field :location, class: "input w-full" %>
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend">Starts at</legend>
+      <%= f.datetime_field :starts_at, class: "input w-full", required: true %>
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend">Ends at</legend>
+      <%= f.datetime_field :ends_at, class: "input w-full", required: true %>
+    </fieldset>
+  </div>
+
+  <fieldset class="fieldset">
+    <legend class="fieldset-legend">Description</legend>
+    <%= f.text_area :description, rows: 3, class: "textarea w-full" %>
+  </fieldset>
+
+  <div class="border border-base-300 rounded-box p-4">
+    <h2 class="font-semibold mb-2">Juleica requirements covered</h2>
+    <p class="text-xs opacity-60 mb-3">How many hours this course contributes to each requirement.</p>
+
+    <table class="table table-sm mb-2">
+      <thead><tr><th>Requirement</th><th>Hours</th><th>Remove</th></tr></thead>
+      <tbody>
+        <%= f.fields_for :course_requirements do |ff| %>
+          <tr>
+            <td>
+              <%= ff.hidden_field :id %>
+              <%= ff.collection_select :juleica_requirement_id, JuleicaRequirement.order(:name), :id, :name,
+                    { prompt: "Select requirement" }, { class: "select select-sm w-full max-w-xs" } %>
+            </td>
+            <td><%= ff.number_field :hours, step: 0.5, min: 0.5, placeholder: "e.g. 4", style: "width: 6rem", class: "input input-sm" %></td>
+            <td>
+              <% if ff.object.persisted? %>
+                <label class="label cursor-pointer justify-start gap-1 text-error">
+                  <%= ff.check_box :_destroy %> destroy
+                </label>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <p class="text-xs opacity-60">Use the empty row to add a requirement; submit and edit again to add more.</p>
+  </div>
+
+  <div class="flex gap-2">
+    <%= f.submit course.new_record? ? "Create course" : "Update course", class: "btn btn-primary" %>
+    <%= link_to "Cancel", courses_path, class: "btn btn-ghost" %>
+  </div>
+<% end %>

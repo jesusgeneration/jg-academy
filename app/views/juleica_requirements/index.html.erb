@@ -1,0 +1,31 @@
+<% content_for :page_title, "Juleica Requirements" %>
+
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-2xl font-semibold">Juleica Requirements</h1>
+  <%= link_to "New requirement", new_juleica_requirement_path, class: "btn btn-primary btn-sm" %>
+</div>
+
+<% if @juleica_requirements.any? %>
+  <div class="card bg-base-100 shadow">
+    <table class="table">
+      <thead>
+        <tr><th>Name</th><th>Required hours</th><th>Courses covering</th><th class="text-right">Actions</th></tr>
+      </thead>
+      <tbody>
+        <% @juleica_requirements.each do |requirement| %>
+          <tr>
+            <td><%= link_to requirement.name, juleica_requirement_path(requirement), class: "link link-hover font-medium" %></td>
+            <td><%= format_hours(requirement.required_hours) %> h</td>
+            <td><span class="badge badge-ghost"><%= requirement.courses.size %></span></td>
+            <td class="text-right space-x-2 whitespace-nowrap">
+              <%= link_to "Edit", edit_juleica_requirement_path(requirement), class: "btn btn-ghost btn-xs" %>
+              <%= button_to "Delete", juleica_requirement_path(requirement), method: :delete, form: { class: "inline" }, data: { turbo_confirm: "Delete #{requirement.name}?" }, class: "btn btn-error btn-outline btn-xs" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="alert alert-info"><span>No requirements yet. Create the first one.</span></div>
+<% end %>

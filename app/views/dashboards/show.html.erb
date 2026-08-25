@@ -1,0 +1,77 @@
+<% content_for :page_title, "Dashboard" %>
+
+<div class="stats stats-vertical lg:stats-horizontal shadow bg-base-100 w-full mb-6">
+  <div class="stat">
+    <div class="stat-title">Users</div>
+    <div class="stat-value"><%= @user_count %></div>
+    <div class="stat-desc">registered accounts</div>
+  </div>
+  <div class="stat">
+    <div class="stat-title">Upcoming Courses</div>
+    <div class="stat-value"><%= @upcoming_course_count %></div>
+    <div class="stat-desc"><%= link_to "view courses", courses_path, class: "link link-hover" %></div>
+  </div>
+  <div class="stat">
+    <div class="stat-title">Juleica Requirements</div>
+    <div class="stat-value"><%= @requirement_count %></div>
+    <div class="stat-desc"><%= link_to "manage requirements", juleica_requirements_path, class: "link link-hover" %></div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+  <div class="card bg-base-100 shadow">
+    <div class="card-body">
+      <h2 class="card-title justify-between">
+        Recent Courses
+        <%= link_to "All courses", courses_path, class: "btn btn-ghost btn-xs" %>
+      </h2>
+      <% if @recent_courses.any? %>
+        <table class="table table-sm">
+          <thead>
+            <tr><th>Course</th><th>Date</th><th>Attendees</th></tr>
+          </thead>
+          <tbody>
+            <% @recent_courses.each do |course| %>
+              <tr>
+                <td><%= link_to course.name, course_path(course), class: "link link-hover" %></td>
+                <td class="whitespace-nowrap"><%= format_datetime(course.starts_at) %></td>
+                <td><%= course.course_attendances.size %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p class="opacity-60 py-4">No courses yet.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow">
+    <div class="card-body">
+      <h2 class="card-title">Users Close to Juleica</h2>
+      <% if @close_users.any? %>
+        <table class="table table-sm">
+          <thead>
+            <tr><th>User</th><th>Closest requirement</th><th class="text-right">Progress</th></tr>
+          </thead>
+          <tbody>
+            <% @close_users.each do |user, best| %>
+              <tr>
+                <td><%= link_to user.email, user_path(user), class: "link link-hover" %></td>
+                <td>
+                  <%= best.requirement.name %>
+                  <span class="text-xs opacity-60 ml-1"><%= best.earned_hours.to_i %> / <%= best.required_hours.to_i %> h</span>
+                </td>
+                <td class="text-right">
+                  <progress class="progress progress-primary w-24" value="<%= progress_percent(best) %>" max="100"></progress>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p class="opacity-60 py-4">No partial progress recorded yet.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

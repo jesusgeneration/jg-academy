@@ -1,0 +1,39 @@
+<% content_for :page_title, "Users" %>
+
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-2xl font-semibold">Users</h1>
+  <%= link_to "New user", new_user_path, class: "btn btn-primary btn-sm" %>
+</div>
+
+<% if @users.any? %>
+  <div class="card bg-base-100 shadow">
+    <table class="table">
+      <thead>
+        <tr><th>Email</th><th>Role</th><th>Confirmed</th><th class="text-right">Actions</th></tr>
+      </thead>
+      <tbody>
+        <% @users.each do |user| %>
+          <tr>
+            <td><%= link_to user.email, user_path(user), class: "link link-hover font-medium" %></td>
+            <td><span class="badge capitalize <%= role_badge_class(user.role) %>"><%= user.role %></span></td>
+            <td>
+              <% if user.confirmed? %>
+                <span class="badge badge-success badge-sm">yes</span>
+              <% else %>
+                <span class="badge badge-warning badge-sm">pending</span>
+              <% end %>
+            </td>
+            <td class="text-right space-x-2 whitespace-nowrap">
+              <%= link_to "Edit", edit_user_path(user), class: "btn btn-ghost btn-xs" %>
+              <% unless user == current_user %>
+                <%= button_to "Delete", user_path(user), method: :delete, form: { class: "inline" }, data: { turbo_confirm: "Delete #{user.email}?" }, class: "btn btn-error btn-outline btn-xs" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="alert alert-info"><span>No users yet.</span></div>
+<% end %>

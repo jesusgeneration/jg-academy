@@ -1,0 +1,15 @@
+<h2 class="card-title mb-4"><%= t(".resend_confirmation_title", default: "Resend confirmation instructions") %></h2>
+
+<%= form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }) do |f| %>
+  <%= render "devise/shared/error_messages", resource: resource %>
+
+  <fieldset class="fieldset">
+    <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "Email", value: (resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email), class: "input w-full", required: true %>
+  </fieldset>
+
+  <div class="mt-4">
+    <%= f.submit t(".resend_confirmation_button", default: "Resend confirmation instructions"), class: "btn btn-primary w-full" %>
+  </div>
+<% end %>
+
+<%= render "devise/shared/links" %>

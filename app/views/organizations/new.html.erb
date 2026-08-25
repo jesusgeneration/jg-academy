@@ -1,0 +1,9 @@
+<% content_for :page_title, "New Organization" %>
+
+<nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
+  <ul><li><%= link_to "Organizations", organizations_path %></li><li>New</li></ul>
+</nav>
+
+<div class="max-w-xl">
+  <%= render "form", organization: @organization %>
+</div>

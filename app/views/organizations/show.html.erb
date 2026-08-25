@@ -1,0 +1,57 @@
+<% content_for :page_title, "Organization" %>
+
+<nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
+  <ul><li><%= link_to "Organizations", organizations_path %></li><li><%= @organization.name %></li></ul>
+</nav>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="card bg-base-100 shadow">
+    <div class="card-body">
+      <h1 class="card-title"><%= @organization.name %></h1>
+      <% if @organization.description.present? %>
+        <p class="opacity-80"><%= simple_format(@organization.description) %></p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow">
+    <div class="card-body">
+      <h2 class="card-title">Members</h2>
+      <% if @memberships.any? %>
+        <ul class="menu w-full p-0">
+          <% @memberships.each do |membership| %>
+            <li>
+              <%= link_to user_path(membership.user) do %>
+                <span class="flex-1"><%= membership.user.email %></span>
+                <span class="badge badge-sm capitalize <%= membership_role_badge_class(membership.role) %>"><%= membership.role %></span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="opacity-60">No members.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow">
+    <div class="card-body">
+      <h2 class="card-title">Courses</h2>
+      <% if @courses.any? %>
+        <table class="table table-sm">
+          <thead><tr><th>Course</th><th>Date</th></tr></thead>
+          <tbody>
+            <% @courses.each do |course| %>
+              <tr>
+                <td><%= link_to course.name, course_path(course), class: "link link-hover" %></td>
+                <td><%= format_datetime(course.starts_at) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p class="opacity-60">No courses offered yet.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

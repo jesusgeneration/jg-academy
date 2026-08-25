@@ -1,0 +1,31 @@
+<% content_for :page_title, "Organizations" %>
+
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-2xl font-semibold">Organizations</h1>
+  <%= link_to "New organization", new_organization_path, class: "btn btn-primary btn-sm" %>
+</div>
+
+<% if @organizations.any? %>
+  <div class="card bg-base-100 shadow">
+    <table class="table">
+      <thead>
+        <tr><th>Name</th><th>Members</th><th>Courses</th><th class="text-right">Actions</th></tr>
+      </thead>
+      <tbody>
+        <% @organizations.each do |organization| %>
+          <tr>
+            <td><%= link_to organization.name, organization_path(organization), class: "link link-hover font-medium" %></td>
+            <td><span class="badge badge-ghost"><%= organization.users.size %></span></td>
+            <td><span class="badge badge-ghost"><%= organization.courses.size %></span></td>
+            <td class="text-right space-x-2 whitespace-nowrap">
+              <%= link_to "Edit", edit_organization_path(organization), class: "btn btn-ghost btn-xs" %>
+              <%= button_to "Delete", organization_path(organization), method: :delete, form: { class: "inline" }, data: { turbo_confirm: "Delete #{organization.name}?" }, class: "btn btn-error btn-outline btn-xs" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="alert alert-info"><span>No organizations yet. Create the first one.</span></div>
+<% end %>

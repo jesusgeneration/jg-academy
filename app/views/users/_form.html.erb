@@ -1,0 +1,51 @@
+<%= form_with model: user, class: "space-y-4" do |f| %>
+  <% if user.errors.any? %>
+    <div role="alert" class="alert alert-error">
+      <span><%= pluralize(user.errors.count, "error") %> prevented saving:</span>
+    </div>
+  <% end %>
+
+  <fieldset class="fieldset">
+    <legend class="fieldset-legend">Email</legend>
+    <%= f.email_field :email, class: "input w-full", required: true, autofocus: true %>
+    <% if user.errors[:email].any? %>
+      <p class="label text-error"><%= user.errors[:email].to_sentence %></p>
+    <% end %>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend class="fieldset-legend">Role</legend>
+    <%= f.select :role, User.roles.keys.map { |r| [r.humanize, r] }, {}, class: "select w-full" %>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend class="fieldset-legend">Organizations</legend>
+    <%= f.fields_for :organization_memberships, @membership_rows do |ff| %>
+      <div class="flex items-center justify-between gap-2 py-1">
+        <span><%= ff.object.organization.name %></span>
+        <%= ff.hidden_field :id %>
+        <%= ff.hidden_field :organization_id %>
+        <%= ff.select :role,
+              options_for_select([["Not a member", ""], ["Member", "member"], ["Organiser", "organiser"]], ff.object.role),
+              {}, class: "select select-sm" %>
+      </div>
+    <% end %>
+  </fieldset>
+
+  <fieldset class="fieldset">
+    <legend class="fieldset-legend">Password</legend>
+    <%= f.password_field :password, autocomplete: "new-password", placeholder: user.persisted? ? "Leave blank to keep current password" : "", class: "input w-full" %>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "Confirm password", class: "input w-full mt-2" unless user.persisted? %>
+    <% if user.errors[:password].any? %>
+      <p class="label text-error"><%= user.errors[:password].to_sentence %></p>
+    <% end %>
+    <% if user.persisted? && !user.confirmed? %>
+      <p class="label">Awaiting email confirmation.</p>
+    <% end %>
+  </fieldset>
+
+  <div class="flex gap-2">
+    <%= f.submit user.new_record? ? "Create user" : "Update user", class: "btn btn-primary" %>
+    <%= link_to "Cancel", users_path, class: "btn btn-ghost" %>
+  </div>
+<% end %>
