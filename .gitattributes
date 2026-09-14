@@ -1,5 +1,11 @@
 # See https://git-scm.com/docs/gitattributes for more about git attribute files.
 
+# Normalize all text files to LF in the repo. Checkout stays native per platform.
+* text=auto
+
+# Scripts must always be LF — CRLF breaks shebang lines.
+bin/* text eol=lf
+
 # Mark the database schema as having been generated.
 db/schema.rb linguist-generated
 
