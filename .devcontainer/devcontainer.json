@@ -16,7 +16,7 @@
   "containerEnv": {
     "DB_HOST": "postgres"
   },
-  "forwardPorts": [3000, 5432],
+  "forwardPorts": [3005, 5432],
 
   "customizations": {
     "vscode": {
