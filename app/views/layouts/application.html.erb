@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html data-theme="corporate">
   <head>
-    <title><%= content_for(:title) || "Juleica Tracker" %></title>
+    <title><%= content_for(:title) || "jg-academy" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Juleica Tracker">
+    <meta name="application-name" content="jg-academy">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -31,7 +31,7 @@
             </label>
           </div>
           <div class="flex-1 px-2">
-            <span class="text-lg font-semibold"><%= content_for(:page_title) || "Juleica Tracker" %></span>
+            <span class="text-lg font-semibold"><%= content_for(:page_title) || "jg-academy" %></span>
           </div>
           <div class="flex-none">
             <div class="dropdown dropdown-end">
@@ -60,8 +60,7 @@
         <label for="portal-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
         <div class="menu bg-base-100 min-h-full w-72 p-4 gap-2">
           <div class="px-2 py-4 mb-2 border-b border-base-300">
-            <span class="text-xl font-bold">Juleica Tracker</span>
-            <p class="text-xs opacity-60">Training progress portal</p>
+            <span class="text-xl font-bold">jg-academy</span>
           </div>
           <ul class="w-full gap-1">
             <% portal_nav_items.each do |item| %>
