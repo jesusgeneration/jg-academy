@@ -28,5 +28,5 @@
     }
   },
 
-  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.local/share/opencode && curl -fsSL https://opencode.ai/install | bash"
+  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.local/share/opencode && curl -fsSL https://opencode.ai/v2/install | bash"
 }
