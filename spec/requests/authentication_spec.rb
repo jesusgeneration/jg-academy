@@ -22,7 +22,7 @@ RSpec.describe "Authentication" do
 
     get root_path
 
-    expect(response.body).to include("Juleica Tracker")
+    expect(response.body).to include("jg-academy")
     expect(response.body).to include("Dashboard")
   end
 
@@ -33,7 +33,7 @@ RSpec.describe "Authentication" do
       aggregate_failures do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("Sign in")
-        expect(response.body).to include("Juleica Tracker")
+        expect(response.body).to include("jg-academy")
       end
     end
 

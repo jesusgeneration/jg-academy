@@ -1,4 +1,4 @@
-puts "Seeding Juleica Tracker..."
+puts "Seeding jg-academy..."
 
 def confirmed_user(email:, role: :user)
   User.find_or_create_by!(email: email) do |user|

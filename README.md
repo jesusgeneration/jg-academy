@@ -1,4 +1,4 @@
-# Juleica Tracker
+# jg-academy
 
 A Rails application for a network of cooperating churches that offer one-off
 training weekends and courses. The application tracks course attendance and
