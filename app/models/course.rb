@@ -4,11 +4,10 @@ class Course < ApplicationRecord
   has_many :course_attendances, dependent: :destroy
   has_many :users, through: :course_attendances
 
-  has_many :course_requirements, dependent: :destroy
-  has_many :juleica_requirements, through: :course_requirements
-
-  accepts_nested_attributes_for :course_requirements, allow_destroy: true,
-    reject_if: ->(attrs) { attrs["juleica_requirement_id"].blank? || attrs["hours"].blank? }
+  has_many :course_coverages, dependent: :destroy
+  has_many :covered_contents,
+           through: :course_coverages,
+           source: :content
 
   validates :name, presence: true
   validates :starts_at, :ends_at, presence: true
@@ -19,6 +18,27 @@ class Course < ApplicationRecord
 
   def past?
     ends_at < Time.current
+  end
+
+  def covers?(content)
+    return false if content.nil? || id.nil? || content.id.nil?
+
+    ids = [ content.id ]
+    return course_coverages.exists?(content_id: ids) if content.level?
+    return false unless content.parent_id
+
+    ids << content.parent_id
+    return course_coverages.exists?(content_id: ids) if content.section?
+
+    grandparent_id =
+      if content.parent&.parent_id
+        content.parent.parent_id
+      else
+        Content.where(id: content.parent_id).pick(:parent_id)
+      end
+    ids << grandparent_id if grandparent_id
+
+    course_coverages.exists?(content_id: ids.compact)
   end
 
   private

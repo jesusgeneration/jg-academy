@@ -37,31 +37,104 @@
 
   <div class="card bg-base-100 shadow h-fit">
     <div class="card-body">
-      <h2 class="card-title">Counts Toward</h2>
-      <% if @course_requirements.any? %>
-        <table class="table table-sm">
-          <thead><tr><th>Requirement</th><th class="text-right">Hours</th></tr></thead>
-          <tbody>
-            <% @course_requirements.each do |course_requirement| %>
-              <tr>
-                <td>
-                  <% if policy(JuleicaRequirement).show? %>
-                    <%= link_to course_requirement.juleica_requirement.name, juleica_requirement_path(course_requirement.juleica_requirement), class: "link link-hover" %>
-                  <% else %>
-                    <%= course_requirement.juleica_requirement.name %>
-                  <% end %>
-                </td>
-                <td class="text-right"><span class="badge badge-primary badge-outline">+ <%= format_hours(course_requirement.hours) %> h</span></td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
+      <h2 class="card-title">Covers</h2>
+      <p class="text-xs opacity-60">Covering a level or section automatically covers everything below it.</p>
+      <% covered = @course.covered_contents.order(:position) %>
+      <% if covered.any? %>
+        <ul class="space-y-1 text-sm mt-2">
+          <% covered.each do |content| %>
+            <li>
+              <span class="badge badge-ghost badge-sm mr-1"><%= content.content_type %></span>
+              <%= content.title %>
+            </li>
+          <% end %>
+        </ul>
       <% else %>
-        <p class="opacity-60">This course does not count toward any requirement yet.</p>
+        <p class="opacity-60">This course does not cover any content yet.</p>
       <% end %>
     </div>
   </div>
 </div>
+
+<% if policy(@course).update? %>
+  <div class="card bg-base-100 shadow mt-6">
+    <div class="card-body">
+      <h2 class="card-title">Manage coverage</h2>
+      <p class="text-sm opacity-60">Add or remove the points in the hierarchy where coverage starts. Descendants of a covered item are covered automatically.</p>
+      <% if @coverage_tree.any? %>
+        <div class="space-y-2 mt-2">
+          <% @coverage_tree.each do |level| %>
+            <% subtree_ids = [ level.id ] + level.children.flat_map { |s| [ s.id ] + s.children.map(&:id) } %>
+            <% level_open = (@coverages_by_content_id.keys & subtree_ids).any? %>
+            <div class="flex items-start gap-2">
+              <div class="collapse collapse-arrow bg-base-200 flex-1">
+                <input type="checkbox" <%= "checked" if level_open %> />
+                <div class="collapse-title text-sm font-medium py-2 min-h-0">
+                  <span class="badge badge-primary badge-outline badge-sm mr-1"><%= level.content_type %></span>
+                  <%= level.title %>
+                </div>
+                <div class="collapse-content">
+                  <% if level.children.any? %>
+                    <div class="space-y-2">
+                      <% level.children.each do |section| %>
+                        <% section_ids = [ section.id ] + section.children.map(&:id) %>
+                        <% section_open = (@coverages_by_content_id.keys & section_ids).any? %>
+                        <% section_via_ancestor = @coverages_by_content_id.key?(level.id) %>
+                        <div class="flex items-start gap-2">
+                          <div class="collapse collapse-arrow bg-base-100 flex-1">
+                            <input type="checkbox" <%= "checked" if section_open %> />
+                            <div class="collapse-title text-sm py-2 min-h-0">
+                              <span class="badge badge-secondary badge-outline badge-sm mr-1"><%= section.content_type %></span>
+                              <%= section.title %>
+                              <% if section_via_ancestor %>
+                                <span class="text-xs opacity-50 ml-1">covered via <%= level.title %></span>
+                              <% end %>
+                            </div>
+                            <div class="collapse-content">
+                              <% if section.children.any? %>
+                                <ul class="space-y-1">
+                                  <% section.children.each do |detail| %>
+                                    <% via = if @coverages_by_content_id.key?(section.id)
+                                               section.title
+                                             elsif section_via_ancestor
+                                               level.title
+                                             end %>
+                                    <li class="flex items-center justify-between gap-2">
+                                      <span>
+                                        <span class="badge badge-ghost badge-sm mr-1"><%= detail.content_type %></span>
+                                        <%= detail.title %>
+                                        <% if via %>
+                                          <span class="text-xs opacity-50 ml-1">covered via <%= via %></span>
+                                        <% end %>
+                                      </span>
+                                      <%= coverage_row_button(@course, detail, @coverages_by_content_id, ancestor_covered: via.present?) %>
+                                    </li>
+                                  <% end %>
+                                </ul>
+                              <% end %>
+                            </div>
+                          </div>
+                          <div class="pt-2">
+                            <%= coverage_row_button(@course, section, @coverages_by_content_id, ancestor_covered: section_via_ancestor) %>
+                          </div>
+                        </div>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+              <div class="pt-2">
+                <%= coverage_toggle_button(@course, level, @coverages_by_content_id) %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="opacity-60">No content items exist yet.</p>
+      <% end %>
+    </div>
+  </div>
+<% end %>
 
 <% if policy(@course).view_attendees? %>
   <div class="card bg-base-100 shadow mt-6">

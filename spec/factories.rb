@@ -30,10 +30,30 @@ FactoryBot.define do
     end
   end
 
-  factory :juleica_requirement do
-    sequence(:name) { |n| "Requirement #{n}" }
-    required_hours { 8 }
-    description { nil }
+  factory :content do
+    sequence(:title) { |n| "Content #{n}" }
+    content_type { :level }
+    position { 0 }
+
+    trait :level do
+      content_type { :level }
+      parent { nil }
+    end
+
+    trait :section do
+      content_type { :section }
+      association :parent, factory: [ :content, :level ]
+    end
+
+    trait :detail do
+      content_type { :detail }
+      association :parent, factory: [ :content, :section ]
+    end
+  end
+
+  factory :course_coverage do
+    association :course
+    association :content, :detail
   end
 
   factory :course do
@@ -48,12 +68,6 @@ FactoryBot.define do
       starts_at { 1.month.ago }
       ends_at { 1.month.ago + 2.days }
     end
-  end
-
-  factory :course_requirement do
-    association :course
-    juleica_requirement
-    hours { 4 }
   end
 
   factory :course_attendance do

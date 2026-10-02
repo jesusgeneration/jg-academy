@@ -15,19 +15,19 @@ class CoursesController < BaseController
 
   def show
     authorize @course
-    @course_requirements = @course.course_requirements.includes(:juleica_requirement)
     @attendances = @course.course_attendances.includes(:user).order("users.email")
     return unless policy(@course).update?
 
     @attendee_management = true
     @registrable_users = User.order(:email) - @course.users
+    @coverage_tree = Content.includes(children: :children).where(parent_id: nil).ordered
+    @coverages_by_content_id = @course.course_coverages.index_by(&:content_id)
   end
 
   def new
     @course = Course.new(organization: permitted_organizations.first)
     authorize @course
     @permitted_organizations = permitted_organizations
-    @course.course_requirements.build
   end
 
   def create
@@ -45,7 +45,6 @@ class CoursesController < BaseController
   def edit
     authorize @course
     prepare_form
-    @course.course_requirements.build
   end
 
   def update
@@ -73,8 +72,7 @@ class CoursesController < BaseController
   end
 
   def course_params
-    params.require(:course).permit(:name, :description, :starts_at, :ends_at, :location, :organization_id,
-      course_requirements_attributes: %i[id juleica_requirement_id hours _destroy])
+    params.require(:course).permit(:name, :description, :starts_at, :ends_at, :location, :organization_id)
   end
 
   def permitted_organizations
@@ -91,6 +89,5 @@ class CoursesController < BaseController
 
   def prepare_form
     @permitted_organizations = permitted_organizations
-    @course.course_requirements.build unless @course.course_requirements.any?(&:new_record?)
   end
 end

@@ -9,10 +9,6 @@ class UsersController < BaseController
 
   def show
     authorize @user
-    @progress = JuleicaProgressCalculator.new(@user).call
-    @credits_by_requirement = JuleicaProgressCalculator.new(@user).credits.group_by(&:juleica_requirement_id)
-    @recommended_courses = JuleicaProgressCalculator.recommended_upcoming_courses(@user)
-                                                    .includes(:organization, course_requirements: :juleica_requirement)
   end
 
   def new

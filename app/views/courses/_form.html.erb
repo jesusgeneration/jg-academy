@@ -39,32 +39,17 @@
   </fieldset>
 
   <div class="border border-base-300 rounded-box p-4">
-    <h2 class="font-semibold mb-2">Juleica requirements covered</h2>
-    <p class="text-xs opacity-60 mb-3">How many hours this course contributes to each requirement.</p>
-
-    <table class="table table-sm mb-2">
-      <thead><tr><th>Requirement</th><th>Hours</th><th>Remove</th></tr></thead>
-      <tbody>
-        <%= f.fields_for :course_requirements do |ff| %>
-          <tr>
-            <td>
-              <%= ff.hidden_field :id %>
-              <%= ff.collection_select :juleica_requirement_id, JuleicaRequirement.order(:name), :id, :name,
-                    { prompt: "Select requirement" }, { class: "select select-sm w-full max-w-xs" } %>
-            </td>
-            <td><%= ff.number_field :hours, step: 0.5, min: 0.5, placeholder: "e.g. 4", style: "width: 6rem", class: "input input-sm" %></td>
-            <td>
-              <% if ff.object.persisted? %>
-                <label class="label cursor-pointer justify-start gap-1 text-error">
-                  <%= ff.check_box :_destroy %> destroy
-                </label>
-              <% end %>
-            </td>
-          </tr>
+    <h2 class="font-semibold mb-2">Content coverage</h2>
+    <p class="text-xs opacity-60 mb-3">Coverage is managed separately via course coverages.</p>
+    <% if course.persisted? && course.covered_contents.any? %>
+      <ul class="text-sm space-y-1">
+        <% course.covered_contents.includes(:parent).ordered.each do |content| %>
+          <li><span class="badge badge-ghost badge-sm mr-1"><%= content.content_type %></span><%= content.title %></li>
         <% end %>
-      </tbody>
-    </table>
-    <p class="text-xs opacity-60">Use the empty row to add a requirement; submit and edit again to add more.</p>
+      </ul>
+    <% else %>
+      <p class="text-xs opacity-60">No content covered yet.</p>
+    <% end %>
   </div>
 
   <div class="flex gap-2">

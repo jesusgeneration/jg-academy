@@ -8,11 +8,11 @@ Rails.application.routes.draw do
 
   resource :dashboard, only: :show
 
-  resources :juleica_requirements
   resources :organizations
   resources :users
 
   resources :courses do
     resources :course_attendances, only: %i[create update destroy]
+    resources :course_coverages, only: %i[create destroy]
   end
 end

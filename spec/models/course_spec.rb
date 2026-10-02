@@ -31,13 +31,13 @@ RSpec.describe Course do
   end
 
   describe "associations" do
-    it "destroys attendances and requirements with the course" do
+    it "destroys attendances and coverages with the course" do
       course = create(:course)
       create(:course_attendance, course: course)
-      create(:course_requirement, course: course)
+      create(:course_coverage, course: course)
 
       expect { course.destroy }.to change(CourseAttendance, :count).by(-1)
-        .and change(CourseRequirement, :count).by(-1)
+        .and change(CourseCoverage, :count).by(-1)
     end
   end
 end

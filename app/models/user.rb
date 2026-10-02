@@ -17,14 +17,6 @@ class User < ApplicationRecord
 
   validates :role, presence: true
 
-  def juleica_progress
-    JuleicaProgressCalculator.new(self).call
-  end
-
-  def recommended_upcoming_courses
-    JuleicaProgressCalculator.recommended_upcoming_courses(self)
-  end
-
   def organiser?
     organised_organizations.any?
   end

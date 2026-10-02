@@ -31,28 +31,30 @@ membership_for(alice, st_martins, :member)
 membership_for(alice, st_peters, :member)
 membership_for(bob, st_martins, :member)
 
-group_leadership = JuleicaRequirement.find_or_create_by!(name: "Group Leadership") do |req|
-  req.required_hours = 8
-  req.description = "Leading and moderating youth groups."
-end
-legal_foundations = JuleicaRequirement.find_or_create_by!(name: "Legal Foundations") do |req|
-  req.required_hours = 4
-  req.description = "Child protection law and liability basics."
-end
-child_protection = JuleicaRequirement.find_or_create_by!(name: "Child Protection") do |req|
-  req.required_hours = 4
-  req.description = "Recognising and preventing abuse."
-end
-youth_methods = JuleicaRequirement.find_or_create_by!(name: "Youth Work Methods") do |req|
-  req.required_hours = 8
-  req.description = "Practical methods for everyday youth work."
+CourseAttendance.destroy_all
+CourseCoverage.destroy_all
+Course.destroy_all
+Content.where(content_type: :detail).delete_all
+Content.where(content_type: :section).delete_all
+Content.where(content_type: :level).delete_all
+
+JSON.parse(File.read(Rails.root.join("db/seeds_data/contents.json"))).each_with_index do |entry, level_position|
+  level = Content.create!(parent: nil, title: entry["title"], content_type: :level, position: level_position)
+
+  entry.fetch("sections").each_with_index do |section_entry, section_position|
+    section = Content.create!(parent: level, title: section_entry["title"], content_type: :section, position: section_position)
+
+    section_entry.fetch("details").each_with_index do |title, detail_position|
+      Content.create!(parent: section, title:, content_type: :detail, position: detail_position)
+    end
+  end
 end
 
-CourseAttendance.where(user: alice).destroy_all
-CourseAttendance.where(user: bob).destroy_all
-[ Course.find_by(name: "Youth Leadership Weekend 2026"),
- Course.find_by(name: "Games & Group Work Weekend"),
- Course.find_by(name: "Safeguarding Weekend") ].compact.each(&:destroy)
+first_level = Content.level.ordered.first
+first_section = first_level.children.ordered.first
+first_detail = Content.detail.ordered.first
+
+Course.where(name: [ "Youth Leadership Weekend 2026", "Games & Group Work Weekend", "Safeguarding Weekend" ]).destroy_all
 
 youth_weekend = Course.create!(
   name: "Youth Leadership Weekend 2026",
@@ -62,8 +64,7 @@ youth_weekend = Course.create!(
   location: "Parish Hall, St. Martin's",
   organization: st_martins
 )
-CourseRequirement.create!(course: youth_weekend, juleica_requirement: group_leadership, hours: 4)
-CourseRequirement.create!(course: youth_weekend, juleica_requirement: legal_foundations, hours: 2)
+CourseCoverage.create!(course: youth_weekend, content: first_level)
 
 games_weekend = Course.create!(
   name: "Games & Group Work Weekend",
@@ -73,8 +74,7 @@ games_weekend = Course.create!(
   location: "Community Center",
   organization: st_peters
 )
-CourseRequirement.create!(course: games_weekend, juleica_requirement: group_leadership, hours: 4)
-CourseRequirement.create!(course: games_weekend, juleica_requirement: youth_methods, hours: 6)
+CourseCoverage.create!(course: games_weekend, content: first_section)
 
 safeguarding_weekend = Course.create!(
   name: "Safeguarding Weekend",
@@ -84,7 +84,7 @@ safeguarding_weekend = Course.create!(
   location: "St. Peter's North",
   organization: st_peters
 )
-CourseRequirement.create!(course: safeguarding_weekend, juleica_requirement: child_protection, hours: 4)
+CourseCoverage.create!(course: safeguarding_weekend, content: first_detail)
 
 CourseAttendance.create!(course: youth_weekend, user: organiser, status: :attended)
 CourseAttendance.create!(course: youth_weekend, user: alice, status: :attended)
