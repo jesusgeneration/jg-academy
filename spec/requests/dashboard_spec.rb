@@ -7,12 +7,13 @@ RSpec.describe "Dashboard" do
         sign_in create(:user, :admin)
         create(:user)
         create(:course)
-        create(:juleica_requirement)
 
         get dashboard_path
 
-        expect(response).to have_http_status(:ok)
-        expect(response.body).to include("Users Close to Juleica")
+        aggregate_failures do
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to include("Recent Courses")
+        end
       end
     end
 

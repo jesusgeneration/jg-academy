@@ -1,2 +1,0 @@
-class JuleicaRequirementPolicy < ApplicationPolicy
-end

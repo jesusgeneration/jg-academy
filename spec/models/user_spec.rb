@@ -34,26 +34,6 @@ RSpec.describe User do
     end
   end
 
-  describe "#juleica_progress" do
-    let(:user) { create(:user) }
-
-    it "returns progress results for all requirements" do
-      create(:juleica_requirement, name: "Group Leadership", required_hours: 8)
-
-      results = user.juleica_progress
-
-      expect(results.size).to eq(1)
-      result = results.first
-      aggregate_failures do
-        expect(result.requirement.name).to eq("Group Leadership")
-        expect(result.required_hours).to eq(8)
-        expect(result.earned_hours).to eq(0)
-        expect(result.remaining_hours).to eq(8)
-        expect(result).not_to be_completed
-      end
-    end
-  end
-
   describe "associations" do
     it "destroys memberships and attendances with the user" do
       user = create(:user)

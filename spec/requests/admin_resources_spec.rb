@@ -8,9 +8,6 @@ RSpec.describe "Admin resources" do
       get organizations_path
       expect(response).to redirect_to(root_path)
 
-      get juleica_requirements_path
-      expect(response).to redirect_to(root_path)
-
       get users_path
       expect(response).to redirect_to(root_path)
     end
@@ -94,96 +91,6 @@ RSpec.describe "Admin resources" do
         expect(response.body).to include("member@example.com")
         expect(response.body).to include(">organiser</span>")
       end
-    end
-  end
-
-  describe "juleica requirements CRUD" do
-    before { sign_in create(:user, :admin) }
-
-    it "renders the index" do
-      create(:juleica_requirement, name: "Group Leadership")
-
-      get juleica_requirements_path
-
-      aggregate_failures do
-        expect(response).to have_http_status(:ok)
-        expect(response.body).to include("Group Leadership")
-      end
-    end
-
-    it "renders the detail page with covering courses" do
-      requirement = create(:juleica_requirement, name: "Legal Foundations")
-      course = create(:course, name: "Law Weekend")
-      create(:course_requirement, course: course, juleica_requirement: requirement, hours: 2)
-
-      get juleica_requirement_path(requirement)
-
-      aggregate_failures do
-        expect(response).to have_http_status(:ok)
-        expect(response.body).to include("Law Weekend")
-        expect(response.body).to include("2 h")
-      end
-    end
-
-    it "renders the new form" do
-      get new_juleica_requirement_path
-
-      expect(response).to have_http_status(:ok)
-    end
-
-    it "renders the edit form" do
-      get edit_juleica_requirement_path(create(:juleica_requirement))
-
-      expect(response).to have_http_status(:ok)
-    end
-
-    it "creates a requirement" do
-      expect {
-        post juleica_requirements_path,
-             params: { juleica_requirement: { name: "Legal Foundations", required_hours: 4 } }
-      }.to change(JuleicaRequirement, :count).by(1)
-    end
-
-    it "updates a requirement" do
-      requirement = create(:juleica_requirement, required_hours: 4)
-
-      patch juleica_requirement_path(requirement),
-            params: { juleica_requirement: { required_hours: 6 } }
-
-      aggregate_failures do
-        expect(response).to redirect_to(juleica_requirements_path)
-        expect(requirement.reload.required_hours).to eq(6)
-      end
-    end
-
-    it "rejects zero required hours" do
-      post juleica_requirements_path,
-           params: { juleica_requirement: { name: "Invalid", required_hours: 0 } }
-
-      expect(response).to have_http_status(:unprocessable_content)
-    end
-
-    it "deletes an unreferenced requirement" do
-      requirement = create(:juleica_requirement)
-
-      expect {
-        delete juleica_requirement_path(requirement)
-      }.to change(JuleicaRequirement, :count).by(-1)
-
-      expect(response).to redirect_to(juleica_requirements_path)
-    end
-
-    it "protects requirements referenced by courses from deletion" do
-      requirement = create(:juleica_requirement)
-      create(:course_requirement, juleica_requirement: requirement)
-
-      expect {
-        delete juleica_requirement_path(requirement)
-      }.not_to change(JuleicaRequirement, :count)
-
-      expect(response).to redirect_to(juleica_requirements_path)
-      follow_redirect!
-      expect(flash[:alert]).to be_present
     end
   end
 

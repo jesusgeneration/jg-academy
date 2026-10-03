@@ -51,4 +51,6 @@ gem "devise", "~> 5.0"
 
 gem "pundit", "~> 2.5"
 
+gem "data_migrate", "~> 11.0"
+
 gem "factory_bot_rails", "~> 6.5", groups: [ :development, :test ]

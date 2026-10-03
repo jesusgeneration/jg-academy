@@ -5,10 +5,9 @@ module ApplicationHelper
       items << nav_entry("Dashboard", dashboard_path)
       items << nav_entry("Users", users_path) if policy(User).index?
     else
-      items << nav_entry("My Progress", user_path(current_user))
+      items << nav_entry("My Account", user_path(current_user))
     end
     items << nav_entry("Courses", courses_path)
-    items << nav_entry("Juleica Requirements", juleica_requirements_path) if policy(JuleicaRequirement).index?
     items << nav_entry("Organizations", organizations_path) if policy(Organization).index?
     items
   end
@@ -48,28 +47,33 @@ module ApplicationHelper
     }.fetch(role.to_s, "badge-ghost")
   end
 
-  def requirement_status_badge(result)
-    if result.completed?
-      [ "badge-success", "Complete" ]
-    elsif result.partial?
-      [ "badge-warning", "In progress" ]
+  def format_datetime(datetime)
+    datetime.strftime("%d %b %Y, %H:%M")
+  end
+
+  def coverage_toggle_button(course, content, coverages_by_content_id)
+    coverage = coverages_by_content_id[content.id]
+    if coverage
+      button_to "Remove",
+        course_course_coverage_path(course, coverage),
+        method: :delete,
+        form: { class: "inline" },
+        class: "btn btn-error btn-outline btn-xs w-20"
     else
-      [ "badge-ghost", "Not started" ]
+      button_to "Add",
+        course_course_coverages_path(course),
+        params: { course_coverage: { content_id: content.id } },
+        form: { class: "inline" },
+        class: "btn btn-outline btn-xs w-20"
     end
   end
 
-  def progress_percent(result)
-    return 100 if result.completed?
+  # A row gets no button when an ancestor is covered and the item itself
+  # has no direct coverage record (there is nothing to add or remove).
+  def coverage_row_button(course, content, coverages_by_content_id, ancestor_covered: false)
+    return nil if ancestor_covered && !coverages_by_content_id.key?(content.id)
 
-    ((result.earned_hours / result.required_hours) * 100).clamp(0, 100)
-  end
-
-  def format_hours(hours)
-    number_with_precision(hours, precision: 2, strip_insignificant_zeros: true)
-  end
-
-  def format_datetime(datetime)
-    datetime.strftime("%d %b %Y, %H:%M")
+    coverage_toggle_button(course, content, coverages_by_content_id)
   end
 
   private

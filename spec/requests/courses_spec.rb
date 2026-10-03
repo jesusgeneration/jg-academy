@@ -34,11 +34,10 @@ RSpec.describe "Courses" do
 
   describe "POST /courses" do
     let(:admin) { create(:user, :admin) }
-    let(:requirement) { create(:juleica_requirement, name: "Group Leadership") }
 
     before { sign_in admin }
 
-    it "creates a course with nested course requirements" do
+    it "creates a course" do
       post courses_path, params: {
         course: {
           name: "Youth Leadership Weekend 2026",
@@ -46,18 +45,14 @@ RSpec.describe "Courses" do
           location: "Parish Hall",
           starts_at: "2026-10-10T18:00",
           ends_at: "2026-10-11T17:00",
-          organization_id: organization.id,
-          course_requirements_attributes: {
-            "0" => { juleica_requirement_id: requirement.id, hours: "4" }
-          }
+          organization_id: organization.id
         }
       }
 
       course = Course.find_by!(name: "Youth Leadership Weekend 2026")
       aggregate_failures do
         expect(response).to redirect_to(course_path(course))
-        expect(course.course_requirements.sole.hours).to eq(4)
-        expect(course.course_requirements.sole.juleica_requirement).to eq(requirement)
+        expect(course.organization).to eq(organization)
       end
     end
 
@@ -236,6 +231,122 @@ RSpec.describe "Courses" do
     end
   end
 
+  describe "coverage management" do
+    let!(:course) { create(:course, organization: organization) }
+    let!(:level) { create(:content, :level, title: "Level 1") }
+    let!(:detail) { create(:content, :detail, title: "Detail 1.1.1") }
+
+    before { sign_in_organiser_for(organization) }
+
+    it "adds coverage to a course of their own organization" do
+      expect {
+        post course_course_coverages_path(course), params: { course_coverage: { content_id: level.id } }
+      }.to change(CourseCoverage, :count).by(1)
+
+      aggregate_failures do
+        expect(response).to redirect_to(course_path(course))
+        expect(course.reload.covers?(level)).to be(true)
+      end
+    end
+
+    it "refuses duplicate coverage" do
+      create(:course_coverage, course: course, content: level)
+
+      expect {
+        post course_course_coverages_path(course), params: { course_coverage: { content_id: level.id } }
+      }.not_to change(CourseCoverage, :count)
+
+      expect(response).to redirect_to(course_path(course))
+      follow_redirect!
+      expect(flash[:alert]).to be_present
+    end
+
+    it "removes coverage from a course of their own organization" do
+      coverage = create(:course_coverage, course: course, content: detail)
+
+      expect {
+        delete course_course_coverage_path(course, coverage)
+      }.to change(CourseCoverage, :count).by(-1)
+
+      expect(response).to redirect_to(course_path(course))
+    end
+
+    it "shows the coverage editor on the course page for the organizing church" do
+      section = create(:content, :section, parent: level, title: "Level 1.1")
+      create(:content, :detail, parent: section, title: "Detail 1.1.9")
+      create(:course_coverage, course: course, content: level)
+
+      get course_path(course)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Manage coverage")
+        expect(response.body).to include("Level 1")
+        expect(response.body).to include("Level 1.1")
+        expect(response.body).to include("Detail 1.1.9")
+        expect(response.body).to include("covered via Level 1")
+        expect(response.body).to include("collapse")
+        expect(response.body).to include("checked")
+        # Covered level keeps Remove; its section and detail get no button.
+        # Only the 3 uncovered items of the other tree keep Add.
+        expect(response.body.scan('>Remove</button>').size).to eq(1)
+        expect(response.body.scan('>Add</button>').size).to eq(3)
+      end
+    end
+
+    it "hides Add buttons on details of a covered section" do
+      section = create(:content, :section, parent: level, title: "Level 1.1")
+      create(:content, :detail, parent: section, title: "Detail 1.1.9")
+      create(:course_coverage, course: course, content: section)
+
+      get course_path(course)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("covered via Level 1.1")
+        # Level, section keep their buttons; the detail gets none.
+        expect(response.body.scan('>Remove</button>').size).to eq(1)
+        expect(response.body.scan('>Add</button>').size).to eq(4)
+      end
+    end
+
+    it "hides the coverage editor from organisers of another organization" do
+      sign_in_organiser_for(other_organization)
+
+      get course_path(course)
+
+      expect(response.body).not_to include("Manage coverage")
+    end
+
+    it "prevents organisers of another organization from adding coverage" do
+      sign_in_organiser_for(other_organization)
+
+      expect {
+        post course_course_coverages_path(course), params: { course_coverage: { content_id: level.id } }
+      }.not_to change(CourseCoverage, :count)
+
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "forbids plain users from adding coverage" do
+      sign_in create(:user)
+
+      expect {
+        post course_course_coverages_path(course), params: { course_coverage: { content_id: level.id } }
+      }.not_to change(CourseCoverage, :count)
+
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "hides the coverage editor from plain users" do
+      sign_in create(:user)
+
+      get course_path(course)
+
+      expect(response.body).not_to include("Manage coverage")
+    end
+  end
+
   describe "attendee visibility" do
     let!(:course) { create(:course, organization: organization) }
     let!(:attendee) { create(:user, email: "attendee@example.com") }
@@ -264,7 +375,7 @@ RSpec.describe "Courses" do
         expect(response).to have_http_status(:ok)
         expect(response.body).not_to include("Attendees")
         expect(response.body).not_to include("attendee@example.com")
-        expect(response.body).to include("Counts Toward")
+        expect(response.body).to include("Covers")
         expect(response.body).to include(course.starts_at.strftime("%d %b %Y"))
       end
     end
