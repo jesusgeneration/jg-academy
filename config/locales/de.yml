@@ -1,0 +1,338 @@
+---
+de:
+  dashboards:
+    show:
+      all_units: Alle Einheiten
+      empty: Noch keine Einheiten.
+      page_title: Dashboard
+      recent_units: Aktuelle Einheiten
+      stats:
+        content_items: Inhalte
+        levels_sections_details: Ebenen, Abschnitte und Details
+        registered_accounts: registrierte Konten
+        upcoming_units: Bevorstehende Einheiten
+        users: Benutzer
+        view_units: Einheiten ansehen
+      table:
+        attendees: Teilnehmende
+        date: Datum
+        unit: Einheit
+  devise_views:
+    confirmations:
+      new:
+        email: E-Mail
+        submit: Bestätigungsanleitung erneut senden
+        title: Bestätigungsanleitung erneut senden
+    passwords:
+      edit:
+        confirm_new_password: Neues Passwort bestätigen
+        new_password: Neues Passwort
+        new_password_with_minimum: Neues Passwort (mindestens %{count} Zeichen)
+        submit: Passwort ändern
+        title: Neues Passwort setzen
+      new:
+        email: E-Mail
+        submit: Anleitung zum Zurücksetzen senden
+        title: Passwort vergessen?
+    registrations:
+      edit:
+        back: Zurück
+        confirm_new_password: Neues Passwort bestätigen
+        current_password_required: Aktuelles Passwort (erforderlich)
+        language: Sprache
+        new_password: Neues Passwort
+        new_password_with_minimum: Neues Passwort (mindestens %{count} Zeichen)
+        submit: Aktualisieren
+        title: Passwort ändern
+        waiting_confirmation: 'Wartet auf Bestätigung für: %{email}'
+      new:
+        confirm_password: Passwort bestätigen
+        email: E-Mail
+        password: Passwort
+        password_with_minimum: Passwort (mindestens %{count} Zeichen)
+        submit: Registrieren
+        title: Registrieren
+    sessions:
+      new:
+        email: E-Mail
+        password: Passwort
+        remember_me: Angemeldet bleiben
+        submit: Anmelden
+        title: Anmelden
+    shared:
+      links:
+        forgot_password: Passwort vergessen?
+        resend_confirmation: Keine Bestätigungsanleitung erhalten?
+        resend_unlock: Keine Entsperranleitung erhalten?
+        sign_up: Registrieren
+  helpers:
+    coverage:
+      add: Hinzufügen
+      remove: Entfernen
+  languages:
+    de: Deutsch
+    en: English
+  layouts:
+    application:
+      app_name: jg-academy
+      close_sidebar: Seitenleiste schließen
+      language: Sprache
+      nav:
+        dashboard: Dashboard
+        my_account: Mein Konto
+        organizations: Organisationen
+        programs: Programme
+        units: Einheiten
+        users: Benutzer
+      open_sidebar: Seitenleiste öffnen
+      user_menu:
+        edit_profile: Profil bearbeiten
+        my_progress: Mein Fortschritt
+        sign_out: Abmelden
+  organizations:
+    create:
+      created: Organisation wurde erfolgreich erstellt.
+    destroy:
+      destroyed: Organisation wurde erfolgreich gelöscht.
+    edit:
+      breadcrumb_current: 'Bearbeiten: %{name}'
+      breadcrumb_root: Organisationen
+      page_title: Organisation bearbeiten
+    form:
+      cancel: Abbrechen
+      create: Organisation erstellen
+      description: Beschreibung
+      errors_prevented:
+        one: '1 Fehler hat das Speichern verhindert:'
+        other: "%{count} Fehler haben das Speichern verhindert:"
+      name: Name
+      update: Organisation aktualisieren
+    index:
+      confirm_delete: "%{name} löschen?"
+      delete: Löschen
+      edit: Bearbeiten
+      empty: Noch keine Organisationen. Erstelle die erste.
+      new: Neue Organisation
+      page_title: Organisationen
+      table:
+        actions: Aktionen
+        members: Mitglieder
+        name: Name
+        programs: Programme
+      title: Organisationen
+    new:
+      breadcrumb_current: Neu
+      breadcrumb_root: Organisationen
+      page_title: Neue Organisation
+    show:
+      breadcrumb_root: Organisationen
+      members: Mitglieder
+      no_members: Keine Mitglieder.
+      no_programs: Noch keine Programme.
+      page_title: Organisation
+      programs: Programme
+      table:
+        kind: Art
+        program: Programm
+    update:
+      updated: Organisation wurde erfolgreich aktualisiert.
+  programs:
+    create:
+      created: Programm wurde erfolgreich erstellt.
+    destroy:
+      destroyed: Programm wurde erfolgreich gelöscht.
+    edit:
+      breadcrumb_current: 'Bearbeiten: %{name}'
+      breadcrumb_root: Programme
+      page_title: Programm bearbeiten
+    form:
+      cancel: Abbrechen
+      create: Programm erstellen
+      description: Beschreibung
+      errors_prevented:
+        one: '1 Fehler hat das Speichern verhindert:'
+        other: "%{count} Fehler haben das Speichern verhindert:"
+      kind: Art
+      name: Name
+      organization: Organisation
+      select_organization: Organisation wählen
+      update: Programm aktualisieren
+    index:
+      empty: Noch keine Programme.
+      new: Neues Programm
+      page_title: Programme
+      table:
+        kind: Art
+        organization: Organisation
+        program: Programm
+        units: Einheiten
+      title: Programme
+    new:
+      breadcrumb_current: Neu
+      breadcrumb_root: Programme
+      page_title: Neues Programm
+    show:
+      breadcrumb_root: Programme
+      confirm_delete: Dieses Programm löschen?
+      delete: Löschen
+      edit: Bearbeiten
+      new_unit: Neue Einheit
+      no_units: Noch keine Einheiten in diesem Programm.
+      table:
+        date: Datum
+        location: Ort
+        unit: Einheit
+      units: Einheiten
+    update:
+      updated: Programm wurde erfolgreich aktualisiert.
+  pundit:
+    default: Du bist nicht berechtigt, diese Aktion auszuführen.
+  time:
+    formats:
+      short: "%d.%m.%Y, %H:%M"
+  unit_attendances:
+    create:
+      created: "%{email} wurde für diese Einheit registriert."
+    destroy:
+      destroyed: Teilnahme wurde entfernt.
+    update:
+      updated: Teilnahme wurde aktualisiert.
+  unit_coverages:
+    create:
+      created: "%{title} wird nun durch diese Einheit abgedeckt."
+    destroy:
+      destroyed: Abdeckung wurde entfernt.
+  units:
+    create:
+      created: Einheit wurde erfolgreich erstellt.
+    destroy:
+      destroyed: Einheit wurde erfolgreich gelöscht.
+    edit:
+      breadcrumb_current: 'Bearbeiten: %{name}'
+      breadcrumb_root: Einheiten
+      page_title: Einheit bearbeiten
+    form:
+      cancel: Abbrechen
+      coverage_hint: Die Abdeckung wird separat über Unit-Coverages verwaltet.
+      coverage_title: Inhaltsabdeckung
+      create: Einheit erstellen
+      description: Beschreibung
+      ends_at: Ende
+      errors_prevented:
+        one: '1 Fehler hat das Speichern verhindert:'
+        other: "%{count} Fehler haben das Speichern verhindert:"
+      location: Ort
+      name: Name
+      no_coverage: Noch keine Inhalte abgedeckt.
+      program: Programm
+      select_program: Programm wählen
+      starts_at: Beginn
+      update: Einheit aktualisieren
+    index:
+      attended_count: "%{count} teilgenommen"
+      empty: Keine Einheiten in dieser Ansicht.
+      new: Neue Einheit
+      page_title: Einheiten
+      table:
+        attendees: Teilnehmende
+        date: Datum
+        location: Ort
+        organization: Organisation
+        program: Programm
+        unit: Einheit
+      tabs:
+        all: Alle
+        past: Vergangen
+        upcoming: Bevorstehend
+      title: Einheiten
+    new:
+      breadcrumb_current: Neu
+      breadcrumb_root: Einheiten
+      page_title: Neue Einheit
+    show:
+      all_registered: Alle Benutzer sind bereits für diese Einheit registriert.
+      attendees: Teilnehmende
+      breadcrumb_programs: Programme
+      confirm_delete: Diese Einheit löschen?
+      confirm_remove_attendance: Teilnahme entfernen?
+      covered_via: abgedeckt über %{title}
+      covers: Abdeckung
+      covers_hint: Wird eine Ebene oder ein Abschnitt abgedeckt, gilt automatisch alles darunter als abgedeckt.
+      delete: Löschen
+      edit: Bearbeiten
+      ends: Ende
+      manage_coverage: Abdeckung verwalten
+      manage_coverage_hint: Lege fest, an welchen Punkten der Hierarchie die Abdeckung beginnt. Untergeordnete Punkte gelten automatisch als abgedeckt.
+      no_attendees: Noch keine Teilnehmenden registriert.
+      no_content: Noch keine Inhalte vorhanden.
+      no_coverage: Diese Einheit deckt noch keine Inhalte ab.
+      register: Registrieren
+      register_attendee: Teilnehmer registrieren
+      remove: Entfernen
+      select_user: Benutzer wählen
+      starts: Beginn
+      status:
+        past: Vergangen
+        upcoming: Bevorstehend
+      table:
+        actions: Aktionen
+        status: Status
+        user: Benutzer
+    update:
+      updated: Einheit wurde erfolgreich aktualisiert.
+  users:
+    create:
+      created: Benutzer wurde erfolgreich erstellt.
+    destroy:
+      cannot_delete_self: Du kannst dein eigenes Konto nicht löschen.
+      destroyed: Benutzer wurde erfolgreich gelöscht.
+    edit:
+      breadcrumb_current: 'Bearbeiten: %{email}'
+      breadcrumb_root: Benutzer
+      page_title: Benutzer bearbeiten
+    form:
+      awaiting_confirmation: Wartet auf E-Mail-Bestätigung.
+      cancel: Abbrechen
+      confirm_password: Passwort bestätigen
+      create: Benutzer erstellen
+      email: E-Mail
+      errors_prevented:
+        one: '1 Fehler hat das Speichern verhindert:'
+        other: "%{count} Fehler haben das Speichern verhindert:"
+      keep_password: Leer lassen, um das aktuelle Passwort zu behalten
+      language: Sprache
+      not_a_member: Kein Mitglied
+      organizations: Organisationen
+      password: Passwort
+      role: Rolle
+      update: Benutzer aktualisieren
+    index:
+      confirm_delete: "%{email} löschen?"
+      confirmed_pending: ausstehend
+      confirmed_yes: ja
+      delete: Löschen
+      edit: Bearbeiten
+      empty: Noch keine Benutzer.
+      new: Neuer Benutzer
+      page_title: Benutzer
+      table:
+        actions: Aktionen
+        confirmed: Bestätigt
+        email: E-Mail
+        role: Rolle
+      title: Benutzer
+    new:
+      breadcrumb_current: Neu
+      breadcrumb_root: Benutzer
+      page_title: Neuer Benutzer
+    show:
+      attendance_title: Einheitenteilnahmen
+      breadcrumb_root: Benutzer
+      edit: Bearbeiten
+      no_attendance: Noch keine Einheitenteilnahmen erfasst.
+      no_organization: Keine Organisation
+      table:
+        status: Status
+        unit: Einheit
+    update:
+      updated: Benutzer wurde erfolgreich aktualisiert.

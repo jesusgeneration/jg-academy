@@ -21,7 +21,7 @@ class UsersController < BaseController
     @user = User.new(user_params)
     authorize @user
     if @user.save
-      redirect_to users_path, notice: "User was successfully created."
+      redirect_to users_path, notice: t(".created")
     else
       build_membership_rows
       render :new, status: :unprocessable_content
@@ -36,7 +36,7 @@ class UsersController < BaseController
   def update
     authorize @user
     if @user.update(user_params)
-      redirect_to users_path, notice: "User was successfully updated."
+      redirect_to users_path, notice: t(".updated")
     else
       build_membership_rows
       render :edit, status: :unprocessable_content
@@ -46,9 +46,9 @@ class UsersController < BaseController
   def destroy
     authorize @user
     if @user == current_user
-      redirect_to users_path, alert: "You cannot delete your own account."
+      redirect_to users_path, alert: t(".cannot_delete_self")
     elsif @user.destroy
-      redirect_to users_path, notice: "User was successfully deleted."
+      redirect_to users_path, notice: t(".destroyed")
     else
       redirect_to users_path, alert: @user.errors.full_messages.to_sentence
     end
@@ -73,7 +73,7 @@ class UsersController < BaseController
   end
 
   def user_params
-    permitted = %i[email role password password_confirmation] +
+    permitted = %i[email role locale password password_confirmation] +
                 [ { organization_memberships_attributes: %i[id organization_id role _destroy] } ]
     user_params = params.require(:user).permit(permitted)
     normalize_membership_roles(user_params)

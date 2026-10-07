@@ -1,31 +1,338 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
+---
 en:
-  hello: "Hello world"
+  dashboards:
+    show:
+      all_units: All units
+      empty: No units yet.
+      page_title: Dashboard
+      recent_units: Recent Units
+      stats:
+        content_items: Content Items
+        levels_sections_details: levels, sections and details
+        registered_accounts: registered accounts
+        upcoming_units: Upcoming Units
+        users: Users
+        view_units: view units
+      table:
+        attendees: Attendees
+        date: Date
+        unit: Unit
+  devise_views:
+    confirmations:
+      new:
+        email: Email
+        submit: Resend confirmation instructions
+        title: Resend confirmation instructions
+    passwords:
+      edit:
+        confirm_new_password: Confirm new password
+        new_password: New password
+        new_password_with_minimum: New password (%{count} characters minimum)
+        submit: Change my password
+        title: Set a new password
+      new:
+        email: Email
+        submit: Send reset instructions
+        title: Forgot your password?
+    registrations:
+      edit:
+        back: Back
+        confirm_new_password: Confirm new password
+        current_password_required: Current password (required)
+        language: Language
+        new_password: New password
+        new_password_with_minimum: New password (%{count} characters minimum)
+        submit: Update
+        title: Change password
+        waiting_confirmation: 'Currently waiting confirmation for: %{email}'
+      new:
+        confirm_password: Confirm password
+        email: Email
+        password: Password
+        password_with_minimum: Password (%{count} characters minimum)
+        submit: Sign up
+        title: Sign up
+    sessions:
+      new:
+        email: Email
+        password: Password
+        remember_me: Remember me
+        submit: Sign in
+        title: Sign in
+    shared:
+      links:
+        forgot_password: Forgot your password?
+        resend_confirmation: Didn't receive confirmation instructions?
+        resend_unlock: Didn't receive unlock instructions?
+        sign_up: Sign up
+  helpers:
+    coverage:
+      add: Add
+      remove: Remove
+  languages:
+    de: Deutsch
+    en: English
+  layouts:
+    application:
+      app_name: jg-academy
+      close_sidebar: close sidebar
+      language: Language
+      nav:
+        dashboard: Dashboard
+        my_account: My Account
+        organizations: Organizations
+        programs: Programs
+        units: Units
+        users: Users
+      open_sidebar: open sidebar
+      user_menu:
+        edit_profile: Edit profile
+        my_progress: My Progress
+        sign_out: Sign out
+  organizations:
+    create:
+      created: Organization was successfully created.
+    destroy:
+      destroyed: Organization was successfully deleted.
+    edit:
+      breadcrumb_current: 'Edit: %{name}'
+      breadcrumb_root: Organizations
+      page_title: Edit Organization
+    form:
+      cancel: Cancel
+      create: Create organization
+      description: Description
+      errors_prevented:
+        one: '1 error prevented saving:'
+        other: "%{count} errors prevented saving:"
+      name: Name
+      update: Update organization
+    index:
+      confirm_delete: Delete %{name}?
+      delete: Delete
+      edit: Edit
+      empty: No organizations yet. Create the first one.
+      new: New organization
+      page_title: Organizations
+      table:
+        actions: Actions
+        members: Members
+        name: Name
+        programs: Programs
+      title: Organizations
+    new:
+      breadcrumb_current: New
+      breadcrumb_root: Organizations
+      page_title: New Organization
+    show:
+      breadcrumb_root: Organizations
+      members: Members
+      no_members: No members.
+      no_programs: No programs offered yet.
+      page_title: Organization
+      programs: Programs
+      table:
+        kind: Kind
+        program: Program
+    update:
+      updated: Organization was successfully updated.
+  programs:
+    create:
+      created: Program was successfully created.
+    destroy:
+      destroyed: Program was successfully deleted.
+    edit:
+      breadcrumb_current: 'Edit: %{name}'
+      breadcrumb_root: Programs
+      page_title: Edit Program
+    form:
+      cancel: Cancel
+      create: Create program
+      description: Description
+      errors_prevented:
+        one: '1 error prevented saving:'
+        other: "%{count} errors prevented saving:"
+      kind: Kind
+      name: Name
+      organization: Organization
+      select_organization: Select organization
+      update: Update program
+    index:
+      empty: No programs yet.
+      new: New program
+      page_title: Programs
+      table:
+        kind: Kind
+        organization: Organization
+        program: Program
+        units: Units
+      title: Programs
+    new:
+      breadcrumb_current: New
+      breadcrumb_root: Programs
+      page_title: New Program
+    show:
+      breadcrumb_root: Programs
+      confirm_delete: Delete this program?
+      delete: Delete
+      edit: Edit
+      new_unit: New unit
+      no_units: No units in this program yet.
+      table:
+        date: Date
+        location: Location
+        unit: Unit
+      units: Units
+    update:
+      updated: Program was successfully updated.
+  pundit:
+    default: You are not authorized to perform this action.
+  time:
+    formats:
+      short: "%d %b %Y, %H:%M"
+  unit_attendances:
+    create:
+      created: "%{email} was registered for this unit."
+    destroy:
+      destroyed: Attendance record was removed.
+    update:
+      updated: Attendance was updated.
+  unit_coverages:
+    create:
+      created: "%{title} is now covered by this unit."
+    destroy:
+      destroyed: Coverage was removed.
+  units:
+    create:
+      created: Unit was successfully created.
+    destroy:
+      destroyed: Unit was successfully deleted.
+    edit:
+      breadcrumb_current: 'Edit: %{name}'
+      breadcrumb_root: Units
+      page_title: Edit Unit
+    form:
+      cancel: Cancel
+      coverage_hint: Coverage is managed separately via unit coverages.
+      coverage_title: Content coverage
+      create: Create unit
+      description: Description
+      ends_at: Ends at
+      errors_prevented:
+        one: '1 error prevented saving:'
+        other: "%{count} errors prevented saving:"
+      location: Location
+      name: Name
+      no_coverage: No content covered yet.
+      program: Program
+      select_program: Select program
+      starts_at: Starts at
+      update: Update unit
+    index:
+      attended_count: "%{count} attended"
+      empty: No units in this view yet.
+      new: New unit
+      page_title: Units
+      table:
+        attendees: Attendees
+        date: Date
+        location: Location
+        organization: Organization
+        program: Program
+        unit: Unit
+      tabs:
+        all: All
+        past: Past
+        upcoming: Upcoming
+      title: Units
+    new:
+      breadcrumb_current: New
+      breadcrumb_root: Units
+      page_title: New Unit
+    show:
+      all_registered: All users are already registered for this unit.
+      attendees: Attendees
+      breadcrumb_programs: Programs
+      confirm_delete: Delete this unit?
+      confirm_remove_attendance: Remove attendance record?
+      covered_via: covered via %{title}
+      covers: Covers
+      covers_hint: Covering a level or section automatically covers everything below it.
+      delete: Delete
+      edit: Edit
+      ends: Ends
+      manage_coverage: Manage coverage
+      manage_coverage_hint: Add or remove the points in the hierarchy where coverage starts. Descendants of a covered item are covered automatically.
+      no_attendees: No attendees registered yet.
+      no_content: No content items exist yet.
+      no_coverage: This unit does not cover any content yet.
+      register: Register
+      register_attendee: Register attendee
+      remove: Remove
+      select_user: Select user
+      starts: Starts
+      status:
+        past: Past
+        upcoming: Upcoming
+      table:
+        actions: Actions
+        status: Status
+        user: User
+    update:
+      updated: Unit was successfully updated.
+  users:
+    create:
+      created: User was successfully created.
+    destroy:
+      cannot_delete_self: You cannot delete your own account.
+      destroyed: User was successfully deleted.
+    edit:
+      breadcrumb_current: 'Edit: %{email}'
+      breadcrumb_root: Users
+      page_title: Edit User
+    form:
+      awaiting_confirmation: Awaiting email confirmation.
+      cancel: Cancel
+      confirm_password: Confirm password
+      create: Create user
+      email: Email
+      errors_prevented:
+        one: '1 error prevented saving:'
+        other: "%{count} errors prevented saving:"
+      keep_password: Leave blank to keep current password
+      language: Language
+      not_a_member: Not a member
+      organizations: Organizations
+      password: Password
+      role: Role
+      update: Update user
+    index:
+      confirm_delete: Delete %{email}?
+      confirmed_pending: pending
+      confirmed_yes: 'yes'
+      delete: Delete
+      edit: Edit
+      empty: No users yet.
+      new: New user
+      page_title: Users
+      table:
+        actions: Actions
+        confirmed: Confirmed
+        email: Email
+        role: Role
+      title: Users
+    new:
+      breadcrumb_current: New
+      breadcrumb_root: Users
+      page_title: New User
+    show:
+      attendance_title: Unit Attendance
+      breadcrumb_root: Users
+      edit: Edit
+      no_attendance: No unit attendance recorded yet.
+      no_organization: No organization
+      table:
+        status: Status
+        unit: Unit
+    update:
+      updated: User was successfully updated.

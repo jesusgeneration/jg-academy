@@ -34,6 +34,7 @@ group :development, :test do
   gem "brakeman", require: false
   gem "rubocop-rails-omakase", require: false
   gem "rspec-rails", "~> 8.0.0"
+  gem "i18n-tasks", require: false
 end
 
 group :development do
@@ -48,6 +49,9 @@ group :test do
 end
 
 gem "devise", "~> 5.0"
+
+gem "rails-i18n", "~> 8.0"
+gem "devise-i18n", "~> 1.0"
 
 gem "pundit", "~> 2.5"
 

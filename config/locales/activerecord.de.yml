@@ -1,0 +1,72 @@
+---
+de:
+  activerecord:
+    attributes:
+      content:
+        content_type: Typ
+        title: Titel
+      organization:
+        description: Beschreibung
+        name: Name
+      organization_membership:
+        role: Rolle
+      program:
+        description: Beschreibung
+        kind: Art
+        name: Name
+        organization: Organisation
+      unit:
+        description: Beschreibung
+        ends_at: Ende
+        location: Ort
+        name: Name
+        program: Programm
+        starts_at: Beginn
+      unit_attendance:
+        status: Status
+        user: Benutzer
+      user:
+        email: E-Mail
+        locale: Sprache
+        password: Passwort
+        password_confirmation: Passwortbestätigung
+        role: Rolle
+    enums:
+      content:
+        content_type:
+          detail: Detail
+          level: Ebene
+          section: Abschnitt
+      organization_membership:
+        role:
+          member: Mitglied
+          organiser: Organisator
+      program:
+        kind:
+          freizeit: Freizeit
+          schooling: Schulung
+      unit_attendance:
+        status:
+          attended: Teilgenommen
+          cancelled: Abgesagt
+          no_show: Nicht erschienen
+          registered: Registriert
+      user:
+        role:
+          admin: Admin
+          user: Benutzer
+    errors:
+      models:
+        unit:
+          attributes:
+            ends_at:
+              after_start_time: muss nach dem Beginn liegen
+    models:
+      content: Inhalt
+      organization: Organisation
+      organization_membership: Mitgliedschaft
+      program: Programm
+      unit: Einheit
+      unit_attendance: Teilnahme
+      unit_coverage: Abdeckung
+      user: Benutzer

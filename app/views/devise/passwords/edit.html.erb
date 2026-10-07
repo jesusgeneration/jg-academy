@@ -1,16 +1,16 @@
-<h2 class="card-title mb-4">Set a new password</h2>
+<h2 class="card-title mb-4"><%= t("devise_views.passwords.edit.title") %></h2>
 
 <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
   <%= render "devise/shared/error_messages", resource: resource %>
   <%= f.hidden_field :reset_password_token %>
 
   <fieldset class="fieldset space-y-3">
-    <%= f.password_field :password, autofocus: true, autocomplete: "new-password", placeholder: "New password#{@minimum_password_length ? " (#{@minimum_password_length} characters minimum)" : ""}", class: "input w-full", required: true %>
-    <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "Confirm new password", class: "input w-full", required: true %>
+    <%= f.password_field :password, autofocus: true, autocomplete: "new-password", placeholder: @minimum_password_length ? t("devise_views.passwords.edit.new_password_with_minimum", count: @minimum_password_length) : t("devise_views.passwords.edit.new_password"), class: "input w-full", required: true %>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: t("devise_views.passwords.edit.confirm_new_password"), class: "input w-full", required: true %>
   </fieldset>
 
   <div class="mt-4">
-    <%= f.submit "Change my password", class: "btn btn-primary w-full" %>
+    <%= f.submit t("devise_views.passwords.edit.submit"), class: "btn btn-primary w-full" %>
   </div>
 <% end %>
 

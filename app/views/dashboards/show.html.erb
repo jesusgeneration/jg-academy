@@ -1,33 +1,33 @@
-<% content_for :page_title, "Dashboard" %>
+<% content_for :page_title, t(".page_title") %>
 
 <div class="stats stats-vertical lg:stats-horizontal shadow bg-base-100 w-full mb-6">
   <div class="stat">
-    <div class="stat-title">Users</div>
+    <div class="stat-title"><%= t(".stats.users") %></div>
     <div class="stat-value"><%= @user_count %></div>
-    <div class="stat-desc">registered accounts</div>
+    <div class="stat-desc"><%= t(".stats.registered_accounts") %></div>
   </div>
   <div class="stat">
-    <div class="stat-title">Upcoming Units</div>
+    <div class="stat-title"><%= t(".stats.upcoming_units") %></div>
     <div class="stat-value"><%= @upcoming_unit_count %></div>
-    <div class="stat-desc"><%= link_to "view units", units_path, class: "link link-hover" %></div>
+    <div class="stat-desc"><%= link_to t(".stats.view_units"), units_path, class: "link link-hover" %></div>
   </div>
   <div class="stat">
-    <div class="stat-title">Content Items</div>
+    <div class="stat-title"><%= t(".stats.content_items") %></div>
     <div class="stat-value"><%= Content.count %></div>
-    <div class="stat-desc">levels, sections and details</div>
+    <div class="stat-desc"><%= t(".stats.levels_sections_details") %></div>
   </div>
 </div>
 
 <div class="card bg-base-100 shadow">
   <div class="card-body">
     <h2 class="card-title justify-between">
-      Recent Units
-      <%= link_to "All units", units_path, class: "btn btn-ghost btn-xs" %>
+      <%= t(".recent_units") %>
+      <%= link_to t(".all_units"), units_path, class: "btn btn-ghost btn-xs" %>
     </h2>
     <% if @recent_units.any? %>
       <table class="table table-sm">
         <thead>
-          <tr><th>Unit</th><th>Date</th><th>Attendees</th></tr>
+          <tr><th><%= t(".table.unit") %></th><th><%= t(".table.date") %></th><th><%= t(".table.attendees") %></th></tr>
         </thead>
         <tbody>
           <% @recent_units.each do |unit| %>
@@ -40,7 +40,7 @@
         </tbody>
       </table>
     <% else %>
-      <p class="opacity-60 py-4">No units yet.</p>
+      <p class="opacity-60 py-4"><%= t(".empty") %></p>
     <% end %>
   </div>
 </div>

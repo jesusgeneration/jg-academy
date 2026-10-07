@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  LOCALES = %w[en de].freeze
+
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable, :confirmable
 
@@ -16,6 +18,9 @@ class User < ApplicationRecord
   has_many :units, through: :unit_attendances
 
   validates :role, presence: true
+  validates :locale, presence: true, inclusion: { in: LOCALES }
+
+  before_validation :normalize_locale
 
   def organiser?
     organised_organizations.any?
@@ -28,5 +33,12 @@ class User < ApplicationRecord
   def organises?(organization_or_id)
     organization_id = organization_or_id.is_a?(Organization) ? organization_or_id.id : organization_or_id
     organised_organizations.exists?(organization_id)
+  end
+
+  private
+
+  def normalize_locale
+    self.locale = "de" if locale.blank?
+    self.locale = locale.to_s
   end
 end

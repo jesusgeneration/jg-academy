@@ -1,7 +1,7 @@
-<% content_for :page_title, "Edit User" %>
+<% content_for :page_title, t(".page_title") %>
 
 <nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
-  <ul><li><%= link_to "Users", users_path %></li><li>Edit: <%= @user.email %></li></ul>
+  <ul><li><%= link_to t(".breadcrumb_root"), users_path %></li><li><%= t(".breadcrumb_current", email: @user.email) %></li></ul>
 </nav>
 
 <div class="max-w-xl">

@@ -1,59 +1,59 @@
 <%= form_with model: unit, class: "space-y-4" do |f| %>
   <% if unit.errors.any? %>
     <div role="alert" class="alert alert-error">
-      <span><%= pluralize(unit.errors.count, "error") %> prevented saving:</span>
+      <span><%= t(".errors_prevented", count: unit.errors.count) %></span>
     </div>
   <% end %>
 
   <fieldset class="fieldset">
-    <legend class="fieldset-legend">Name</legend>
+    <legend class="fieldset-legend"><%= t(".name") %></legend>
     <%= f.text_field :name, class: "input w-full", required: true, autofocus: true %>
   </fieldset>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <fieldset class="fieldset">
-      <legend class="fieldset-legend">Program</legend>
+      <legend class="fieldset-legend"><%= t(".program") %></legend>
       <%= f.collection_select :program_id, @permitted_programs, :id, :name,
-            { prompt: "Select program" }, { class: "select w-full", required: true } %>
+            { prompt: t(".select_program") }, { class: "select w-full", required: true } %>
     </fieldset>
 
     <fieldset class="fieldset">
-      <legend class="fieldset-legend">Location</legend>
+      <legend class="fieldset-legend"><%= t(".location") %></legend>
       <%= f.text_field :location, class: "input w-full" %>
     </fieldset>
 
     <fieldset class="fieldset">
-      <legend class="fieldset-legend">Starts at</legend>
+      <legend class="fieldset-legend"><%= t(".starts_at") %></legend>
       <%= f.datetime_field :starts_at, class: "input w-full", required: true %>
     </fieldset>
 
     <fieldset class="fieldset">
-      <legend class="fieldset-legend">Ends at</legend>
+      <legend class="fieldset-legend"><%= t(".ends_at") %></legend>
       <%= f.datetime_field :ends_at, class: "input w-full", required: true %>
     </fieldset>
   </div>
 
   <fieldset class="fieldset">
-    <legend class="fieldset-legend">Description</legend>
+    <legend class="fieldset-legend"><%= t(".description") %></legend>
     <%= f.text_area :description, rows: 3, class: "textarea w-full" %>
   </fieldset>
 
   <div class="border border-base-300 rounded-box p-4">
-    <h2 class="font-semibold mb-2">Content coverage</h2>
-    <p class="text-xs opacity-60 mb-3">Coverage is managed separately via unit coverages.</p>
+    <h2 class="font-semibold mb-2"><%= t(".coverage_title") %></h2>
+    <p class="text-xs opacity-60 mb-3"><%= t(".coverage_hint") %></p>
     <% if unit.persisted? && unit.covered_contents.any? %>
       <ul class="text-sm space-y-1">
         <% unit.covered_contents.includes(:parent).ordered.each do |content| %>
-          <li><span class="badge badge-ghost badge-sm mr-1"><%= content.content_type %></span><%= content.title %></li>
+          <li><span class="badge badge-ghost badge-sm mr-1"><%= human_enum_label("content", "content_type", content.content_type) %></span><%= content.title %></li>
         <% end %>
       </ul>
     <% else %>
-      <p class="text-xs opacity-60">No content covered yet.</p>
+      <p class="text-xs opacity-60"><%= t(".no_coverage") %></p>
     <% end %>
   </div>
 
   <div class="flex gap-2">
-    <%= f.submit unit.new_record? ? "Create unit" : "Update unit", class: "btn btn-primary" %>
-    <%= link_to "Cancel", units_path, class: "btn btn-ghost" %>
+    <%= f.submit unit.new_record? ? t(".create") : t(".update"), class: "btn btn-primary" %>
+    <%= link_to t(".cancel"), units_path, class: "btn btn-ghost" %>
   </div>
 <% end %>

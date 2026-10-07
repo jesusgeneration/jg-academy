@@ -1,7 +1,7 @@
-<% content_for :page_title, "Edit Unit" %>
+<% content_for :page_title, t(".page_title") %>
 
 <nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
-  <ul><li><%= link_to "Units", units_path %></li><li>Edit: <%= @unit.name %></li></ul>
+  <ul><li><%= link_to t(".breadcrumb_root"), units_path %></li><li><%= t(".breadcrumb_current", name: @unit.name) %></li></ul>
 </nav>
 
 <div class="max-w-2xl">

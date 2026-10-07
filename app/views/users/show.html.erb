@@ -2,7 +2,7 @@
 
 <nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
   <% if policy(User).index? %>
-    <ul><li><%= link_to "Users", users_path %></li><li><%= @user.email %></li></ul>
+    <ul><li><%= link_to t(".breadcrumb_root"), users_path %></li><li><%= @user.email %></li></ul>
   <% end %>
 </nav>
 
@@ -11,17 +11,17 @@
     <div>
       <h1 class="card-title"><%= @user.email %></h1>
       <p class="text-sm opacity-70">
-        <span class="badge capitalize mr-2 <%= role_badge_class(@user.role) %>"><%= @user.role %></span>
+        <span class="badge capitalize mr-2 <%= role_badge_class(@user.role) %>"><%= human_enum_label("user", "role", @user.role) %></span>
         <% if @user.organizations.any? %>
           <%= @user.organizations.map(&:name).join(", ") %>
         <% else %>
-          No organization
+          <%= t(".no_organization") %>
         <% end %>
       </p>
     </div>
     <div>
       <% if policy(@user).update? && @user != current_user %>
-        <%= link_to "Edit", edit_user_path(@user), class: "btn btn-outline btn-sm" %>
+        <%= link_to t(".edit"), edit_user_path(@user), class: "btn btn-outline btn-sm" %>
       <% end %>
     </div>
   </div>
@@ -29,24 +29,24 @@
 
 <div class="card bg-base-100 shadow">
   <div class="card-body">
-    <h2 class="card-title">Unit Attendance</h2>
+    <h2 class="card-title"><%= t(".attendance_title") %></h2>
     <% attendances = @user.unit_attendances.includes(:unit).order("units.starts_at") %>
     <% if attendances.any? %>
       <table class="table table-sm">
         <thead>
-          <tr><th>Unit</th><th>Status</th></tr>
+          <tr><th><%= t(".table.unit") %></th><th><%= t(".table.status") %></th></tr>
         </thead>
         <tbody>
           <% attendances.each do |attendance| %>
             <tr>
               <td><%= link_to attendance.unit.name, unit_path(attendance.unit), class: "link link-hover" %></td>
-              <td><span class="badge <%= attendance_status_badge_class(attendance.status) %>"><%= attendance.status.humanize %></span></td>
+              <td><span class="badge <%= attendance_status_badge_class(attendance.status) %>"><%= human_enum_label("unit_attendance", "status", attendance.status) %></span></td>
             </tr>
           <% end %>
         </tbody>
       </table>
     <% else %>
-      <p class="opacity-60">No unit attendance recorded yet.</p>
+      <p class="opacity-60"><%= t(".no_attendance") %></p>
     <% end %>
   </div>
 </div>

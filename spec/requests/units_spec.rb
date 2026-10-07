@@ -234,7 +234,7 @@ RSpec.describe "Units" do
       get unit_path(unit)
 
       expect(response.body).to include(participant.email)
-      expect(response.body).to include("Attended")
+      expect(response.body).to include(I18n.t("activerecord.enums.unit_attendance.status.attended"))
     end
 
     it "removes an attendance record" do
@@ -255,7 +255,7 @@ RSpec.describe "Units" do
       get unit_path(unit)
 
       aggregate_failures do
-        expect(response.body).not_to include("Attendees")
+        expect(response.body).not_to include(I18n.t("units.show.attendees"))
         expect(response.body).not_to include("otherchurch@example.com")
       end
     end
@@ -310,17 +310,17 @@ RSpec.describe "Units" do
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("Manage coverage")
+        expect(response.body).to include(I18n.t("units.show.manage_coverage"))
         expect(response.body).to include("Level 1")
         expect(response.body).to include("Level 1.1")
         expect(response.body).to include("Detail 1.1.9")
-        expect(response.body).to include("covered via Level 1")
+        expect(response.body).to include(I18n.t("units.show.covered_via", title: "Level 1"))
         expect(response.body).to include("collapse")
         expect(response.body).to include("checked")
         # Covered level keeps Remove; its section and detail get no button.
         # Only the 3 uncovered items of the other tree keep Add.
-        expect(response.body.scan(">Remove</button>").size).to eq(1)
-        expect(response.body.scan(">Add</button>").size).to eq(3)
+        expect(response.body.scan(">#{(I18n.t("helpers.coverage.remove"))}</button>").size).to eq(1)
+        expect(response.body.scan(">#{(I18n.t("helpers.coverage.add"))}</button>").size).to eq(3)
       end
     end
 
@@ -333,10 +333,10 @@ RSpec.describe "Units" do
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("covered via Level 1.1")
+        expect(response.body).to include(I18n.t("units.show.covered_via", title: "Level 1.1"))
         # Level, section keep their buttons; the detail gets none.
-        expect(response.body.scan(">Remove</button>").size).to eq(1)
-        expect(response.body.scan(">Add</button>").size).to eq(4)
+        expect(response.body.scan(">#{(I18n.t("helpers.coverage.remove"))}</button>").size).to eq(1)
+        expect(response.body.scan(">#{(I18n.t("helpers.coverage.add"))}</button>").size).to eq(4)
       end
     end
 
@@ -345,7 +345,7 @@ RSpec.describe "Units" do
 
       get unit_path(unit)
 
-      expect(response.body).not_to include("Manage coverage")
+      expect(response.body).not_to include(I18n.t("units.show.manage_coverage"))
     end
 
     it "prevents organisers of another organization from adding coverage" do
@@ -373,7 +373,7 @@ RSpec.describe "Units" do
 
       get unit_path(unit)
 
-      expect(response.body).not_to include("Manage coverage")
+      expect(response.body).not_to include(I18n.t("units.show.manage_coverage"))
     end
   end
 
@@ -390,7 +390,7 @@ RSpec.describe "Units" do
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
-        expect(response.body).not_to include("Attendees")
+        expect(response.body).not_to include(I18n.t("units.show.attendees"))
         expect(response.body).not_to include("attendee@example.com")
         expect(response.body).to include(unit.name)
       end
@@ -403,10 +403,10 @@ RSpec.describe "Units" do
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
-        expect(response.body).not_to include("Attendees")
+        expect(response.body).not_to include(I18n.t("units.show.attendees"))
         expect(response.body).not_to include("attendee@example.com")
-        expect(response.body).to include("Covers")
-        expect(response.body).to include(unit.starts_at.strftime("%d %b %Y"))
+        expect(response.body).to include(I18n.t("units.show.covers"))
+        expect(response.body).to include(I18n.l(unit.starts_at, format: :short))
       end
     end
 
@@ -416,7 +416,7 @@ RSpec.describe "Units" do
       get unit_path(unit)
 
       aggregate_failures do
-        expect(response.body).to include("Attendees")
+        expect(response.body).to include(I18n.t("units.show.attendees"))
         expect(response.body).to include("attendee@example.com")
       end
     end
@@ -427,7 +427,7 @@ RSpec.describe "Units" do
       get units_path
 
       aggregate_failures do
-        expect(response.body).to include("Attendees")
+        expect(response.body).to include(I18n.t("units.index.table.attendees"))
         expect(response.body).to include(unit.name)
       end
     end

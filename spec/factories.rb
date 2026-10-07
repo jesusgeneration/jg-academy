@@ -5,6 +5,7 @@ FactoryBot.define do
     password_confirmation { "sup3rsecret!" }
     confirmed_at { Time.current }
     role { :user }
+    locale { "de" }
 
     trait :unconfirmed do
       confirmed_at { nil }

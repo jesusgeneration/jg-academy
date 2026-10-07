@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html data-theme="corporate">
+<html lang="<%= I18n.locale %>" data-theme="corporate">
   <head>
-    <title><%= content_for(:title) || "jg-academy" %></title>
+    <title><%= content_for(:title) || t("layouts.application.app_name") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -12,7 +12,15 @@
 
   <body class="bg-base-200 min-h-screen flex items-center justify-center">
     <main class="w-full max-w-md px-4 py-10">
-      <h1 class="text-center text-2xl font-bold mb-6">jg-academy</h1>
+      <h1 class="text-center text-2xl font-bold mb-6"><%= t("layouts.application.app_name") %></h1>
+      <div class="flex justify-center mb-4">
+        <div class="join" role="group" aria-label="<%= t("layouts.application.language") %>">
+          <% User::LOCALES.each do |code| %>
+            <%= link_to code.upcase, url_for(locale: code),
+                  class: "btn btn-ghost btn-xs join-item #{'btn-active' if I18n.locale.to_s == code}" %>
+          <% end %>
+        </div>
+      </div>
       <%= render "shared/flash" %>
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
