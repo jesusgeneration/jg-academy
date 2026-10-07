@@ -97,6 +97,20 @@ Rubocop (Rails Omakase style) must pass as well:
 bundle exec rubocop
 ```
 
+## Troubleshooting
+
+### `db:drop` fails with `PG::ObjectInUse`
+
+Dropping the database can fail with `database "..." is being accessed by
+other users` when another process still holds a connection — typically the
+Ruby language server, a Rails console, or the dev server. Terminate the other
+backends first (they reconnect on their own), then drop:
+
+```bash
+bin/rails runner 'ActiveRecord::Base.connection.execute("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = current_database() AND pid <> pg_backend_pid()")'
+bin/rails db:drop db:create db:migrate:with_data db:seed
+```
+
 ## Key Conventions
 
 - Progress is calculated by `JuleicaProgressCalculator`
