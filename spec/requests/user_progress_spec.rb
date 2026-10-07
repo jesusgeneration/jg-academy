@@ -24,7 +24,7 @@ RSpec.describe "Users" do
       aggregate_failures do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("alice@example.com")
-        expect(response.body).to include("Unit Attendance")
+        expect(response.body).to include(I18n.t("users.show.attendance_title"))
       end
     end
 
@@ -37,7 +37,7 @@ RSpec.describe "Users" do
 
       aggregate_failures do
         expect(response.body).to include("Youth Leadership Weekend")
-        expect(response.body).to include("Attended")
+        expect(response.body).to include(I18n.t("activerecord.enums.unit_attendance.status.attended"))
       end
     end
 

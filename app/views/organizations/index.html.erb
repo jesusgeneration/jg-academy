@@ -1,15 +1,15 @@
-<% content_for :page_title, "Organizations" %>
+<% content_for :page_title, t(".page_title") %>
 
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-2xl font-semibold">Organizations</h1>
-  <%= link_to "New organization", new_organization_path, class: "btn btn-primary btn-sm" %>
+  <h1 class="text-2xl font-semibold"><%= t(".title") %></h1>
+  <%= link_to t(".new"), new_organization_path, class: "btn btn-primary btn-sm" %>
 </div>
 
 <% if @organizations.any? %>
   <div class="card bg-base-100 shadow">
     <table class="table">
       <thead>
-        <tr><th>Name</th><th>Members</th><th>Programs</th><th class="text-right">Actions</th></tr>
+        <tr><th><%= t(".table.name") %></th><th><%= t(".table.members") %></th><th><%= t(".table.programs") %></th><th class="text-right"><%= t(".table.actions") %></th></tr>
       </thead>
       <tbody>
         <% @organizations.each do |organization| %>
@@ -18,8 +18,8 @@
             <td><span class="badge badge-ghost"><%= organization.users.size %></span></td>
             <td><span class="badge badge-ghost"><%= organization.programs.size %></span></td>
             <td class="text-right space-x-2 whitespace-nowrap">
-              <%= link_to "Edit", edit_organization_path(organization), class: "btn btn-ghost btn-xs" %>
-              <%= button_to "Delete", organization_path(organization), method: :delete, form: { class: "inline" }, data: { turbo_confirm: "Delete #{organization.name}?" }, class: "btn btn-error btn-outline btn-xs" %>
+              <%= link_to t(".edit"), edit_organization_path(organization), class: "btn btn-ghost btn-xs" %>
+              <%= button_to t(".delete"), organization_path(organization), method: :delete, form: { class: "inline" }, data: { turbo_confirm: t(".confirm_delete", name: organization.name) }, class: "btn btn-error btn-outline btn-xs" %>
             </td>
           </tr>
         <% end %>
@@ -27,5 +27,5 @@
     </table>
   </div>
 <% else %>
-  <div class="alert alert-info"><span>No organizations yet. Create the first one.</span></div>
+  <div class="alert alert-info"><span><%= t(".empty") %></span></div>
 <% end %>

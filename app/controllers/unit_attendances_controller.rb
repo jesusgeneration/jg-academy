@@ -5,7 +5,7 @@ class UnitAttendancesController < BaseController
     @attendance = @unit.unit_attendances.build(user_id: attendance_params[:user_id], status: :registered)
     authorize @attendance
     if @attendance.save
-      redirect_to @unit, notice: "#{@attendance.user.email} was registered for this unit."
+      redirect_to @unit, notice: t(".created", email: @attendance.user.email)
     else
       redirect_to @unit, alert: @attendance.errors.full_messages.to_sentence
     end
@@ -15,7 +15,7 @@ class UnitAttendancesController < BaseController
     @attendance = @unit.unit_attendances.find(params[:id])
     authorize @attendance
     if @attendance.update(attendance_params)
-      redirect_to @unit, notice: "Attendance was updated."
+      redirect_to @unit, notice: t(".updated")
     else
       redirect_to @unit, alert: @attendance.errors.full_messages.to_sentence
     end
@@ -25,7 +25,7 @@ class UnitAttendancesController < BaseController
     @attendance = @unit.unit_attendances.find(params[:id])
     authorize @attendance
     @attendance.destroy
-    redirect_to @unit, notice: "Attendance record was removed."
+    redirect_to @unit, notice: t(".destroyed")
   end
 
   private

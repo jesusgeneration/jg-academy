@@ -1,14 +1,14 @@
-<h2 class="card-title mb-4">Forgot your password?</h2>
+<h2 class="card-title mb-4"><%= t("devise_views.passwords.new.title") %></h2>
 
 <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
   <%= render "devise/shared/error_messages", resource: resource %>
 
   <fieldset class="fieldset">
-    <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "Email", class: "input w-full", required: true %>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: t("devise_views.passwords.new.email"), class: "input w-full", required: true %>
   </fieldset>
 
   <div class="mt-4">
-    <%= f.submit "Send reset instructions", class: "btn btn-primary w-full" %>
+    <%= f.submit t("devise_views.passwords.new.submit"), class: "btn btn-primary w-full" %>
   </div>
 <% end %>
 

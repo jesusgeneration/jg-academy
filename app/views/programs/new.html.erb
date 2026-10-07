@@ -1,7 +1,7 @@
-<% content_for :page_title, "New Program" %>
+<% content_for :page_title, t(".page_title") %>
 
 <nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
-  <ul><li><%= link_to "Programs", programs_path %></li><li>New</li></ul>
+  <ul><li><%= link_to t(".breadcrumb_root"), programs_path %></li><li><%= t(".breadcrumb_current") %></li></ul>
 </nav>
 
 <div class="max-w-2xl">

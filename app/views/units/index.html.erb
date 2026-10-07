@@ -1,14 +1,14 @@
-<% content_for :page_title, "Units" %>
+<% content_for :page_title, t(".page_title") %>
 
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-2xl font-semibold">Units</h1>
+  <h1 class="text-2xl font-semibold"><%= t(".title") %></h1>
   <% if policy(Unit).create? %>
-    <%= link_to "New unit", new_unit_path, class: "btn btn-primary btn-sm" %>
+    <%= link_to t(".new"), new_unit_path, class: "btn btn-primary btn-sm" %>
   <% end %>
 </div>
 
 <div role="tablist" class="tabs tabs-box mb-4">
-  <% [["upcoming", "Upcoming"], ["past", "Past"], ["all", "All"]].each do |tab, label| %>
+  <% [["upcoming", t(".tabs.upcoming")], ["past", t(".tabs.past")], ["all", t(".tabs.all")]].each do |tab, label| %>
     <%= link_to label, units_path(tab: tab), role: "tab",
           class: "tab #{'tab-active' if @tab == tab}" %>
   <% end %>
@@ -20,8 +20,8 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Unit</th><th>Program</th><th>Organization</th><th>Date</th><th>Location</th>
-          <% if show_attendees %><th>Attendees</th><% end %>
+          <th><%= t(".table.unit") %></th><th><%= t(".table.program") %></th><th><%= t(".table.organization") %></th><th><%= t(".table.date") %></th><th><%= t(".table.location") %></th>
+          <% if show_attendees %><th><%= t(".table.attendees") %></th><% end %>
         </tr>
       </thead>
       <tbody>
@@ -37,7 +37,7 @@
                 <span class="badge badge-ghost"><%= unit.unit_attendances.size %></span>
                 <% attended = unit.unit_attendances.count(&:attended?) %>
                 <% if attended.positive? %>
-                  <span class="badge badge-success badge-outline badge-sm ml-1"><%= attended %> attended</span>
+                  <span class="badge badge-success badge-outline badge-sm ml-1"><%= t(".attended_count", count: attended) %></span>
                 <% end %>
               </td>
             <% end %>
@@ -47,5 +47,5 @@
     </table>
   </div>
 <% else %>
-  <div class="alert alert-info"><span>No units in this view yet.</span></div>
+  <div class="alert alert-info"><span><%= t(".empty") %></span></div>
 <% end %>

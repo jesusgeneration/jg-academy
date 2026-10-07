@@ -1,5 +1,5 @@
 <nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
-  <ul><li><%= link_to "Programs", programs_path %></li><li><%= @program.name %></li></ul>
+  <ul><li><%= link_to t(".breadcrumb_root"), programs_path %></li><li><%= @program.name %></li></ul>
 </nav>
 
 <div class="card bg-base-100 shadow">
@@ -9,16 +9,16 @@
         <h1 class="card-title"><%= @program.name %></h1>
         <p class="text-sm opacity-60">
           <%= @program.organization.name %> ·
-          <span class="badge badge-ghost badge-sm capitalize"><%= @program.kind %></span>
+          <span class="badge badge-ghost badge-sm capitalize"><%= human_enum_label("program", "kind", @program.kind) %></span>
         </p>
       </div>
       <% if policy(@program).update? || policy(@program).destroy? %>
         <div class="flex gap-2">
           <% if policy(@program).update? %>
-            <%= link_to "Edit", edit_program_path(@program), class: "btn btn-outline btn-sm" %>
+            <%= link_to t(".edit"), edit_program_path(@program), class: "btn btn-outline btn-sm" %>
           <% end %>
           <% if policy(@program).destroy? %>
-            <%= button_to "Delete", program_path(@program), method: :delete, form: { class: "inline" }, data: { turbo_confirm: "Delete this program?" }, class: "btn btn-error btn-outline btn-sm" %>
+            <%= button_to t(".delete"), program_path(@program), method: :delete, form: { class: "inline" }, data: { turbo_confirm: t(".confirm_delete") }, class: "btn btn-error btn-outline btn-sm" %>
           <% end %>
         </div>
       <% end %>
@@ -33,15 +33,15 @@
 <div class="card bg-base-100 shadow mt-6">
   <div class="card-body">
     <h2 class="card-title justify-between">
-      Units
+      <%= t(".units") %>
       <% if policy(Unit).create? %>
-        <%= link_to "New unit", new_unit_path, class: "btn btn-ghost btn-xs" %>
+        <%= link_to t(".new_unit"), new_unit_path, class: "btn btn-ghost btn-xs" %>
       <% end %>
     </h2>
     <% if @units.any? %>
       <table class="table table-sm">
         <thead>
-          <tr><th>Unit</th><th>Date</th><th>Location</th></tr>
+          <tr><th><%= t(".table.unit") %></th><th><%= t(".table.date") %></th><th><%= t(".table.location") %></th></tr>
         </thead>
         <tbody>
           <% @units.each do |unit| %>
@@ -54,7 +54,7 @@
         </tbody>
       </table>
     <% else %>
-      <p class="opacity-60">No units in this program yet.</p>
+      <p class="opacity-60"><%= t(".no_units") %></p>
     <% end %>
   </div>
 </div>

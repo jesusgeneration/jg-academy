@@ -2,14 +2,14 @@ module ApplicationHelper
   def portal_nav_items
     items = []
     if current_user.staff?
-      items << nav_entry("Dashboard", dashboard_path)
-      items << nav_entry("Users", users_path) if policy(User).index?
+      items << nav_entry(t("layouts.application.nav.dashboard"), dashboard_path)
+      items << nav_entry(t("layouts.application.nav.users"), users_path) if policy(User).index?
     else
-      items << nav_entry("My Account", user_path(current_user))
+      items << nav_entry(t("layouts.application.nav.my_account"), user_path(current_user))
     end
-    items << nav_entry("Programs", programs_path)
-    items << nav_entry("Units", units_path)
-    items << nav_entry("Organizations", organizations_path) if policy(Organization).index?
+    items << nav_entry(t("layouts.application.nav.programs"), programs_path)
+    items << nav_entry(t("layouts.application.nav.units"), units_path)
+    items << nav_entry(t("layouts.application.nav.organizations"), organizations_path) if policy(Organization).index?
     items
   end
 
@@ -49,19 +49,27 @@ module ApplicationHelper
   end
 
   def format_datetime(datetime)
-    datetime.strftime("%d %b %Y, %H:%M")
+    l(datetime, format: :short)
+  end
+
+  def human_enum_label(model_name, attr_name, value)
+    I18n.t("activerecord.enums.#{model_name}.#{attr_name}.#{value}", default: value.to_s.humanize)
+  end
+
+  def locale_options
+    User::LOCALES.map { |code| [ t("languages.#{code}"), code ] }
   end
 
   def coverage_toggle_button(unit, content, coverages_by_content_id)
     coverage = coverages_by_content_id[content.id]
     if coverage
-      button_to "Remove",
+      button_to t("helpers.coverage.remove"),
         unit_unit_coverage_path(unit, coverage),
         method: :delete,
         form: { class: "inline" },
         class: "btn btn-error btn-outline btn-xs w-20"
     else
-      button_to "Add",
+      button_to t("helpers.coverage.add"),
         unit_unit_coverages_path(unit),
         params: { unit_coverage: { content_id: content.id } },
         form: { class: "inline" },
@@ -80,7 +88,7 @@ module ApplicationHelper
   private
 
   def route_to_controller(path)
-    Rails.application.routes.recognize_path(path)[:controller]
+    Rails.application.routes.recognize_path(path.split("?").first)[:controller]
   rescue ActionController::RoutingError
     ""
   end

@@ -19,6 +19,8 @@ Read before making architectural decisions:
 bin/rails db:test:prepare   # sync test database with schema
 bundle exec rspec           # run test suite (must pass before finishing work)
 bundle exec rubocop         # Rails Omakase style (must pass)
+bundle exec i18n-tasks health       # no missing/unused/inconsistent translations
+bundle exec i18n-tasks check-normalized  # locale files sorted/normalized
 bin/rails db:seed           # demo dataset incl. login accounts
 bin/dev                     # run app locally (Rails + Tailwind watcher)
 ```
@@ -127,6 +129,25 @@ authority is per-organization via `OrganizationMembership.role`
   coverage badges via `badge-ghost`/`badge-primary`/`badge-secondary` per
   content type; dashboard stats via `stat`.
 
+## I18n Conventions
+
+- Default locale is `:de`, also supported: `:en`
+  (`config.i18n.available_locales`). User language is stored on
+  `User#locale` and resolved as
+  `params > user > session > Accept-Language > default` (see
+  `ApplicationController#set_locale`).
+- **All new UI text must be translatable.** Never hard-code user-facing
+  strings in views, controllers, helpers, or mailers. Use lazy `t(".key")`
+  in views, scoped `t(".key")` in controllers, `human_enum_label` for
+  enums, and `l()` for dates/times. User-entered data (names, descriptions,
+  `Content.title`) stays untranslated.
+- Locale files: `config/locales/en.yml` / `de.yml` for app strings,
+  `config/locales/activerecord.en/de.yml` for models/attributes/enums/errors.
+  `rails-i18n` + `devise-i18n` own framework strings; app config lives in
+  `config/i18n-tasks.yml` (`base_locale: de`).
+- Pluralization via `one`/`other` hashes (never bare `%{count}` singulars);
+  keep EN/DE key trees identical.
+
 ## Gotchas
 
 - **Routes:** Devise is mounted at `/auth` (`devise_for :users, path: "auth"`).
@@ -146,7 +167,11 @@ authority is per-organization via `OrganizationMembership.role`
 
 1. `bundle exec rspec` — all green
 2. `bundle exec rubocop` — no offenses
-3. New behavior covered by specs (model/policy/request/data as fitting)
-4. Every controller action has at least one spec asserting its response
+3. `bundle exec i18n-tasks health` — no missing/unused/inconsistent translations
+4. `bundle exec i18n-tasks check-normalized` — locale files normalized
+5. All new UI text translatable (EN + DE keys, lazy `t(".key")`, no hard-coded
+   user-facing strings; specs assert via `I18n.t`, never literals)
+6. New behavior covered by specs (model/policy/request/data as fitting)
+7. Every controller action has at least one spec asserting its response
    status (render or redirect) — including GET pages that only render forms
-5. Migrations reversible; schema.rb committed alongside
+8. Migrations reversible; schema.rb committed alongside

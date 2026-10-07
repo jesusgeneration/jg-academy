@@ -5,7 +5,7 @@ class UnitCoveragesController < BaseController
     authorize @unit, :update?
     @coverage = @unit.unit_coverages.build(content_id: coverage_params[:content_id])
     if @coverage.save
-      redirect_to @unit, notice: "#{@coverage.content.title} is now covered by this unit."
+      redirect_to @unit, notice: t(".created", title: @coverage.content.title)
     else
       redirect_to @unit, alert: @coverage.errors.full_messages.to_sentence
     end
@@ -15,7 +15,7 @@ class UnitCoveragesController < BaseController
     authorize @unit, :update?
     @coverage = @unit.unit_coverages.find(params[:id])
     @coverage.destroy
-    redirect_to @unit, notice: "Coverage was removed."
+    redirect_to @unit, notice: t(".destroyed")
   end
 
   private

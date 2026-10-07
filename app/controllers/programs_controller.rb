@@ -22,7 +22,7 @@ class ProgramsController < BaseController
     authorize @program
     ensure_permitted_organization
     if @program.save
-      redirect_to @program, notice: "Program was successfully created."
+      redirect_to @program, notice: t(".created")
     else
       prepare_form
       render :new, status: :unprocessable_content
@@ -39,7 +39,7 @@ class ProgramsController < BaseController
     @program.assign_attributes(program_params)
     ensure_permitted_organization
     if @program.save
-      redirect_to @program, notice: "Program was successfully updated."
+      redirect_to @program, notice: t(".updated")
     else
       prepare_form
       render :edit, status: :unprocessable_content
@@ -49,7 +49,7 @@ class ProgramsController < BaseController
   def destroy
     authorize @program
     if @program.destroy
-      redirect_to programs_path, notice: "Program was successfully deleted."
+      redirect_to programs_path, notice: t(".destroyed")
     else
       redirect_to programs_path, alert: @program.errors.full_messages.to_sentence
     end

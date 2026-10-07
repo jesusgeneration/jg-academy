@@ -1,0 +1,71 @@
+# i18n-tasks finds and manages missing and unused translations.
+# Docs: https://github.com/glebm/i18n-tasks
+
+base_locale: de
+locales: [en, de]
+internal_locale: en
+
+data:
+  read:
+    - config/locales/%{locale}.yml
+    - config/locales/*.%{locale}.yml
+  write:
+    - ['activerecord.*', 'config/locales/activerecord.%{locale}.yml']
+    - ['devise.*', 'config/locales/devise.%{locale}.yml']
+    - config/locales/%{locale}.yml
+  external:
+    - "<%= %x[bundle info rails-i18n --path].chomp %>/rails/locale/%{locale}.yml"
+    - "<%= %x[bundle info devise-i18n --path].chomp %>/rails/locales/%{locale}.yml"
+  router: conservative_router
+  yaml:
+    write:
+      line_width: -1
+
+search:
+  paths:
+    - app/
+  relative_roots:
+    - app/controllers
+    - app/helpers
+    - app/mailers
+    - app/views
+  exclude:
+    - app/assets/images
+    - app/assets/fonts
+    - app/assets/videos
+
+ignore_unused:
+  # Built dynamically via ApplicationHelper#human_enum_label, e.g.
+  # human_enum_label("user", "role", value) -> activerecord.enums.user.role.*
+  - 'activerecord.enums.*'
+  # Resolved implicitly by Rails (error messages, human_attribute_name,
+  # human-readable model names) rather than literal t() calls in app/.
+  - 'activerecord.models.*'
+  - 'activerecord.attributes.*'
+  - 'activerecord.errors.models.*'
+  # Built dynamically, e.g. t("languages.#{code}") and url_for(locale: code)
+  - 'languages.*'
+  # Resolved via l(datetime, format: :short)
+  - 'time.formats.*'
+  - 'date.formats.*'
+  # Pundit keys are built dynamically ("#{policy}.#{query}") with default: :default
+  - 'pundit.*'
+  # Resolved via Rails/devise internals, not literal t() calls in app/
+  - 'errors.*'
+  - 'devise.*'
+  - 'activerecord.errors.*'
+  - 'date.*'
+  - 'datetime.*'
+  - 'number.*'
+  - 'support.*'
+  - 'helpers.*'
+
+ignore_missing:
+  # Handled the same way as ignore_unused above (dynamic lookups / gem-provided).
+  - 'activerecord.enums.*'
+  - 'pundit.*'
+
+ignore_eq_base:
+  all:
+    # Brand name is identical in every locale by design.
+    - 'layouts.application.app_name'

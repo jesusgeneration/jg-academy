@@ -35,7 +35,7 @@ class UnitsController < BaseController
     authorize @unit
     ensure_permitted_program
     if @unit.save
-      redirect_to @unit, notice: "Unit was successfully created."
+      redirect_to @unit, notice: t(".created")
     else
       prepare_form
       render :new, status: :unprocessable_content
@@ -52,7 +52,7 @@ class UnitsController < BaseController
     @unit.assign_attributes(unit_params)
     ensure_permitted_program
     if @unit.save
-      redirect_to @unit, notice: "Unit was successfully updated."
+      redirect_to @unit, notice: t(".updated")
     else
       prepare_form
       render :edit, status: :unprocessable_content
@@ -63,7 +63,7 @@ class UnitsController < BaseController
     authorize @unit
     program = @unit.program
     @unit.destroy
-    redirect_to program, notice: "Unit was successfully deleted."
+    redirect_to program, notice: t(".destroyed")
   end
 
   private

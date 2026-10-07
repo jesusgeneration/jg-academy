@@ -1,35 +1,35 @@
 <%= form_with model: program, class: "space-y-4" do |f| %>
   <% if program.errors.any? %>
     <div role="alert" class="alert alert-error">
-      <span><%= pluralize(program.errors.count, "error") %> prevented saving:</span>
+      <span><%= t(".errors_prevented", count: program.errors.count) %></span>
     </div>
   <% end %>
 
   <fieldset class="fieldset">
-    <legend class="fieldset-legend">Name</legend>
+    <legend class="fieldset-legend"><%= t(".name") %></legend>
     <%= f.text_field :name, class: "input w-full", required: true, autofocus: true %>
   </fieldset>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <fieldset class="fieldset">
-      <legend class="fieldset-legend">Organization</legend>
+      <legend class="fieldset-legend"><%= t(".organization") %></legend>
       <%= f.collection_select :organization_id, @permitted_organizations, :id, :name,
-            { prompt: "Select organization" }, { class: "select w-full", required: true } %>
+            { prompt: t(".select_organization") }, { class: "select w-full", required: true } %>
     </fieldset>
 
     <fieldset class="fieldset">
-      <legend class="fieldset-legend">Kind</legend>
-      <%= f.select :kind, Program.kinds.keys.map { |k| [k.humanize, k] }, {}, { class: "select w-full", required: true } %>
+      <legend class="fieldset-legend"><%= t(".kind") %></legend>
+      <%= f.select :kind, Program.kinds.keys.map { |k| [ human_enum_label("program", "kind", k), k ] }, {}, { class: "select w-full", required: true } %>
     </fieldset>
   </div>
 
   <fieldset class="fieldset">
-    <legend class="fieldset-legend">Description</legend>
+    <legend class="fieldset-legend"><%= t(".description") %></legend>
     <%= f.text_area :description, rows: 3, class: "textarea w-full" %>
   </fieldset>
 
   <div class="flex gap-2">
-    <%= f.submit program.new_record? ? "Create program" : "Update program", class: "btn btn-primary" %>
-    <%= link_to "Cancel", programs_path, class: "btn btn-ghost" %>
+    <%= f.submit program.new_record? ? t(".create") : t(".update"), class: "btn btn-primary" %>
+    <%= link_to t(".cancel"), programs_path, class: "btn btn-ghost" %>
   </div>
 <% end %>

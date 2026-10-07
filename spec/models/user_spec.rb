@@ -44,4 +44,20 @@ RSpec.describe User do
         .and change(UnitAttendance, :count).by(-1)
     end
   end
+
+  describe "locale" do
+    it "defaults to German" do
+      expect(User.new.locale).to eq("de")
+      expect(create(:user, locale: nil).locale).to eq("de")
+    end
+
+    it "accepts English and German" do
+      expect(build(:user, locale: "en")).to be_valid
+      expect(build(:user, locale: "de")).to be_valid
+    end
+
+    it "rejects unknown locales" do
+      expect(build(:user, locale: "fr")).not_to be_valid
+    end
+  end
 end

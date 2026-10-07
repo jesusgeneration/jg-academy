@@ -1,7 +1,7 @@
-<% content_for :page_title, "Edit Organization" %>
+<% content_for :page_title, t(".page_title") %>
 
 <nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
-  <ul><li><%= link_to "Organizations", organizations_path %></li><li>Edit: <%= @organization.name %></li></ul>
+  <ul><li><%= link_to t(".breadcrumb_root"), organizations_path %></li><li><%= t(".breadcrumb_current", name: @organization.name) %></li></ul>
 </nav>
 
 <div class="max-w-xl">

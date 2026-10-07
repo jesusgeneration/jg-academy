@@ -1,9 +1,9 @@
-<% content_for :page_title, "Programs" %>
+<% content_for :page_title, t(".page_title") %>
 
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-2xl font-semibold">Programs</h1>
+  <h1 class="text-2xl font-semibold"><%= t(".title") %></h1>
   <% if policy(Program).create? %>
-    <%= link_to "New program", new_program_path, class: "btn btn-primary btn-sm" %>
+    <%= link_to t(".new"), new_program_path, class: "btn btn-primary btn-sm" %>
   <% end %>
 </div>
 
@@ -12,14 +12,14 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Program</th><th>Kind</th><th>Organization</th><th>Units</th>
+          <th><%= t(".table.program") %></th><th><%= t(".table.kind") %></th><th><%= t(".table.organization") %></th><th><%= t(".table.units") %></th>
         </tr>
       </thead>
       <tbody>
         <% @programs.each do |program| %>
           <tr>
             <td><%= link_to program.name, program_path(program), class: "link link-hover font-medium" %></td>
-            <td><span class="badge badge-ghost capitalize"><%= program.kind %></span></td>
+            <td><span class="badge badge-ghost capitalize"><%= human_enum_label("program", "kind", program.kind) %></span></td>
             <td><%= program.organization.name %></td>
             <td><span class="badge badge-ghost"><%= program.units.size %></span></td>
           </tr>
@@ -28,5 +28,5 @@
     </table>
   </div>
 <% else %>
-  <div class="alert alert-info"><span>No programs yet.</span></div>
+  <div class="alert alert-info"><span><%= t(".empty") %></span></div>
 <% end %>

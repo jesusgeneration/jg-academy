@@ -65,6 +65,12 @@ jobs:
       - name: Lint code for consistent style
         run: bin/rubocop -f github
 
+      - name: Check translations for missing/unused/inconsistent keys
+        run: bundle exec i18n-tasks health
+
+      - name: Check translation files are normalized
+        run: bundle exec i18n-tasks check-normalized
+
   test:
     runs-on: ubuntu-latest
 
