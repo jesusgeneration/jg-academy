@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Authentication" do
   it "redirects anonymous visitors to the sign-in page" do
-    get courses_path
+    get units_path
 
     expect(response).to redirect_to(new_user_session_path)
   end

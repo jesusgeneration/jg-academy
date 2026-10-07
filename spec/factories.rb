@@ -51,14 +51,25 @@ FactoryBot.define do
     end
   end
 
-  factory :course_coverage do
-    association :course
+  factory :program do
+    association :organization
+    sequence(:name) { |n| "Program #{n}" }
+    description { "A training program." }
+    kind { :schooling }
+
+    trait :freizeit do
+      kind { :freizeit }
+    end
+  end
+
+  factory :unit_coverage do
+    association :unit
     association :content, :detail
   end
 
-  factory :course do
-    association :organization
-    sequence(:name) { |n| "Training Weekend #{n}" }
+  factory :unit do
+    association :program
+    sequence(:name) { |n| "Training Unit #{n}" }
     starts_at { 2.weeks.from_now.beginning_of_day + 18.hours }
     ends_at { starts_at ? starts_at + 2.days : 3.weeks.from_now }
     location { "Parish Hall" }
@@ -70,8 +81,8 @@ FactoryBot.define do
     end
   end
 
-  factory :course_attendance do
-    association :course
+  factory :unit_attendance do
+    association :unit
     user
     status { :registered }
 

@@ -1,0 +1,9 @@
+<% content_for :page_title, "New Unit" %>
+
+<nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
+  <ul><li><%= link_to "Units", units_path %></li><li>New</li></ul>
+</nav>
+
+<div class="max-w-2xl">
+  <%= render "form", unit: @unit %>
+</div>

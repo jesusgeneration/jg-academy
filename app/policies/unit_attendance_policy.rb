@@ -1,4 +1,4 @@
-class CourseAttendancePolicy < ApplicationPolicy
+class UnitAttendancePolicy < ApplicationPolicy
   def create?
     manage?
   end
@@ -14,6 +14,6 @@ class CourseAttendancePolicy < ApplicationPolicy
   private
 
   def manage?
-    admin? || organises_organization?(record.course&.organization_id)
+    admin? || organises_organization?(record.unit&.program&.organization_id)
   end
 end

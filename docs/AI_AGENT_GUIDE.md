@@ -9,9 +9,10 @@ Read that document before making architectural or implementation
 decisions.
 
 The application is a Rails application for several cooperating churches
-that offer unique, one-off training events. The system records
-attendance and calculates how much of each configured Juleica
-requirement a person has accumulated.
+that offer training programs (schoolings, freizeiten) made of unique,
+one-off units. The system records attendance and which content each
+unit covers, so organisers can see what training a person has
+completed.
 
 The goal is to build a clean, conventional Rails application with a
 domain model that is easy to extend.
@@ -25,37 +26,48 @@ Implement these models first:
 -   `User`
 -   `Organization`
 -   `OrganizationMembership`
--   `Course`
--   `CourseAttendance`
--   `CourseRequirement`
--   `JuleicaRequirement`
+-   `Program` (`schooling` or `freizeit`, owns the `organization_id`)
+-   `Unit` (one session inside a program)
+-   `UnitAttendance`
+-   `UnitCoverage`
+-   `Content` (level → section → detail hierarchy)
 
 The relationship is:
 
 ``` text
 User
   |
-  +-- OrganizationMembership --> Organization
-  |
-  +-- CourseAttendance -------> Course
-                                  |
-                                  +-- CourseRequirement --> JuleicaRequirement
+  +-- OrganizationMembership --> Organization --< Program --< Unit
+  |                                                  |
+  +-- UnitAttendance ---------> Unit --UnitCoverage--> Content
 ```
 
-Do NOT introduce `CourseOccurrence`.
+Do NOT introduce `UnitOccurrence`.
 
-A `Course` is already a unique, one-off event.
+A `Unit` is already a unique, one-off event.
 
-Do NOT introduce a reusable course template unless a future requirement
+Do NOT introduce a reusable unit template unless a future requirement
 explicitly asks for it.
 
 ------------------------------------------------------------------------
 
-# 2. Course Semantics
+# 2. Program and Unit Semantics
 
-A course represents an actual event.
+A program groups several units. It represents a schooling or a freizeit
+(`Program.kind`: `schooling` / `freizeit`) and owns the `organization_id`.
 
-Expected fields include:
+Expected program fields include:
+
+``` text
+name
+description
+kind
+organization_id
+```
+
+A unit represents an actual event: one session inside a program.
+
+Expected unit fields include:
 
 ``` text
 name
@@ -63,30 +75,31 @@ description
 starts_at
 ends_at
 location
-organization_id
+program_id
 ```
 
-A course can be completely different from every other course.
+A unit can be completely different from every other unit. Units always
+belong to exactly one program; the organization is derived via
+`unit.program.organization` (there is no `organization_id` on units).
 
 Do not assume:
 
--   recurring courses
--   yearly course instances
--   a fixed course curriculum
+-   recurring units
+-   yearly unit instances
+-   a fixed unit curriculum
 -   fixed topics
--   a fixed set of requirements
+-   a fixed set of contents
 
 ------------------------------------------------------------------------
 
-# 3. Course Requirements
+# 3. Unit Coverage
 
 Use a join model:
 
 ``` text
-CourseRequirement
-  course_id
-  juleica_requirement_id
-  hours
+UnitCoverage
+  unit_id
+  content_id
 ```
 
 This is intentionally a real model rather than
@@ -94,47 +107,43 @@ This is intentionally a real model rather than
 
 Why:
 
-A course can contribute different amounts of training time to different
-requirements.
+A unit can cover multiple content items, and the same content item can
+be covered by many different units.
 
-Example:
-
-``` text
-Course A
-  Group Leadership: 4 hours
-  Legal Foundations: 2 hours
-  Child Protection: 2 hours
-```
+Covering a level or section automatically covers everything below it.
+That implication is computed, not stored — see `Unit#covers?` (§6).
 
 Use conventional Rails associations:
 
 ``` ruby
-class Course < ApplicationRecord
-  belongs_to :organization
+class Unit < ApplicationRecord
+  belongs_to :program
 
-  has_many :course_attendances, dependent: :destroy
-  has_many :users, through: :course_attendances
+  has_many :unit_attendances, dependent: :destroy
+  has_many :users, through: :unit_attendances
 
-  has_many :course_requirements, dependent: :destroy
-  has_many :juleica_requirements, through: :course_requirements
+  has_many :unit_coverages, dependent: :destroy
+  has_many :covered_contents,
+           through: :unit_coverages,
+           source: :content
 end
 ```
 
 and:
 
 ``` ruby
-class CourseRequirement < ApplicationRecord
-  belongs_to :course
-  belongs_to :juleica_requirement
+class UnitCoverage < ApplicationRecord
+  belongs_to :unit
+  belongs_to :content
 
-  validates :hours, numericality: { greater_than: 0 }
+  validates :content_id, uniqueness: { scope: :unit_id }
 end
 ```
 
 Add a unique database index on:
 
 ``` text
-course_id + juleica_requirement_id
+unit_id + content_id
 ```
 
 ------------------------------------------------------------------------
@@ -144,9 +153,9 @@ course_id + juleica_requirement_id
 Use:
 
 ``` text
-CourseAttendance
+UnitAttendance
   user_id
-  course_id
+  unit_id
   status
 ```
 
@@ -161,13 +170,13 @@ enum :status, {
 }
 ```
 
-Only `attended` contributes qualification credit in the initial
-implementation.
+Only `attended` counts as completed participation. Registered,
+cancelled and no-show attendances never count.
 
 Add a unique database index on:
 
 ``` text
-user_id + course_id
+user_id + unit_id
 ```
 
 Do not use a plain HABTM relationship for attendance.
@@ -176,66 +185,63 @@ Attendance is important domain data.
 
 ------------------------------------------------------------------------
 
-# 5. Juleica Requirements
+# 5. Content Hierarchy
 
 Use:
 
 ``` text
-JuleicaRequirement
-  name
-  description
-  required_hours
+Content
+  parent_id (self-reference, null for levels)
+  title
+  content_type (level / section / detail)
+  position
 ```
 
-Do not hard-code requirements in Ruby.
+Content forms a strict three-level hierarchy:
 
-Requirements must be stored in the database.
+``` text
+level (no parent)
+  section (exactly one level parent)
+    detail (exactly one section parent, no children)
+```
 
-The model should validate that `required_hours` is positive.
+Do not hard-code content titles or the hierarchy in Ruby.
 
-Do not assume that all requirements have the same required number of
-hours.
+Content lives in the database. It is seeded from
+`db/seeds_data/contents.json` (via `db:seed` and the
+`ImportJuleicaContents` data migration) and validated by
+`Content#hierarchy_rules`: levels must not have parents or detail
+children, sections require a level parent and may only have detail
+children, details require a section parent and must not have children.
 
 ------------------------------------------------------------------------
 
-# 6. Progress Must Be Derived
+# 6. Coverage Must Be Derived
 
 Do NOT add:
 
 ``` text
-user_juleica_requirement.completed
+unit_content.completed
 ```
 
-for the initial implementation.
+Coverage is derived from:
 
-Completion is derived from:
+1.  The unit's direct `UnitCoverage` links.
+2.  Links on ancestors in the `Content` hierarchy: covering a level
+    covers its sections and details; covering a section covers its
+    details but not siblings or ancestors.
 
-1.  The user's qualifying course attendance.
-2.  The requirements covered by those courses.
-3.  The hours contributed by those courses.
-4.  The requirement's required hours.
-
-Conceptually:
+Conceptually (`Unit#covers?`):
 
 ``` text
-earned_hours =
-  sum(course_requirement.hours)
-  for courses the user attended
-  for the selected requirement
-```
+covers?(level) =
+  unit_coverages.exists?(content_id: level.id)
 
-Then:
+covers?(section) =
+  unit_coverages.exists?(content_id: [section.id, section.parent_id])
 
-``` text
-remaining_hours =
-  max(required_hours - earned_hours, 0)
-```
-
-and:
-
-``` text
-completed =
-  earned_hours >= required_hours
+covers?(detail) =
+  unit_coverages.exists?(content_id: [detail.id, section.id, level.id])
 ```
 
 Avoid duplicating this result in the database unless there is a
@@ -243,71 +249,46 @@ demonstrated performance requirement.
 
 ------------------------------------------------------------------------
 
-# 7. Progress API / Domain Interface
+# 7. Coverage API / Domain Interface
 
-Create a clean domain-level interface for retrieving progress.
-
-For example, the application may expose something conceptually like:
-
-``` ruby
-user.juleica_progress
-```
-
-The result should provide:
-
-``` text
-requirement
-required_hours
-earned_hours
-remaining_hours
-completed
-```
-
-A service object is acceptable if that produces cleaner code.
+The domain-level interface for coverage is `Unit#covers?(content)`.
 
 For example:
 
-``` text
-JuleicaProgress
-JuleicaProgressCalculator
+``` ruby
+unit.covers?(level)    # true when the level itself is linked
+unit.covers?(section)  # true when the section or its level is linked
+unit.covers?(detail)   # true when the detail, its section, or its level is linked
 ```
 
-Do not over-engineer this. Choose the simplest design that keeps the
-calculation testable.
+The interface returns booleans only — there are no hours, no earned /
+remaining totals, and no service object. A user's page (`users#show`)
+lists their `UnitAttendance` records with statuses instead of a
+computed progress total.
+
+Do not over-engineer this. Keep the check on the model where it is
+testable (`spec/models/unit_covers_spec.rb`).
 
 ------------------------------------------------------------------------
 
-# 8. Upcoming Course Recommendations
+# 8. Upcoming Units
 
-The application should eventually answer:
+The units index offers `upcoming` / `past` / `all` tabs backed by the
+`Unit.upcoming` and `Unit.past` scopes (ordered by `starts_at` /
+`ends_at`).
 
-> Which upcoming courses could help this user complete their remaining
-> requirements?
-
-This can be derived from:
-
-``` text
-remaining requirements
-        +
-future courses
-        +
-course requirements
-```
-
-For example:
+A future version may answer which upcoming units cover content a user
+has not attended yet, derived from:
 
 ``` text
-Alice is missing:
-
-Youth Work Methods: 4 hours
-
-Upcoming:
-Youth Work Weekend
-  Youth Work Methods: 6 hours
+unattended content
+        +
+future units
+        +
+unit coverages
 ```
 
-The first implementation does not need a sophisticated recommendation
-engine.
+The current implementation does not need a recommendation engine.
 
 A simple query/filter is sufficient.
 
@@ -337,6 +318,13 @@ Do not put a permanent `organization_id` directly on `User` unless a
 future requirement explicitly establishes that a user can belong to
 exactly one organization.
 
+Programs belong to organizations (`Program belongs_to :organization`,
+`kind`: `schooling` / `freizeit`). Units belong to programs and reach
+their organization via `unit.program.organization` — there is no
+`organization_id` on units. Authorization for programs and units is
+scoped to the program's organization (see `ProgramPolicy`,
+`UnitPolicy`).
+
 ------------------------------------------------------------------------
 
 # 10. Database Integrity
@@ -346,11 +334,11 @@ Use database constraints in addition to Rails validations.
 Required unique indexes:
 
 ``` text
-course_attendances:
-  [user_id, course_id]
+unit_attendances:
+  [user_id, unit_id]
 
-course_requirements:
-  [course_id, juleica_requirement_id]
+unit_coverages:
+  [unit_id, content_id]
 
 organization_memberships:
   [user_id, organization_id]
@@ -358,10 +346,12 @@ organization_memberships:
 
 Use foreign keys.
 
-Prevent negative hours at the application level and, where practical, at
-the database level.
-
 Use appropriate timestamps.
+
+Cross-table rules that the database cannot express (hierarchy rules,
+`ends_at` after `starts_at`) live in model validations plus request
+specs — see `spec/models/content_spec.rb` and
+`spec/models/unit_spec.rb`.
 
 ------------------------------------------------------------------------
 
@@ -398,73 +388,62 @@ Write model and domain tests for at least these cases.
 
 ### Attendance
 
--   A user can attend a course.
--   A user cannot have duplicate attendance for the same course.
--   Registered attendance does not contribute hours.
--   Attended attendance contributes hours.
--   Cancelled attendance does not contribute hours.
--   No-show attendance does not contribute hours.
+-   A user can attend a unit.
+-   A user cannot have duplicate attendance for the same unit.
+-   Attendance defaults to `registered`.
+-   All four statuses (`registered`, `attended`, `cancelled`, `no_show`)
+    are accepted; only `attended` counts as completed participation.
 
-### Course requirements
+### Unit coverage
 
--   A course can cover multiple requirements.
--   A requirement can be covered by multiple courses.
--   A course can contribute different hours to different requirements.
--   Duplicate course/requirement relationships are prevented.
--   Hours must be positive.
+-   A unit can cover multiple contents.
+-   A content item can be covered by multiple units.
+-   Duplicate unit/content combinations are prevented (validation and
+    unique index).
 
-### Progress
+### Coverage derivation (`Unit#covers?`)
 
 Test:
 
 ``` text
-0 hours -> incomplete
-4 / 8 -> incomplete, 4 remaining
-8 / 8 -> complete
-10 / 8 -> complete, 0 remaining
+link level        -> covers level, its sections and its details
+link section      -> covers section and its details, but not siblings,
+                     the parent level, or other sections
+link detail       -> covers only that detail
+no link           -> covers nothing; nil content -> false
 ```
 
-Also test accumulation across multiple courses:
-
-``` text
-Course A -> 4 hours
-Course B -> 4 hours
-Requirement -> 8 hours
-
-Result -> complete
-```
-
-And make sure attendance status affects the calculation.
+And make sure ancestor links imply descendants, never the reverse.
 
 ------------------------------------------------------------------------
 
 # 13. Important Domain Test
 
-This scenario should be explicitly covered:
+This scenario should be explicitly covered (see
+`spec/models/unit_covers_spec.rb`):
 
 ``` text
-Requirement:
-Group Leadership = 8 hours
+Hierarchy:
+Level 1
+  Section 1.1
+    Detail 1.1.1, Detail 1.1.2
+  Section 1.2
+    Detail 1.2.1
 
-Course A:
-Group Leadership = 4 hours
-
-Course B:
-Group Leadership = 4 hours
-
-User attends Course A.
-User does NOT attend Course B.
+Unit links Level 1 and nothing else.
 
 Result:
-4 / 8 hours
-Incomplete.
+covers Level 1, Section 1.1, Section 1.2 and all details.
 ```
 
-Then when Course B attendance becomes `attended`:
+And the reverse direction:
 
 ``` text
-8 / 8 hours
-Complete.
+Unit links Detail 1.1.1 and nothing else.
+
+Result:
+covers only Detail 1.1.1 — not Section 1.1, not Level 1,
+not Detail 1.1.2.
 ```
 
 This is central to the application.
@@ -473,45 +452,50 @@ This is central to the application.
 
 # 14. UI Priorities
 
-The most useful UI is not a generic list of courses.
+The most useful UI is not a generic list of units.
 
 Prioritize:
 
-## User progress
+## User attendance
 
-Show:
+Show (see `users#show`):
 
--   completed requirements
--   partial requirements
--   remaining hours
--   upcoming courses relevant to missing requirements
+-   the user's unit attendances with statuses
+-   links to the attended units
 
-## Course
+## Program
 
-Show:
+Show (see `programs#show`):
+
+-   name, kind (`schooling` / `freizeit`), organization
+-   description
+-   the program's units
+
+## Unit
+
+Show (see `units#show`):
 
 -   date/time
--   organization
+-   program and organization
 -   location
 -   description
--   requirements covered
--   hours contributed to each requirement
--   attendees
+-   covered contents
+-   coverage manager (add/remove links per hierarchy node)
+-   attendees (organisers of the program's organization only)
 
-## Admin progress
+## Organiser overview
 
-Allow an administrator to quickly answer:
+Allow an organiser to quickly answer:
 
--   Who attended this course?
--   What did this course count toward?
--   What is Alice still missing?
--   Which users are close to completing their requirements?
+-   Who attended this unit?
+-   What does this unit cover?
+-   Which units belong to this program?
 
 ------------------------------------------------------------------------
 
 # 15. Avoid Hard-Coding Official Juleica Rules
 
-The application should track configured requirements.
+The application should track configured content.
 
 Do not embed assumptions such as:
 
@@ -522,10 +506,10 @@ REQUIRED_MODULES = [...]
 or:
 
 ``` ruby
-if user.course_count >= 5
+if user.unit_count >= 5
 ```
 
-The requirement set should live in the database.
+The content hierarchy should live in the database.
 
 If official requirements change in the future, the data model should be
 able to adapt without rewriting the core domain logic.
@@ -555,9 +539,9 @@ The current system should first establish a solid:
 ``` text
 User
   -> Attendance
-  -> Course
-  -> CourseRequirement
-  -> JuleicaRequirement
+  -> Unit
+  -> UnitCoverage
+  -> Content
 ```
 
 flow.
@@ -570,15 +554,15 @@ Implement in this order:
 
 1.  Organizations
 2.  Organization memberships
-3.  Juleica requirements
-4.  Courses
-5.  Course requirements
-6.  Course attendance
-7.  Progress calculation
-8.  Tests for progress
-9.  Course/user administration UI
-10. User progress UI
-11. Upcoming-course filtering
+3.  Content hierarchy (levels, sections, details)
+4.  Programs
+5.  Units
+6.  Unit coverage
+7.  Unit attendance
+8.  Tests for coverage derivation
+9.  Program/unit/user administration UI
+10. User attendance UI
+11. Upcoming-unit filtering
 
 Keep commits and changes focused.
 
@@ -591,35 +575,25 @@ After each major domain model, run the test suite.
 The implementation is successful when this scenario works end-to-end:
 
 ``` text
-1. Admin creates "Group Leadership" requirement.
-   Required hours: 8.
+1. Admin creates the "Youth Leadership Program 2026" program
+   (kind: schooling) for St. Martin's.
 
-2. Admin creates "Youth Leadership Weekend".
-   It contributes 4 hours to Group Leadership.
+2. Admin creates the "Youth Leadership Weekend 2026" unit in that
+   program. It covers the "Group Leadership" content level.
 
-3. Alice is registered for the course.
+3. Alice is registered for the unit.
 
 4. Alice's attendance is marked "attended".
 
-5. Alice's progress shows:
-   Group Leadership: 4 / 8 hours
-   Remaining: 4 hours
-   Status: incomplete.
+5. Alice's page lists:
+   Youth Leadership Weekend 2026 — Attended.
 
-6. Admin creates another course.
-
-7. The second course contributes another 4 hours to Group Leadership.
-
-8. Alice attends the second course.
-
-9. Alice's progress now shows:
-   Group Leadership: 8 / 8 hours
-   Remaining: 0 hours
-   Status: complete.
+6. The unit page shows the covered contents, and `unit.covers?`
+   returns true for the level, its sections and its details.
 ```
 
-The application should make it possible to trace the 8 hours back to the
-two actual course attendances.
+The application should make it possible to trace coverage back to the
+actual unit attendance and coverage records.
 
 ------------------------------------------------------------------------
 
@@ -627,9 +601,8 @@ two actual course attendances.
 
 The system should answer:
 
-> **What training has this person actually completed, what Juleica
-> requirements did that training contribute toward, and what do they
-> still need?**
+> **What training has this person actually completed, and what
+> content did that training cover?**
 
 Keep that question at the center of architectural decisions.
 
@@ -686,8 +659,8 @@ The primary layout should consist of:
 │               │                                              │
 │ Dashboard     │                                              │
 │ Users         │                                              │
-│ Courses       │                                              │
-│ Requirements  │                                              │
+│ Programs      │                                              │
+│ Units         │                                              │
 │ Organizations │                                              │
 │               │                                              │
 │               │                                              │
@@ -706,8 +679,8 @@ The main navigation should initially contain:
 
 Dashboard
 Users
-Courses
-Juleica Requirements
+Programs
+Units
 Organizations
 
 Additional navigation items may be added as features are introduced.
@@ -722,58 +695,41 @@ The dashboard should prioritize information and actions over decorative design.
 
 Use DaisyUI components such as:
 
-stat for high-level numbers
+stat for high-level numbers (users, upcoming units, content items)
 card for grouped information
 table for lists
 badge for statuses
-progress for Juleica progress
 alert for important information
 
-For example, the dashboard might show:
+For example, the dashboard shows:
 ```text
 ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
-│ Users            │ │ Upcoming Courses │ │ Requirements     │
+│ Users            │ │ Upcoming Units   │ │ Content Items    │
 │ 124              │ │ 3                │ │ 12               │
 └──────────────────┘ └──────────────────┘ └──────────────────┘
 ```
 
-Recent Courses
+Recent Units
 ───────────────────────────────────────────────────────────────
-Course                         Date          Attendees
+Unit                           Date          Attendees
 Youth Leadership Weekend       12 Oct        18
 Safeguarding Weekend           02 Nov        14
+User Attendance UI
 
-Users Close to Juleica
+The user page should make attendance immediately understandable.
+
+Use DaisyUI badge, card, and table components where appropriate.
+
+Show the user's unit attendances with statuses:
+
+Unit Attendance
 ───────────────────────────────────────────────────────────────
-Alice                           9 / 10
-Bob                             8 / 10
-Charlie                         8 / 10
-User Progress UI
+Youth Leadership Weekend       Attended
+Safeguarding Weekend           Registered
 
-The user progress page should make Juleica progress immediately understandable.
-
-Use DaisyUI progress, badge, card, and table components where appropriate.
-
-For each requirement show:
-
-Group Leadership
-8 / 8 hours                         ✓ Complete
-
-Youth Work Methods
-4 / 8 hours                         4 hours remaining
-
-The interface should make it easy to understand why a user has received credit.
-
-Where useful, show the courses contributing to a requirement:
-
-Youth Work Methods
-4 / 8 hours
-
-Youth Leadership Weekend
-+ 2 hours
-
-Games & Group Work Weekend
-+ 2 hours
+The interface should make it easy to understand which units a user
+attended and what each unit covers (see the unit page's "Covers"
+section and the coverage manager).
 General UI Principle
 
 The application is an administrative portal.

@@ -4,8 +4,8 @@ class Content < ApplicationRecord
     class_name: "Content", foreign_key: :parent_id,
     dependent: :restrict_with_error
 
-  has_many :course_coverages, dependent: :destroy
-  has_many :courses, through: :course_coverages
+  has_many :unit_coverages, dependent: :destroy
+  has_many :units, through: :unit_coverages
 
   enum :content_type, {
     level: 0,

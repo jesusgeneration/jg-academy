@@ -36,21 +36,21 @@
 
   <div class="card bg-base-100 shadow">
     <div class="card-body">
-      <h2 class="card-title">Courses</h2>
-      <% if @courses.any? %>
+      <h2 class="card-title">Programs</h2>
+      <% if @programs.any? %>
         <table class="table table-sm">
-          <thead><tr><th>Course</th><th>Date</th></tr></thead>
+          <thead><tr><th>Program</th><th>Kind</th></tr></thead>
           <tbody>
-            <% @courses.each do |course| %>
+            <% @programs.each do |program| %>
               <tr>
-                <td><%= link_to course.name, course_path(course), class: "link link-hover" %></td>
-                <td><%= format_datetime(course.starts_at) %></td>
+                <td><%= link_to program.name, program_path(program), class: "link link-hover" %></td>
+                <td><span class="badge badge-ghost badge-sm capitalize"><%= program.kind %></span></td>
               </tr>
             <% end %>
           </tbody>
         </table>
       <% else %>
-        <p class="opacity-60">No courses offered yet.</p>
+        <p class="opacity-60">No programs offered yet.</p>
       <% end %>
     </div>
   </div>

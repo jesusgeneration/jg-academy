@@ -1,0 +1,9 @@
+<% content_for :page_title, "New Program" %>
+
+<nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
+  <ul><li><%= link_to "Programs", programs_path %></li><li>New</li></ul>
+</nav>
+
+<div class="max-w-2xl">
+  <%= render "form", program: @program %>
+</div>

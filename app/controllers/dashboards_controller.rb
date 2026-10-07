@@ -6,7 +6,7 @@ class DashboardsController < BaseController
     end
 
     @user_count = User.count
-    @upcoming_course_count = Course.upcoming.count
-    @recent_courses = Course.includes(:organization).order(created_at: :desc).limit(5)
+    @upcoming_unit_count = Unit.upcoming.count
+    @recent_units = Unit.includes(program: :organization).order(created_at: :desc).limit(5)
   end
 end

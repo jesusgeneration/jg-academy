@@ -6,13 +6,13 @@ RSpec.describe "Dashboard" do
       it "shows portal statistics" do
         sign_in create(:user, :admin)
         create(:user)
-        create(:course)
+        create(:unit)
 
         get dashboard_path
 
         aggregate_failures do
           expect(response).to have_http_status(:ok)
-          expect(response.body).to include("Recent Courses")
+          expect(response.body).to include("Recent Units")
         end
       end
     end

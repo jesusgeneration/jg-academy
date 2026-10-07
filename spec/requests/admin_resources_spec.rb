@@ -58,7 +58,7 @@ RSpec.describe "Admin resources" do
       expect(response).to have_http_status(:unprocessable_content)
     end
 
-    it "deletes an organization without courses" do
+    it "deletes an organization without programs" do
       organization = create(:organization)
 
       expect {
@@ -68,9 +68,9 @@ RSpec.describe "Admin resources" do
       expect(response).to redirect_to(organizations_path)
     end
 
-    it "protects organizations with courses from deletion" do
+    it "protects organizations with programs from deletion" do
       organization = create(:organization)
-      create(:course, organization: organization)
+      create(:program, organization: organization)
 
       delete organization_path(organization)
 

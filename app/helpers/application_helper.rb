@@ -7,7 +7,8 @@ module ApplicationHelper
     else
       items << nav_entry("My Account", user_path(current_user))
     end
-    items << nav_entry("Courses", courses_path)
+    items << nav_entry("Programs", programs_path)
+    items << nav_entry("Units", units_path)
     items << nav_entry("Organizations", organizations_path) if policy(Organization).index?
     items
   end
@@ -51,18 +52,18 @@ module ApplicationHelper
     datetime.strftime("%d %b %Y, %H:%M")
   end
 
-  def coverage_toggle_button(course, content, coverages_by_content_id)
+  def coverage_toggle_button(unit, content, coverages_by_content_id)
     coverage = coverages_by_content_id[content.id]
     if coverage
       button_to "Remove",
-        course_course_coverage_path(course, coverage),
+        unit_unit_coverage_path(unit, coverage),
         method: :delete,
         form: { class: "inline" },
         class: "btn btn-error btn-outline btn-xs w-20"
     else
       button_to "Add",
-        course_course_coverages_path(course),
-        params: { course_coverage: { content_id: content.id } },
+        unit_unit_coverages_path(unit),
+        params: { unit_coverage: { content_id: content.id } },
         form: { class: "inline" },
         class: "btn btn-outline btn-xs w-20"
     end
@@ -70,10 +71,10 @@ module ApplicationHelper
 
   # A row gets no button when an ancestor is covered and the item itself
   # has no direct coverage record (there is nothing to add or remove).
-  def coverage_row_button(course, content, coverages_by_content_id, ancestor_covered: false)
+  def coverage_row_button(unit, content, coverages_by_content_id, ancestor_covered: false)
     return nil if ancestor_covered && !coverages_by_content_id.key?(content.id)
 
-    coverage_toggle_button(course, content, coverages_by_content_id)
+    coverage_toggle_button(unit, content, coverages_by_content_id)
   end
 
   private

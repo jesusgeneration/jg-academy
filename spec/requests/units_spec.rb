@@ -1,8 +1,10 @@
 require "rails_helper"
 
-RSpec.describe "Courses" do
+RSpec.describe "Units" do
   let(:organization) { create(:organization) }
   let(:other_organization) { create(:organization) }
+  let(:program) { create(:program, organization: organization) }
+  let(:other_program) { create(:program, organization: other_organization) }
 
   def sign_in_organiser_for(target_organization)
     user = create(:user)
@@ -11,65 +13,85 @@ RSpec.describe "Courses" do
     user
   end
 
-  describe "GET /courses" do
-    it "allows plain users to browse upcoming courses" do
+  describe "GET /units" do
+    it "allows plain users to browse upcoming units" do
       sign_in create(:user)
-      course = create(:course, organization: organization)
+      unit = create(:unit, program: program)
 
-      get courses_path
+      get units_path
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include(course.name)
+      expect(response.body).to include(unit.name)
     end
 
     it "supports the past tab" do
       sign_in create(:user)
-      past_course = create(:course, :past, organization: organization)
+      past_unit = create(:unit, :past, program: program)
 
-      get courses_path, params: { tab: "past" }
+      get units_path, params: { tab: "past" }
 
-      expect(response.body).to include(past_course.name)
+      expect(response.body).to include(past_unit.name)
     end
   end
 
-  describe "POST /courses" do
+  describe "GET /units/:id" do
+    it "renders the unit page for plain users" do
+      sign_in create(:user)
+      unit = create(:unit, program: program)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(unit.name)
+      end
+    end
+  end
+
+  describe "POST /units" do
     let(:admin) { create(:user, :admin) }
 
     before { sign_in admin }
 
-    it "creates a course" do
-      post courses_path, params: {
-        course: {
-          name: "Youth Leadership Weekend 2026",
-          description: "A leadership weekend.",
+    it "creates a unit" do
+      post units_path, params: {
+        unit: {
+          name: "Youth Leadership Unit 2026",
+          description: "A leadership unit.",
           location: "Parish Hall",
           starts_at: "2026-10-10T18:00",
           ends_at: "2026-10-11T17:00",
-          organization_id: organization.id
+          program_id: program.id
         }
       }
 
-      course = Course.find_by!(name: "Youth Leadership Weekend 2026")
+      unit = Unit.find_by!(name: "Youth Leadership Unit 2026")
       aggregate_failures do
-        expect(response).to redirect_to(course_path(course))
-        expect(course.organization).to eq(organization)
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.program).to eq(program)
       end
     end
 
+    it "renders the new form" do
+      get new_unit_path
+
+      expect(response).to have_http_status(:ok)
+    end
+
     it "rejects invalid submissions" do
-      post courses_path, params: { course: { name: "" } }
+      post units_path, params: { unit: { name: "" } }
 
       expect(response).to have_http_status(:unprocessable_content)
     end
   end
 
   describe "organizer-scoped management" do
-    let!(:course) { create(:course, organization: organization) }
+    let!(:unit) { create(:unit, program: program) }
 
     it "renders the new form for organisers" do
       sign_in_organiser_for(organization)
 
-      get new_course_path
+      get new_unit_path
 
       expect(response).to have_http_status(:ok)
     end
@@ -77,152 +99,160 @@ RSpec.describe "Courses" do
     it "renders the edit form for the organizing church" do
       sign_in_organiser_for(organization)
 
-      get edit_course_path(course)
+      get edit_unit_path(unit)
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include(course.name)
+        expect(response.body).to include(unit.name)
       end
     end
 
-    it "updates a course of their own organization" do
+    it "updates a unit of their own organization" do
       sign_in_organiser_for(organization)
 
-      patch course_path(course), params: {
-        course: {
-          name: "Renamed Weekend",
+      patch unit_path(unit), params: {
+        unit: {
+          name: "Renamed Unit",
           starts_at: "2026-10-10T18:00",
           ends_at: "2026-10-11T17:00",
-          organization_id: organization.id
+          program_id: program.id
         }
       }
 
       aggregate_failures do
-        expect(response).to redirect_to(course_path(course))
-        expect(course.reload.name).to eq("Renamed Weekend")
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.reload.name).to eq("Renamed Unit")
       end
     end
 
-    it "deletes a course of their own organization" do
+    it "deletes a unit of their own organization" do
       sign_in_organiser_for(organization)
 
       expect {
-        delete course_path(course)
-      }.to change(Course, :count).by(-1)
+        delete unit_path(unit)
+      }.to change(Unit, :count).by(-1)
 
-      expect(response).to redirect_to(courses_path)
+      expect(response).to redirect_to(program_path(program))
     end
 
-    it "lets an organiser create a course for their own organization" do
+    it "lets an organiser create a unit for their own organization" do
       sign_in_organiser_for(organization)
 
       expect {
-        post courses_path, params: { course: course_params_for(organization.id) }
-      }.to change(Course, :count).by(1)
+        post units_path, params: { unit: unit_params_for(program.id) }
+      }.to change(Unit, :count).by(1)
 
-      expect(Course.last.organization).to eq(organization)
+      expect(Unit.last.program).to eq(program)
     end
 
-    it "clamps the organization to the organiser's own when tampering" do
+    it "clamps the program to the organiser's own when tampering" do
       sign_in_organiser_for(organization)
 
-      post courses_path, params: { course: course_params_for(other_organization.id) }
+      post units_path, params: { unit: unit_params_for(other_program.id) }
 
       aggregate_failures do
-        expect(Course.last.organization).to eq(organization)
-        expect(Course.last.organization).not_to eq(other_organization)
+        expect(Unit.last.program).to eq(program)
+        expect(Unit.last.program).not_to eq(other_program)
       end
     end
 
-    it "prevents organisers of another organization from editing its courses" do
+    it "clamps the program on update when tampering" do
+      sign_in_organiser_for(organization)
+
+      patch unit_path(unit), params: { unit: { program_id: other_program.id } }
+
+      expect(unit.reload.program).to eq(program)
+    end
+
+    it "prevents organisers of another organization from editing its units" do
       sign_in_organiser_for(other_organization)
 
-      patch course_path(course), params: { course: { name: "Hijacked" } }
+      patch unit_path(unit), params: { unit: { name: "Hijacked" } }
 
-      expect(course.reload.name).not_to eq("Hijacked")
+      expect(unit.reload.name).not_to eq("Hijacked")
       expect(response).to redirect_to(root_path)
     end
 
-    it "prevents organisers of another organization from deleting its courses" do
+    it "prevents organisers of another organization from deleting its units" do
       sign_in_organiser_for(other_organization)
 
       expect {
-        delete course_path(course)
-      }.not_to change(Course, :count)
+        delete unit_path(unit)
+      }.not_to change(Unit, :count)
 
       expect(response).to redirect_to(root_path)
     end
 
     private
 
-    def course_params_for(tampered_organization_id)
+    def unit_params_for(tampered_program_id)
       {
-        name: "Organiser Course",
+        name: "Organiser Unit",
         starts_at: "2026-10-10T18:00",
         ends_at: "2026-10-11T17:00",
-        organization_id: tampered_organization_id
+        program_id: tampered_program_id
       }
     end
   end
 
   describe "attendance management" do
-    let!(:course) { create(:course, organization: organization) }
+    let!(:unit) { create(:unit, program: program) }
     let!(:participant) { create(:user) }
 
     before { sign_in_organiser_for(organization) }
 
     it "registers a user and marks them attended" do
       expect {
-        post course_course_attendances_path(course), params: { course_attendance: { user_id: participant.id } }
-      }.to change(CourseAttendance, :count).by(1)
+        post unit_unit_attendances_path(unit), params: { unit_attendance: { user_id: participant.id } }
+      }.to change(UnitAttendance, :count).by(1)
 
-      attendance = CourseAttendance.sole
+      attendance = UnitAttendance.sole
       expect(attendance.status).to eq("registered")
 
-      patch course_course_attendance_path(course, attendance),
-            params: { course_attendance: { status: "attended" } }
+      patch unit_unit_attendance_path(unit, attendance),
+            params: { unit_attendance: { status: "attended" } }
 
       expect(attendance.reload.status).to eq("attended")
-      expect(response).to redirect_to(course_path(course))
+      expect(response).to redirect_to(unit_path(unit))
     end
 
     it "refuses duplicate registrations" do
-      create(:course_attendance, course: course, user: participant)
+      create(:unit_attendance, unit: unit, user: participant)
 
       expect {
-        post course_course_attendances_path(course), params: { course_attendance: { user_id: participant.id } }
-      }.not_to change(CourseAttendance, :count)
+        post unit_unit_attendances_path(unit), params: { unit_attendance: { user_id: participant.id } }
+      }.not_to change(UnitAttendance, :count)
 
-      expect(response).to redirect_to(course_path(course))
+      expect(response).to redirect_to(unit_path(unit))
       follow_redirect!
       expect(flash[:alert]).to be_present
     end
 
-    it "shows attendees on the course page for the organizing church" do
-      create(:course_attendance, :attended, course: course, user: participant)
+    it "shows attendees on the unit page for the organizing church" do
+      create(:unit_attendance, :attended, unit: unit, user: participant)
 
-      get course_path(course)
+      get unit_path(unit)
 
       expect(response.body).to include(participant.email)
       expect(response.body).to include("Attended")
     end
 
     it "removes an attendance record" do
-      attendance = create(:course_attendance, course: course, user: participant)
+      attendance = create(:unit_attendance, unit: unit, user: participant)
 
       expect {
-        delete course_course_attendance_path(course, attendance)
-      }.to change(CourseAttendance, :count).by(-1)
+        delete unit_unit_attendance_path(unit, attendance)
+      }.to change(UnitAttendance, :count).by(-1)
 
-      expect(response).to redirect_to(course_path(course))
+      expect(response).to redirect_to(unit_path(unit))
     end
 
     it "hides attendees from organisers of another organization" do
       other_participant = create(:user, email: "otherchurch@example.com")
-      create(:course_attendance, :attended, course: course, user: other_participant)
+      create(:unit_attendance, :attended, unit: unit, user: other_participant)
       sign_in_organiser_for(other_organization)
 
-      get course_path(course)
+      get unit_path(unit)
 
       aggregate_failures do
         expect(response.body).not_to include("Attendees")
@@ -232,51 +262,51 @@ RSpec.describe "Courses" do
   end
 
   describe "coverage management" do
-    let!(:course) { create(:course, organization: organization) }
+    let!(:unit) { create(:unit, program: program) }
     let!(:level) { create(:content, :level, title: "Level 1") }
     let!(:detail) { create(:content, :detail, title: "Detail 1.1.1") }
 
     before { sign_in_organiser_for(organization) }
 
-    it "adds coverage to a course of their own organization" do
+    it "adds coverage to a unit of their own organization" do
       expect {
-        post course_course_coverages_path(course), params: { course_coverage: { content_id: level.id } }
-      }.to change(CourseCoverage, :count).by(1)
+        post unit_unit_coverages_path(unit), params: { unit_coverage: { content_id: level.id } }
+      }.to change(UnitCoverage, :count).by(1)
 
       aggregate_failures do
-        expect(response).to redirect_to(course_path(course))
-        expect(course.reload.covers?(level)).to be(true)
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.reload.covers?(level)).to be(true)
       end
     end
 
     it "refuses duplicate coverage" do
-      create(:course_coverage, course: course, content: level)
+      create(:unit_coverage, unit: unit, content: level)
 
       expect {
-        post course_course_coverages_path(course), params: { course_coverage: { content_id: level.id } }
-      }.not_to change(CourseCoverage, :count)
+        post unit_unit_coverages_path(unit), params: { unit_coverage: { content_id: level.id } }
+      }.not_to change(UnitCoverage, :count)
 
-      expect(response).to redirect_to(course_path(course))
+      expect(response).to redirect_to(unit_path(unit))
       follow_redirect!
       expect(flash[:alert]).to be_present
     end
 
-    it "removes coverage from a course of their own organization" do
-      coverage = create(:course_coverage, course: course, content: detail)
+    it "removes coverage from a unit of their own organization" do
+      coverage = create(:unit_coverage, unit: unit, content: detail)
 
       expect {
-        delete course_course_coverage_path(course, coverage)
-      }.to change(CourseCoverage, :count).by(-1)
+        delete unit_unit_coverage_path(unit, coverage)
+      }.to change(UnitCoverage, :count).by(-1)
 
-      expect(response).to redirect_to(course_path(course))
+      expect(response).to redirect_to(unit_path(unit))
     end
 
-    it "shows the coverage editor on the course page for the organizing church" do
+    it "shows the coverage editor on the unit page for the organizing church" do
       section = create(:content, :section, parent: level, title: "Level 1.1")
       create(:content, :detail, parent: section, title: "Detail 1.1.9")
-      create(:course_coverage, course: course, content: level)
+      create(:unit_coverage, unit: unit, content: level)
 
-      get course_path(course)
+      get unit_path(unit)
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
@@ -289,31 +319,31 @@ RSpec.describe "Courses" do
         expect(response.body).to include("checked")
         # Covered level keeps Remove; its section and detail get no button.
         # Only the 3 uncovered items of the other tree keep Add.
-        expect(response.body.scan('>Remove</button>').size).to eq(1)
-        expect(response.body.scan('>Add</button>').size).to eq(3)
+        expect(response.body.scan(">Remove</button>").size).to eq(1)
+        expect(response.body.scan(">Add</button>").size).to eq(3)
       end
     end
 
     it "hides Add buttons on details of a covered section" do
       section = create(:content, :section, parent: level, title: "Level 1.1")
       create(:content, :detail, parent: section, title: "Detail 1.1.9")
-      create(:course_coverage, course: course, content: section)
+      create(:unit_coverage, unit: unit, content: section)
 
-      get course_path(course)
+      get unit_path(unit)
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("covered via Level 1.1")
         # Level, section keep their buttons; the detail gets none.
-        expect(response.body.scan('>Remove</button>').size).to eq(1)
-        expect(response.body.scan('>Add</button>').size).to eq(4)
+        expect(response.body.scan(">Remove</button>").size).to eq(1)
+        expect(response.body.scan(">Add</button>").size).to eq(4)
       end
     end
 
     it "hides the coverage editor from organisers of another organization" do
       sign_in_organiser_for(other_organization)
 
-      get course_path(course)
+      get unit_path(unit)
 
       expect(response.body).not_to include("Manage coverage")
     end
@@ -322,8 +352,8 @@ RSpec.describe "Courses" do
       sign_in_organiser_for(other_organization)
 
       expect {
-        post course_course_coverages_path(course), params: { course_coverage: { content_id: level.id } }
-      }.not_to change(CourseCoverage, :count)
+        post unit_unit_coverages_path(unit), params: { unit_coverage: { content_id: level.id } }
+      }.not_to change(UnitCoverage, :count)
 
       expect(response).to redirect_to(root_path)
     end
@@ -332,8 +362,8 @@ RSpec.describe "Courses" do
       sign_in create(:user)
 
       expect {
-        post course_course_coverages_path(course), params: { course_coverage: { content_id: level.id } }
-      }.not_to change(CourseCoverage, :count)
+        post unit_unit_coverages_path(unit), params: { unit_coverage: { content_id: level.id } }
+      }.not_to change(UnitCoverage, :count)
 
       expect(response).to redirect_to(root_path)
     end
@@ -341,49 +371,49 @@ RSpec.describe "Courses" do
     it "hides the coverage editor from plain users" do
       sign_in create(:user)
 
-      get course_path(course)
+      get unit_path(unit)
 
       expect(response.body).not_to include("Manage coverage")
     end
   end
 
   describe "attendee visibility" do
-    let!(:course) { create(:course, organization: organization) }
+    let!(:unit) { create(:unit, program: program) }
     let!(:attendee) { create(:user, email: "attendee@example.com") }
 
-    before { create(:course_attendance, :attended, course: course, user: attendee) }
+    before { create(:unit_attendance, :attended, unit: unit, user: attendee) }
 
     it "hides attendees from plain users on the index page" do
       sign_in create(:user)
 
-      get courses_path
+      get units_path
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
         expect(response.body).not_to include("Attendees")
         expect(response.body).not_to include("attendee@example.com")
-        expect(response.body).to include(course.name)
+        expect(response.body).to include(unit.name)
       end
     end
 
     it "hides attendees from plain users on the detail page" do
       sign_in create(:user)
 
-      get course_path(course)
+      get unit_path(unit)
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
         expect(response.body).not_to include("Attendees")
         expect(response.body).not_to include("attendee@example.com")
         expect(response.body).to include("Covers")
-        expect(response.body).to include(course.starts_at.strftime("%d %b %Y"))
+        expect(response.body).to include(unit.starts_at.strftime("%d %b %Y"))
       end
     end
 
     it "shows attendees to organisers on the detail page" do
       sign_in_organiser_for(organization)
 
-      get course_path(course)
+      get unit_path(unit)
 
       aggregate_failures do
         expect(response.body).to include("Attendees")
@@ -394,32 +424,32 @@ RSpec.describe "Courses" do
     it "shows attendees to admins on the index page" do
       sign_in create(:user, :admin)
 
-      get courses_path
+      get units_path
 
       aggregate_failures do
         expect(response.body).to include("Attendees")
-        expect(response.body).to include(course.name)
+        expect(response.body).to include(unit.name)
       end
     end
   end
 
   describe "authorization" do
-    it "forbids plain users from creating courses" do
+    it "forbids plain users from creating units" do
       sign_in create(:user)
 
       expect {
-        post courses_path, params: { course: { name: "Nope" } }
-      }.not_to change(Course, :count)
+        post units_path, params: { unit: { name: "Nope" } }
+      }.not_to change(Unit, :count)
 
       expect(response).to redirect_to(root_path)
     end
 
     it "forbids plain users from changing attendance" do
       sign_in create(:user)
-      course = create(:course)
-      attendance = create(:course_attendance, course: course)
+      unit = create(:unit)
+      attendance = create(:unit_attendance, unit: unit)
 
-      patch course_course_attendance_path(course, attendance), params: { course_attendance: { status: "attended" } }
+      patch unit_unit_attendance_path(unit, attendance), params: { unit_attendance: { status: "attended" } }
 
       expect(attendance.reload.status).not_to eq("attended")
     end

@@ -10,9 +10,10 @@ Rails.application.routes.draw do
 
   resources :organizations
   resources :users
+  resources :programs
 
-  resources :courses do
-    resources :course_attendances, only: %i[create update destroy]
-    resources :course_coverages, only: %i[create destroy]
+  resources :units do
+    resources :unit_attendances, only: %i[create update destroy]
+    resources :unit_coverages, only: %i[create destroy]
   end
 end
