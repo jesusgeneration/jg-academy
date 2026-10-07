@@ -31,9 +31,10 @@ membership_for(alice, st_martins, :member)
 membership_for(alice, st_peters, :member)
 membership_for(bob, st_martins, :member)
 
-CourseAttendance.destroy_all
-CourseCoverage.destroy_all
-Course.destroy_all
+UnitAttendance.destroy_all
+UnitCoverage.destroy_all
+Unit.destroy_all
+Program.destroy_all
 Content.where(content_type: :detail).delete_all
 Content.where(content_type: :section).delete_all
 Content.where(content_type: :level).delete_all
@@ -54,42 +55,56 @@ first_level = Content.level.ordered.first
 first_section = first_level.children.ordered.first
 first_detail = Content.detail.ordered.first
 
-Course.where(name: [ "Youth Leadership Weekend 2026", "Games & Group Work Weekend", "Safeguarding Weekend" ]).destroy_all
+Program.where(name: [ "Youth Leadership Program 2026", "Games & Group Work Program" ]).destroy_all
 
-youth_weekend = Course.create!(
+youth_program = Program.create!(
+  name: "Youth Leadership Program 2026",
+  description: "Foundations for new youth leaders.",
+  organization: st_martins,
+  kind: :schooling
+)
+
+games_program = Program.create!(
+  name: "Games & Group Work Program",
+  description: "Practical games and group dynamics.",
+  organization: st_peters,
+  kind: :freizeit
+)
+
+youth_weekend = Unit.create!(
   name: "Youth Leadership Weekend 2026",
   description: "Foundations for new youth leaders.",
   starts_at: Time.zone.parse("2026-10-10 18:00"),
   ends_at: Time.zone.parse("2026-10-11 17:00"),
   location: "Parish Hall, St. Martin's",
-  organization: st_martins
+  program: youth_program
 )
-CourseCoverage.create!(course: youth_weekend, content: first_level)
+UnitCoverage.create!(unit: youth_weekend, content: first_level)
 
-games_weekend = Course.create!(
+games_weekend = Unit.create!(
   name: "Games & Group Work Weekend",
   description: "Practical games and group dynamics.",
   starts_at: Time.zone.parse("2026-11-07 18:00"),
   ends_at: Time.zone.parse("2026-11-08 17:00"),
   location: "Community Center",
-  organization: st_peters
+  program: games_program
 )
-CourseCoverage.create!(course: games_weekend, content: first_section)
+UnitCoverage.create!(unit: games_weekend, content: first_section)
 
-safeguarding_weekend = Course.create!(
+safeguarding_weekend = Unit.create!(
   name: "Safeguarding Weekend",
   description: "Child protection training with certificate.",
   starts_at: Time.zone.parse("2026-11-21 09:00"),
   ends_at: Time.zone.parse("2026-11-22 17:00"),
   location: "St. Peter's North",
-  organization: st_peters
+  program: games_program
 )
-CourseCoverage.create!(course: safeguarding_weekend, content: first_detail)
+UnitCoverage.create!(unit: safeguarding_weekend, content: first_detail)
 
-CourseAttendance.create!(course: youth_weekend, user: organiser, status: :attended)
-CourseAttendance.create!(course: youth_weekend, user: alice, status: :attended)
-CourseAttendance.create!(course: games_weekend, user: alice, status: :attended)
-CourseAttendance.create!(course: safeguarding_weekend, user: alice, status: :registered)
-CourseAttendance.create!(course: youth_weekend, user: bob, status: :attended)
+UnitAttendance.create!(unit: youth_weekend, user: organiser, status: :attended)
+UnitAttendance.create!(unit: youth_weekend, user: alice, status: :attended)
+UnitAttendance.create!(unit: games_weekend, user: alice, status: :attended)
+UnitAttendance.create!(unit: safeguarding_weekend, user: alice, status: :registered)
+UnitAttendance.create!(unit: youth_weekend, user: bob, status: :attended)
 
 puts "Seed complete. Sign in as admin@example.com / organiser@example.com / alice@example.com (password123)"

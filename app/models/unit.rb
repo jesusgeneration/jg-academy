@@ -1,13 +1,15 @@
-class Course < ApplicationRecord
-  belongs_to :organization
+class Unit < ApplicationRecord
+  belongs_to :program
 
-  has_many :course_attendances, dependent: :destroy
-  has_many :users, through: :course_attendances
+  has_many :unit_attendances, dependent: :destroy
+  has_many :users, through: :unit_attendances
 
-  has_many :course_coverages, dependent: :destroy
+  has_many :unit_coverages, dependent: :destroy
   has_many :covered_contents,
-           through: :course_coverages,
+           through: :unit_coverages,
            source: :content
+
+  delegate :organization, to: :program
 
   validates :name, presence: true
   validates :starts_at, :ends_at, presence: true
@@ -24,11 +26,11 @@ class Course < ApplicationRecord
     return false if content.nil? || id.nil? || content.id.nil?
 
     ids = [ content.id ]
-    return course_coverages.exists?(content_id: ids) if content.level?
+    return unit_coverages.exists?(content_id: ids) if content.level?
     return false unless content.parent_id
 
     ids << content.parent_id
-    return course_coverages.exists?(content_id: ids) if content.section?
+    return unit_coverages.exists?(content_id: ids) if content.section?
 
     grandparent_id =
       if content.parent&.parent_id
@@ -38,7 +40,7 @@ class Course < ApplicationRecord
       end
     ids << grandparent_id if grandparent_id
 
-    course_coverages.exists?(content_id: ids.compact)
+    unit_coverages.exists?(content_id: ids.compact)
   end
 
   private

@@ -31,7 +31,7 @@ class ImportJuleicaContents < ActiveRecord::Migration[8.1]
   end
 
   def down
-    CourseCoverage.delete_all
+    UnitCoverage.delete_all
     Content.where(content_type: :detail).delete_all
     Content.where(content_type: :section).delete_all
     Content.where(content_type: :level).delete_all

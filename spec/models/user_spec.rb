@@ -38,10 +38,10 @@ RSpec.describe User do
     it "destroys memberships and attendances with the user" do
       user = create(:user)
       create(:organization_membership, user: user)
-      create(:course_attendance, user: user)
+      create(:unit_attendance, user: user)
 
       expect { user.destroy }.to change(OrganizationMembership, :count).by(-1)
-        .and change(CourseAttendance, :count).by(-1)
+        .and change(UnitAttendance, :count).by(-1)
     end
   end
 end

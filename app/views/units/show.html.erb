@@ -1,5 +1,9 @@
 <nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
-  <ul><li><%= link_to "Courses", courses_path %></li><li><%= @course.name %></li></ul>
+  <ul>
+    <li><%= link_to "Programs", programs_path %></li>
+    <li><%= link_to @unit.program.name, program_path(@unit.program) %></li>
+    <li><%= @unit.name %></li>
+  </ul>
 </nav>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -7,28 +11,28 @@
     <div class="card-body">
       <div class="flex items-start justify-between gap-2">
         <div>
-          <h1 class="card-title"><%= @course.name %></h1>
-          <p class="text-sm opacity-60"><%= @course.organization.name %><% if @course.location.present? %> · <%= @course.location %><% end %></p>
+          <h1 class="card-title"><%= @unit.name %></h1>
+          <p class="text-sm opacity-60"><%= @unit.program.organization.name %> · <%= link_to @unit.program.name, program_path(@unit.program), class: "link link-hover" %><% if @unit.location.present? %> · <%= @unit.location %><% end %></p>
         </div>
-        <span class="badge <%= @course.past? ? "badge-ghost" : "badge-info" %>"><%= @course.past? ? "Past" : "Upcoming" %></span>
+        <span class="badge <%= @unit.past? ? "badge-ghost" : "badge-info" %>"><%= @unit.past? ? "Past" : "Upcoming" %></span>
       </div>
 
-      <% if @course.description.present? %>
-        <p class="mt-2 opacity-80"><%= simple_format(@course.description) %></p>
+      <% if @unit.description.present? %>
+        <p class="mt-2 opacity-80"><%= simple_format(@unit.description) %></p>
       <% end %>
 
       <dl class="grid grid-cols-2 gap-2 text-sm mt-4 max-w-md">
-        <dt class="opacity-60">Starts</dt><dd><%= format_datetime(@course.starts_at) %></dd>
-        <dt class="opacity-60">Ends</dt><dd><%= format_datetime(@course.ends_at) %></dd>
+        <dt class="opacity-60">Starts</dt><dd><%= format_datetime(@unit.starts_at) %></dd>
+        <dt class="opacity-60">Ends</dt><dd><%= format_datetime(@unit.ends_at) %></dd>
       </dl>
 
-      <% if policy(@course).update? || policy(@course).destroy? %>
+      <% if policy(@unit).update? || policy(@unit).destroy? %>
         <div class="card-actions justify-end mt-4">
-          <% if policy(@course).update? %>
-            <%= link_to "Edit", edit_course_path(@course), class: "btn btn-outline btn-sm" %>
+          <% if policy(@unit).update? %>
+            <%= link_to "Edit", edit_unit_path(@unit), class: "btn btn-outline btn-sm" %>
           <% end %>
-          <% if policy(@course).destroy? %>
-            <%= button_to "Delete", course_path(@course), method: :delete, form: { class: "inline" }, data: { turbo_confirm: "Delete this course?" }, class: "btn btn-error btn-outline btn-sm" %>
+          <% if policy(@unit).destroy? %>
+            <%= button_to "Delete", unit_path(@unit), method: :delete, form: { class: "inline" }, data: { turbo_confirm: "Delete this unit?" }, class: "btn btn-error btn-outline btn-sm" %>
           <% end %>
         </div>
       <% end %>
@@ -39,7 +43,7 @@
     <div class="card-body">
       <h2 class="card-title">Covers</h2>
       <p class="text-xs opacity-60">Covering a level or section automatically covers everything below it.</p>
-      <% covered = @course.covered_contents.order(:position) %>
+      <% covered = @unit.covered_contents.order(:position) %>
       <% if covered.any? %>
         <ul class="space-y-1 text-sm mt-2">
           <% covered.each do |content| %>
@@ -50,13 +54,13 @@
           <% end %>
         </ul>
       <% else %>
-        <p class="opacity-60">This course does not cover any content yet.</p>
+        <p class="opacity-60">This unit does not cover any content yet.</p>
       <% end %>
     </div>
   </div>
 </div>
 
-<% if policy(@course).update? %>
+<% if policy(@unit).update? %>
   <div class="card bg-base-100 shadow mt-6">
     <div class="card-body">
       <h2 class="card-title">Manage coverage</h2>
@@ -107,7 +111,7 @@
                                           <span class="text-xs opacity-50 ml-1">covered via <%= via %></span>
                                         <% end %>
                                       </span>
-                                      <%= coverage_row_button(@course, detail, @coverages_by_content_id, ancestor_covered: via.present?) %>
+                                      <%= coverage_row_button(@unit, detail, @coverages_by_content_id, ancestor_covered: via.present?) %>
                                     </li>
                                   <% end %>
                                 </ul>
@@ -115,7 +119,7 @@
                             </div>
                           </div>
                           <div class="pt-2">
-                            <%= coverage_row_button(@course, section, @coverages_by_content_id, ancestor_covered: section_via_ancestor) %>
+                            <%= coverage_row_button(@unit, section, @coverages_by_content_id, ancestor_covered: section_via_ancestor) %>
                           </div>
                         </div>
                       <% end %>
@@ -124,7 +128,7 @@
                 </div>
               </div>
               <div class="pt-2">
-                <%= coverage_toggle_button(@course, level, @coverages_by_content_id) %>
+                <%= coverage_toggle_button(@unit, level, @coverages_by_content_id) %>
               </div>
             </div>
           <% end %>
@@ -136,14 +140,14 @@
   </div>
 <% end %>
 
-<% if policy(@course).view_attendees? %>
+<% if policy(@unit).view_attendees? %>
   <div class="card bg-base-100 shadow mt-6">
     <div class="card-body">
       <h2 class="card-title">Attendees</h2>
 
       <% if @attendee_management %>
         <% if @registrable_users.any? %>
-          <%= form_with model: [@course, CourseAttendance.new], url: course_course_attendances_path(@course), method: :post, class: "flex flex-wrap items-end gap-2 mb-4" do |f| %>
+          <%= form_with model: [@unit, UnitAttendance.new], url: unit_unit_attendances_path(@unit), method: :post, class: "flex flex-wrap items-end gap-2 mb-4" do |f| %>
             <fieldset class="fieldset w-full sm:w-72">
               <legend class="fieldset-legend">Register attendee</legend>
               <%= f.select :user_id, options_from_collection_for_select(@registrable_users, :id, :email), { prompt: "Select user" }, class: "select w-full", required: true %>
@@ -151,7 +155,7 @@
             <%= f.submit "Register", class: "btn btn-primary" %>
           <% end %>
         <% else %>
-          <p class="text-sm opacity-60 mb-4">All users are already registered for this course.</p>
+          <p class="text-sm opacity-60 mb-4">All users are already registered for this unit.</p>
         <% end %>
       <% end %>
 
@@ -170,16 +174,16 @@
                 <td><span class="badge <%= attendance_status_badge_class(attendance.status) %>"><%= attendance.status.humanize %></span></td>
                 <% if policy(attendance).update? %>
                   <td class="text-right space-x-1 whitespace-nowrap">
-                    <% (CourseAttendance.statuses.keys - [attendance.status]).each do |status| %>
+                    <% (UnitAttendance.statuses.keys - [attendance.status]).each do |status| %>
                       <%= button_to status.humanize,
-                            course_course_attendance_path(@course, attendance),
+                            unit_unit_attendance_path(@unit, attendance),
                             method: :patch,
-                            params: { course_attendance: { status: status } },
+                            params: { unit_attendance: { status: status } },
                             form: { class: "inline" },
                             class: "btn btn-xs #{'btn-success' if status == 'attended'} #{'btn-outline' unless status == 'attended'}" %>
                     <% end %>
                     <%= button_to "Remove",
-                          course_course_attendance_path(@course, attendance),
+                          unit_unit_attendance_path(@unit, attendance),
                           method: :delete,
                           form: { class: "inline" },
                           data: { turbo_confirm: "Remove attendance record?" },

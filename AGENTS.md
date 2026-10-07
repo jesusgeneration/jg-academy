@@ -5,8 +5,8 @@ Guidance for AI coding agents working in this repository.
 ## What this is
 
 **Juleica Tracker** — a Rails portal for cooperating churches that offer
-one-off training events. It records course attendance and derives each
-person's progress toward Juleica requirements.
+training programs (schoolings, freizeiten) made of one-off units. It records
+unit attendance and derives each person's progress toward Juleica requirements.
 
 Read before making architectural decisions:
 
@@ -32,37 +32,44 @@ RSpec + FactoryBot. No Node build step.
 | Path | Purpose |
 | --- | --- |
 | `app/models/` | Domain models (see diagram below) |
-| `app/services/juleica_progress_calculator.rb` | All progress logic |
 | `app/policies/` | Pundit authorization per resource |
 | `app/controllers/dashboards_controller.rb` | Staff dashboard; redirects participants to their progress page |
 | `app/views/layouts/application.html.erb` | Portal shell (drawer sidebar + navbar) |
 | `app/views/layouts/devise.html.erb` | Centered card layout for sign-in/up pages |
-| `db/migrate/`, `db/schema.rb` | Schema with FKs, composite unique indexes, check constraints |
-| `spec/` | `models/`, `services/`, `policies/`, `requests/`, `factories.rb` |
+| `db/migrate/`, `db/schema.rb` | Schema with FKs and composite unique indexes |
+| `spec/` | `models/`, `policies/`, `requests/`, `data/`, `factories.rb` |
 
 Domain relationships:
 
 ```text
-User --OrganizationMembership--> Organization <--organization_id-- Course
-User --CourseAttendance--> Course --CourseRequirement--> JuleicaRequirement
+User --OrganizationMembership--> Organization --< Program --< Unit
+User --UnitAttendance--> Unit --UnitCoverage--> Content
 ```
 
 ## Non-Negotiable Domain Rules
 
-1. **A Course is a one-off real-world event.** Never introduce
-   `CourseOccurrence`, course templates, or recurring instances.
-2. **Progress is derived, never stored.** Do not add cached
-   `earned_hours`/`completed` columns or callbacks that write them. Everything
-   flows through `JuleicaProgressCalculator` (`User#juleica_progress`).
-3. **Only `attended` attendance earns credit.** Registered/cancelled/no_show
-   never count.
-4. **Requirements are data, not code.** Never hard-code requirement names,
-   hour thresholds, or module lists.
+1. **A Unit is a one-off real-world event.** Never introduce
+   `UnitOccurrence`, unit templates, or recurring instances. Units always
+   belong to a `Program` (`schooling` / `freizeit`); programs own the
+   `organization_id`.
+2. **Coverage is derived, never stored.** Do not add cached
+   `covered`/`completed` columns or callbacks that write them. Whether a
+   unit covers a content item is computed by `Unit#covers?` (a direct
+   `UnitCoverage` link, or a link on an ancestor in the `Content`
+   hierarchy). Attendance truth lives on `UnitAttendance#status`.
+3. **Only `attended` attendance counts as completed participation.**
+   Registered/cancelled/no_show never count.
+4. **Content is data, not code.** Never hard-code content titles or the
+   level → section → detail hierarchy in Ruby. The hierarchy lives in the
+   database (seeded from `db/seeds_data/contents.json`).
 5. **Database integrity mirrors validations:** unique indexes on
-   `[user_id, course_id]`, `[course_id, juleica_requirement_id]`,
-   `[user_id, organization_id]`; check constraints enforce positive hours;
-   use foreign keys. Add both validation *and* constraint for new invariants.
-6. Hours are `decimal(6,2)` — half-hours are valid, negative/zero are not.
+   `[user_id, unit_id]`, `[unit_id, content_id]`,
+   `[user_id, organization_id]`; use foreign keys. Add both validation *and*
+   constraint for new invariants.
+6. `Content` hierarchy rules: `level` has no parent, `section` belongs to
+   exactly one `level`, `detail` belongs to exactly one `section` and has no
+   children. Enforced by `Content#hierarchy_rules` validation (see
+   `app/models/content.rb:46`); do not bypass it.
 7. Future concepts (`QualificationEvidence`, `RequirementSet`, certificates…)
    stay unimplemented until a requirement explicitly asks.
 
@@ -70,20 +77,21 @@ User --CourseAttendance--> Course --CourseRequirement--> JuleicaRequirement
 
 Two system roles on `User.role`: `user` (default) and `admin`. Organizing
 authority is per-organization via `OrganizationMembership.role`
-(`member` < `organiser`). Participation in courses is represented only by
-`CourseAttendance` — any user can attend, including organisers.
+(`member` < `organiser`). Participation in units is represented only by
+`UnitAttendance` — any user can attend, including organisers.
 
 - Every portal controller inherits `BaseController` (enforces sign-in).
 - Every action calls `authorize`; collections call `policy_scope`.
-- Matrix: plain users browse courses + own progress; organisers manage
-  courses, attendance and rosters **of their own organizations only**
-  (`user.organises?(organization)`); admins manage organizations, juleica
-  requirements, users and deletions. The staff dashboard is visible to
+- Matrix: plain users browse programs/units + own progress; organisers manage
+  programs, units, attendance and rosters **of their own organizations only**
+  (`user.organises?(organization)`); admins manage organizations, programs,
+  users and deletions. The staff dashboard is visible to
   admins and organisers; everyone else lands on their progress page.
-- Course forms must limit organization options to permitted ones; the
+- Program forms must limit organization options to permitted ones; the
   controller clamps `organization_id` server-side for non-admins (see
-  `CoursesController#ensure_permitted_organization`). Keep that clamp when
-  refactoring course create/update.
+  `ProgramsController#ensure_permitted_organization`). Unit forms must limit
+  program options likewise (`UnitsController#ensure_permitted_program`).
+  Keep those clamps when refactoring program/unit create/update.
 - Unauthorized access redirects with a flash alert (see
   `ApplicationController#user_not_authorized`).
 
@@ -98,12 +106,12 @@ authority is per-organization via `OrganizationMembership.role`
 - Policy specs must use Pundit ≥ 2.5 style:
   `permissions :show? do ... expect(policy_class).to permit(user, record)` —
   the legacy `permit_action(s)` matchers no longer exist.
-- The central domain scenario (guide §13: two courses × 4h → 4/8 → attended →
-  8/8) has specs in `spec/services/juleica_progress_calculator_spec.rb` and an
-  end-to-end version in `spec/requests/user_progress_spec.rb`. Keep them
-  passing through any refactor.
-- Calculator results memoize per instance; always instantiate a fresh
-  `JuleicaProgressCalculator` per calculation in specs.
+- The central domain scenario (guide §13: covering a level implies its
+  sections and details; covering a section implies its details but not
+  siblings or ancestors) has specs in `spec/models/unit_covers_spec.rb`,
+  and the attendance list has an end-to-end version in
+  `spec/requests/user_progress_spec.rb`. Keep them passing through any
+  refactor.
 
 ## UI Conventions
 
@@ -115,9 +123,9 @@ authority is per-organization via `OrganizationMembership.role`
 - Sidebar entries are role-filtered via policies (see
   `ApplicationHelper#portal_nav_items`).
 - Flash messages render through `shared/_flash` as DaisyUI alerts.
-- Status colors: attendance badges via
-  `attendance_status_badge_class`, progress via success (complete) /
-  primary (partial) bars.
+- Status colors: attendance badges via `attendance_status_badge_class`,
+  coverage badges via `badge-ghost`/`badge-primary`/`badge-secondary` per
+  content type; dashboard stats via `stat`.
 
 ## Gotchas
 
@@ -125,8 +133,8 @@ authority is per-organization via `OrganizationMembership.role`
   This frees `/users/*` for the admin `UsersController` — mounting Devise back
   on default paths makes `POST /users` hit registrations instead of
   `UsersController#create`.
-- **Nested attributes:** `course_requirements_attributes` requires
-  `params.require(:course).permit(...)`; `params.expect` silently drops the
+- **Nested attributes:** e.g. `organization_memberships_attributes` requires
+  `params.require(:user).permit(...)`; `params.expect` silently drops the
   dynamic `"0"` wrapper keys. Use require+permit for nested forms.
 - Array params need array permits: `organization_ids: []`, not
   `:organization_ids`.
@@ -138,7 +146,7 @@ authority is per-organization via `OrganizationMembership.role`
 
 1. `bundle exec rspec` — all green
 2. `bundle exec rubocop` — no offenses
-3. New behavior covered by specs (model/service/policy/request as fitting)
+3. New behavior covered by specs (model/policy/request/data as fitting)
 4. Every controller action has at least one spec asserting its response
    status (render or redirect) — including GET pages that only render forms
 5. Migrations reversible; schema.rb committed alongside

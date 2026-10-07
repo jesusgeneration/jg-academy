@@ -1,0 +1,32 @@
+<% content_for :page_title, "Programs" %>
+
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-2xl font-semibold">Programs</h1>
+  <% if policy(Program).create? %>
+    <%= link_to "New program", new_program_path, class: "btn btn-primary btn-sm" %>
+  <% end %>
+</div>
+
+<% if @programs.any? %>
+  <div class="card bg-base-100 shadow">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Program</th><th>Kind</th><th>Organization</th><th>Units</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @programs.each do |program| %>
+          <tr>
+            <td><%= link_to program.name, program_path(program), class: "link link-hover font-medium" %></td>
+            <td><span class="badge badge-ghost capitalize"><%= program.kind %></span></td>
+            <td><%= program.organization.name %></td>
+            <td><span class="badge badge-ghost"><%= program.units.size %></span></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="alert alert-info"><span>No programs yet.</span></div>
+<% end %>

@@ -1,0 +1,60 @@
+<nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
+  <ul><li><%= link_to "Programs", programs_path %></li><li><%= @program.name %></li></ul>
+</nav>
+
+<div class="card bg-base-100 shadow">
+  <div class="card-body">
+    <div class="flex items-start justify-between gap-2">
+      <div>
+        <h1 class="card-title"><%= @program.name %></h1>
+        <p class="text-sm opacity-60">
+          <%= @program.organization.name %> ·
+          <span class="badge badge-ghost badge-sm capitalize"><%= @program.kind %></span>
+        </p>
+      </div>
+      <% if policy(@program).update? || policy(@program).destroy? %>
+        <div class="flex gap-2">
+          <% if policy(@program).update? %>
+            <%= link_to "Edit", edit_program_path(@program), class: "btn btn-outline btn-sm" %>
+          <% end %>
+          <% if policy(@program).destroy? %>
+            <%= button_to "Delete", program_path(@program), method: :delete, form: { class: "inline" }, data: { turbo_confirm: "Delete this program?" }, class: "btn btn-error btn-outline btn-sm" %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @program.description.present? %>
+      <p class="mt-2 opacity-80"><%= simple_format(@program.description) %></p>
+    <% end %>
+  </div>
+</div>
+
+<div class="card bg-base-100 shadow mt-6">
+  <div class="card-body">
+    <h2 class="card-title justify-between">
+      Units
+      <% if policy(Unit).create? %>
+        <%= link_to "New unit", new_unit_path, class: "btn btn-ghost btn-xs" %>
+      <% end %>
+    </h2>
+    <% if @units.any? %>
+      <table class="table table-sm">
+        <thead>
+          <tr><th>Unit</th><th>Date</th><th>Location</th></tr>
+        </thead>
+        <tbody>
+          <% @units.each do |unit| %>
+            <tr>
+              <td><%= link_to unit.name, unit_path(unit), class: "link link-hover" %></td>
+              <td class="whitespace-nowrap"><%= format_datetime(unit.starts_at) %></td>
+              <td><%= unit.location %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="opacity-60">No units in this program yet.</p>
+    <% end %>
+  </div>
+</div>

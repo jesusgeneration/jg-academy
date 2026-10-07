@@ -1,12 +1,12 @@
 require "rails_helper"
 require "pundit/rspec"
 
-RSpec.describe CourseAttendancePolicy do
+RSpec.describe UnitAttendancePolicy do
   subject(:policy_class) { described_class }
 
   let(:organization) { create(:organization, name: "Church A") }
   let(:other_organization) { create(:organization, name: "Church B") }
-  let!(:attendance) { create(:course_attendance, course: create(:course, organization: organization)) }
+  let!(:attendance) { create(:unit_attendance, unit: create(:unit, program: create(:program, organization: organization))) }
   let(:user) { build_stubbed(:user) }
 
   permissions :create?, :update?, :destroy? do
@@ -14,7 +14,7 @@ RSpec.describe CourseAttendancePolicy do
       expect(policy_class).to permit(build_stubbed(:user, :admin), attendance)
     end
 
-    it "grant organisers of the course's organization" do
+    it "grant organisers of the unit's organization" do
       organiser = create(:user)
       create(:organization_membership, :organiser, user: organiser, organization: organization)
 

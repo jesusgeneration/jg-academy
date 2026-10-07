@@ -24,14 +24,14 @@ RSpec.describe "Users" do
       aggregate_failures do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("alice@example.com")
-        expect(response.body).to include("Course Attendance")
+        expect(response.body).to include("Unit Attendance")
       end
     end
 
     it "lists the user's attendance" do
       sign_in alice
-      course = create(:course, name: "Youth Leadership Weekend")
-      create(:course_attendance, :attended, course: course, user: alice)
+      unit = create(:unit, name: "Youth Leadership Weekend")
+      create(:unit_attendance, :attended, unit: unit, user: alice)
 
       get user_path(alice)
 

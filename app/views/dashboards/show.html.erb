@@ -7,9 +7,9 @@
     <div class="stat-desc">registered accounts</div>
   </div>
   <div class="stat">
-    <div class="stat-title">Upcoming Courses</div>
-    <div class="stat-value"><%= @upcoming_course_count %></div>
-    <div class="stat-desc"><%= link_to "view courses", courses_path, class: "link link-hover" %></div>
+    <div class="stat-title">Upcoming Units</div>
+    <div class="stat-value"><%= @upcoming_unit_count %></div>
+    <div class="stat-desc"><%= link_to "view units", units_path, class: "link link-hover" %></div>
   </div>
   <div class="stat">
     <div class="stat-title">Content Items</div>
@@ -21,26 +21,26 @@
 <div class="card bg-base-100 shadow">
   <div class="card-body">
     <h2 class="card-title justify-between">
-      Recent Courses
-      <%= link_to "All courses", courses_path, class: "btn btn-ghost btn-xs" %>
+      Recent Units
+      <%= link_to "All units", units_path, class: "btn btn-ghost btn-xs" %>
     </h2>
-    <% if @recent_courses.any? %>
+    <% if @recent_units.any? %>
       <table class="table table-sm">
         <thead>
-          <tr><th>Course</th><th>Date</th><th>Attendees</th></tr>
+          <tr><th>Unit</th><th>Date</th><th>Attendees</th></tr>
         </thead>
         <tbody>
-          <% @recent_courses.each do |course| %>
+          <% @recent_units.each do |unit| %>
             <tr>
-              <td><%= link_to course.name, course_path(course), class: "link link-hover" %></td>
-              <td class="whitespace-nowrap"><%= format_datetime(course.starts_at) %></td>
-              <td><%= course.course_attendances.size %></td>
+              <td><%= link_to unit.name, unit_path(unit), class: "link link-hover" %></td>
+              <td class="whitespace-nowrap"><%= format_datetime(unit.starts_at) %></td>
+              <td><%= unit.unit_attendances.size %></td>
             </tr>
           <% end %>
         </tbody>
       </table>
     <% else %>
-      <p class="opacity-60 py-4">No courses yet.</p>
+      <p class="opacity-60 py-4">No units yet.</p>
     <% end %>
   </div>
 </div>

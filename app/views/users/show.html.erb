@@ -29,24 +29,24 @@
 
 <div class="card bg-base-100 shadow">
   <div class="card-body">
-    <h2 class="card-title">Course Attendance</h2>
-    <% attendances = @user.course_attendances.includes(:course).order("courses.starts_at") %>
+    <h2 class="card-title">Unit Attendance</h2>
+    <% attendances = @user.unit_attendances.includes(:unit).order("units.starts_at") %>
     <% if attendances.any? %>
       <table class="table table-sm">
         <thead>
-          <tr><th>Course</th><th>Status</th></tr>
+          <tr><th>Unit</th><th>Status</th></tr>
         </thead>
         <tbody>
           <% attendances.each do |attendance| %>
             <tr>
-              <td><%= link_to attendance.course.name, course_path(attendance.course), class: "link link-hover" %></td>
+              <td><%= link_to attendance.unit.name, unit_path(attendance.unit), class: "link link-hover" %></td>
               <td><span class="badge <%= attendance_status_badge_class(attendance.status) %>"><%= attendance.status.humanize %></span></td>
             </tr>
           <% end %>
         </tbody>
       </table>
     <% else %>
-      <p class="opacity-60">No course attendance recorded yet.</p>
+      <p class="opacity-60">No unit attendance recorded yet.</p>
     <% end %>
   </div>
 </div>

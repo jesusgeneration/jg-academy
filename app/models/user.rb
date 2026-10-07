@@ -12,8 +12,8 @@ class User < ApplicationRecord
   accepts_nested_attributes_for :organization_memberships, allow_destroy: true,
     reject_if: ->(attrs) { attrs["role"].blank? && attrs["id"].blank? }
 
-  has_many :course_attendances, dependent: :destroy
-  has_many :courses, through: :course_attendances
+  has_many :unit_attendances, dependent: :destroy
+  has_many :units, through: :unit_attendances
 
   validates :role, presence: true
 

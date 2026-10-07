@@ -9,7 +9,7 @@ class OrganizationsController < BaseController
   def show
     authorize @organization
     @memberships = @organization.organization_memberships.includes(:user).order("users.email")
-    @courses = @organization.courses.order(starts_at: :desc)
+    @programs = @organization.programs.order(:name)
   end
 
   def new

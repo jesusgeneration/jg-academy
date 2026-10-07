@@ -1,0 +1,35 @@
+<%= form_with model: program, class: "space-y-4" do |f| %>
+  <% if program.errors.any? %>
+    <div role="alert" class="alert alert-error">
+      <span><%= pluralize(program.errors.count, "error") %> prevented saving:</span>
+    </div>
+  <% end %>
+
+  <fieldset class="fieldset">
+    <legend class="fieldset-legend">Name</legend>
+    <%= f.text_field :name, class: "input w-full", required: true, autofocus: true %>
+  </fieldset>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend">Organization</legend>
+      <%= f.collection_select :organization_id, @permitted_organizations, :id, :name,
+            { prompt: "Select organization" }, { class: "select w-full", required: true } %>
+    </fieldset>
+
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend">Kind</legend>
+      <%= f.select :kind, Program.kinds.keys.map { |k| [k.humanize, k] }, {}, { class: "select w-full", required: true } %>
+    </fieldset>
+  </div>
+
+  <fieldset class="fieldset">
+    <legend class="fieldset-legend">Description</legend>
+    <%= f.text_area :description, rows: 3, class: "textarea w-full" %>
+  </fieldset>
+
+  <div class="flex gap-2">
+    <%= f.submit program.new_record? ? "Create program" : "Update program", class: "btn btn-primary" %>
+    <%= link_to "Cancel", programs_path, class: "btn btn-ghost" %>
+  </div>
+<% end %>

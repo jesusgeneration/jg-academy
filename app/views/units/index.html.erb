@@ -1,0 +1,51 @@
+<% content_for :page_title, "Units" %>
+
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-2xl font-semibold">Units</h1>
+  <% if policy(Unit).create? %>
+    <%= link_to "New unit", new_unit_path, class: "btn btn-primary btn-sm" %>
+  <% end %>
+</div>
+
+<div role="tablist" class="tabs tabs-box mb-4">
+  <% [["upcoming", "Upcoming"], ["past", "Past"], ["all", "All"]].each do |tab, label| %>
+    <%= link_to label, units_path(tab: tab), role: "tab",
+          class: "tab #{'tab-active' if @tab == tab}" %>
+  <% end %>
+</div>
+
+<% if @units.any? %>
+  <% show_attendees = @show_attendance_summary %>
+  <div class="card bg-base-100 shadow">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Unit</th><th>Program</th><th>Organization</th><th>Date</th><th>Location</th>
+          <% if show_attendees %><th>Attendees</th><% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% @units.each do |unit| %>
+          <tr>
+            <td><%= link_to unit.name, unit_path(unit), class: "link link-hover font-medium" %></td>
+            <td><%= link_to unit.program.name, program_path(unit.program), class: "link link-hover" %></td>
+            <td><%= unit.program.organization.name %></td>
+            <td class="whitespace-nowrap"><%= format_datetime(unit.starts_at) %></td>
+            <td><%= unit.location %></td>
+            <% if show_attendees %>
+              <td>
+                <span class="badge badge-ghost"><%= unit.unit_attendances.size %></span>
+                <% attended = unit.unit_attendances.count(&:attended?) %>
+                <% if attended.positive? %>
+                  <span class="badge badge-success badge-outline badge-sm ml-1"><%= attended %> attended</span>
+                <% end %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="alert alert-info"><span>No units in this view yet.</span></div>
+<% end %>
