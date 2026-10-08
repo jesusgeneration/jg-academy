@@ -48,6 +48,14 @@ module ApplicationHelper
     }.fetch(role.to_s, "badge-ghost")
   end
 
+  def date_badge_class(datetime)
+    datetime.present? && datetime >= Time.current ? "badge-success" : "badge-ghost"
+  end
+
+  def next_upcoming_unit(program)
+    program.units.select { |unit| unit.ends_at >= Time.current }.min_by(&:starts_at)
+  end
+
   def format_datetime(datetime)
     l(datetime, format: :short)
   end

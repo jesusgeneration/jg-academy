@@ -2,9 +2,12 @@
 de:
   dashboards:
     show:
+      all_programs: Alle Veranstaltungen
       all_units: Alle Einheiten
       empty: Noch keine Einheiten.
+      empty_programs: Noch keine bevorstehenden Veranstaltungen.
       page_title: Dashboard
+      recent_programs: Aktuelle Veranstaltungen
       recent_units: Aktuelle Einheiten
       stats:
         content_items: Inhalte
@@ -16,7 +19,9 @@ de:
       table:
         attendees: Teilnehmende
         date: Datum
+        program: Veranstaltung
         unit: Einheit
+        units: Einheiten
   devise_views:
     confirmations:
       new:
