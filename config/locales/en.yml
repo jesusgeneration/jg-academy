@@ -2,9 +2,12 @@
 en:
   dashboards:
     show:
+      all_programs: All programs
       all_units: All units
       empty: No units yet.
+      empty_programs: No upcoming programs yet.
       page_title: Dashboard
+      recent_programs: Recent programs
       recent_units: Recent Units
       stats:
         content_items: Content Items
@@ -16,7 +19,9 @@ en:
       table:
         attendees: Attendees
         date: Date
+        program: Program
         unit: Unit
+        units: Units
   devise_views:
     confirmations:
       new:

@@ -18,6 +18,40 @@
   </div>
 </div>
 
+<div class="card bg-base-100 shadow mb-6">
+  <div class="card-body">
+    <h2 class="card-title justify-between">
+      <%= t(".recent_programs") %>
+      <%= link_to t(".all_programs"), programs_path, class: "btn btn-ghost btn-xs" %>
+    </h2>
+    <% if @recent_programs.any? %>
+      <table class="table table-sm">
+        <thead>
+          <tr><th><%= t(".table.program") %></th><th><%= t(".table.date") %></th><th><%= t(".table.units") %></th></tr>
+        </thead>
+        <tbody>
+          <% @recent_programs.each do |program| %>
+            <% next_unit = next_upcoming_unit(program) %>
+            <tr>
+              <td><%= link_to program.name, program_path(program), class: "link link-hover" %></td>
+              <td class="whitespace-nowrap">
+                <% if next_unit %>
+                  <span class="badge <%= date_badge_class(next_unit.starts_at) %>"><%= format_datetime(next_unit.starts_at) %></span>
+                <% else %>
+                  –
+                <% end %>
+              </td>
+              <td><span class="badge badge-ghost"><%= program.units.size %></span></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="opacity-60 py-4"><%= t(".empty_programs") %></p>
+    <% end %>
+  </div>
+</div>
+
 <div class="card bg-base-100 shadow">
   <div class="card-body">
     <h2 class="card-title justify-between">
@@ -33,7 +67,7 @@
           <% @recent_units.each do |unit| %>
             <tr>
               <td><%= link_to unit.name, unit_path(unit), class: "link link-hover" %></td>
-              <td class="whitespace-nowrap"><%= format_datetime(unit.starts_at) %></td>
+              <td class="whitespace-nowrap"><span class="badge <%= date_badge_class(unit.starts_at) %>"><%= format_datetime(unit.starts_at) %></span></td>
               <td><%= unit.unit_attendances.size %></td>
             </tr>
           <% end %>
