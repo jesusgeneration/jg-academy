@@ -286,6 +286,10 @@ en:
     update:
       updated: Unit was successfully updated.
   users:
+    confirm:
+      already_confirmed: "%{email} was already confirmed."
+      confirmed: "%{email} was confirmed."
+      failed: "%{email} could not be confirmed."
     create:
       created: User was successfully created.
     destroy:
@@ -312,6 +316,7 @@ en:
       role: Role
       update: Update user
     index:
+      confirm: Confirm
       confirm_delete: Delete %{email}?
       confirmed_pending: pending
       confirmed_yes: 'yes'

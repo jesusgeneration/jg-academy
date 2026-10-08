@@ -229,5 +229,52 @@ RSpec.describe "Admin resources" do
         expect(user.organizations).to be_empty
       end
     end
+
+    it "confirms a pending user" do
+      user = create(:user, :unconfirmed)
+
+      patch confirm_user_path(user)
+
+      aggregate_failures do
+        expect(response).to redirect_to(users_path)
+        expect(user.reload).to be_confirmed
+      end
+    end
+
+    it "reports already confirmed users" do
+      user = create(:user)
+
+      patch confirm_user_path(user)
+
+      aggregate_failures do
+        expect(response).to redirect_to(users_path)
+        follow_redirect!
+        expect(flash[:alert]).to include(I18n.t("users.confirm.already_confirmed", email: user.email))
+      end
+    end
+
+    it "shows a confirm button for pending users on the index" do
+      pending_user = create(:user, :unconfirmed)
+
+      get users_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("users.index.confirm"))
+        expect(response.body).to include(confirm_user_path(pending_user))
+      end
+    end
+
+    it "blocks non-admins from confirming users" do
+      sign_in create(:user)
+      pending_user = create(:user, :unconfirmed)
+
+      patch confirm_user_path(pending_user)
+
+      aggregate_failures do
+        expect(response).to redirect_to(root_path)
+        expect(pending_user.reload).not_to be_confirmed
+      end
+    end
   end
 end

@@ -24,6 +24,9 @@
               <% end %>
             </td>
             <td class="text-right space-x-2 whitespace-nowrap">
+              <% unless user.confirmed? %>
+                <%= button_to t(".confirm"), confirm_user_path(user), method: :patch, form: { class: "inline" }, class: "btn btn-success btn-outline btn-xs" %>
+              <% end %>
               <%= link_to t(".edit"), edit_user_path(user), class: "btn btn-ghost btn-xs" %>
               <% unless user == current_user %>
                 <%= button_to t(".delete"), user_path(user), method: :delete, form: { class: "inline" }, data: { turbo_confirm: t(".confirm_delete", email: user.email) }, class: "btn btn-error btn-outline btn-xs" %>

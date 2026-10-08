@@ -1,5 +1,5 @@
 class UsersController < BaseController
-  before_action :set_user, only: %i[show edit update destroy]
+  before_action :set_user, only: %i[show edit update destroy confirm]
   before_action :set_organizations, only: %i[new create edit update]
 
   def index
@@ -51,6 +51,17 @@ class UsersController < BaseController
       redirect_to users_path, notice: t(".destroyed")
     else
       redirect_to users_path, alert: @user.errors.full_messages.to_sentence
+    end
+  end
+
+  def confirm
+    authorize @user
+    if @user.confirmed?
+      redirect_to users_path, alert: t(".already_confirmed", email: @user.email)
+    elsif @user.confirm
+      redirect_to users_path, notice: t(".confirmed", email: @user.email)
+    else
+      redirect_to users_path, alert: t(".failed", email: @user.email)
     end
   end
 
