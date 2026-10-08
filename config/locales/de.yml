@@ -80,8 +80,8 @@ de:
       nav:
         dashboard: Dashboard
         my_account: Mein Konto
-        organizations: Organisationen
-        programs: Programme
+        organizations: Veranstalter (Organisation)
+        programs: Veranstaltungen
         units: Einheiten
         users: Benutzer
       open_sidebar: Seitenleiste öffnen
@@ -91,100 +91,100 @@ de:
         sign_out: Abmelden
   organizations:
     create:
-      created: Organisation wurde erfolgreich erstellt.
+      created: Veranstalter wurde erfolgreich erstellt.
     destroy:
-      destroyed: Organisation wurde erfolgreich gelöscht.
+      destroyed: Veranstalter wurde erfolgreich gelöscht.
     edit:
       breadcrumb_current: 'Bearbeiten: %{name}'
-      breadcrumb_root: Organisationen
-      page_title: Organisation bearbeiten
+      breadcrumb_root: Veranstalter
+      page_title: Veranstalter bearbeiten
     form:
       cancel: Abbrechen
-      create: Organisation erstellen
+      create: Veranstalter erstellen
       description: Beschreibung
       errors_prevented:
         one: '1 Fehler hat das Speichern verhindert:'
         other: "%{count} Fehler haben das Speichern verhindert:"
       name: Name
-      update: Organisation aktualisieren
+      update: Veranstalter aktualisieren
     index:
       confirm_delete: "%{name} löschen?"
       delete: Löschen
       edit: Bearbeiten
-      empty: Noch keine Organisationen. Erstelle die erste.
-      new: Neue Organisation
-      page_title: Organisationen
+      empty: Noch keine Veranstalter. Erstelle den ersten.
+      new: Neuer Veranstalter
+      page_title: Veranstalter
       table:
         actions: Aktionen
         members: Mitglieder
         name: Name
-        programs: Programme
-      title: Organisationen
+        programs: Veranstaltungen
+      title: Veranstalter
     new:
       breadcrumb_current: Neu
-      breadcrumb_root: Organisationen
-      page_title: Neue Organisation
+      breadcrumb_root: Veranstalter
+      page_title: Neuer Veranstalter
     show:
-      breadcrumb_root: Organisationen
+      breadcrumb_root: Veranstalter
       members: Mitglieder
       no_members: Keine Mitglieder.
-      no_programs: Noch keine Programme.
-      page_title: Organisation
-      programs: Programme
+      no_programs: Noch keine Veranstaltungen.
+      page_title: Veranstalter
+      programs: Veranstaltungen
       table:
         kind: Art
-        program: Programm
+        program: Veranstaltung
     update:
-      updated: Organisation wurde erfolgreich aktualisiert.
+      updated: Veranstalter wurde erfolgreich aktualisiert.
   programs:
     create:
-      created: Programm wurde erfolgreich erstellt.
+      created: Veranstaltung wurde erfolgreich erstellt.
     destroy:
-      destroyed: Programm wurde erfolgreich gelöscht.
+      destroyed: Veranstaltung wurde erfolgreich gelöscht.
     edit:
       breadcrumb_current: 'Bearbeiten: %{name}'
-      breadcrumb_root: Programme
-      page_title: Programm bearbeiten
+      breadcrumb_root: Veranstaltungen
+      page_title: Veranstaltung bearbeiten
     form:
       cancel: Abbrechen
-      create: Programm erstellen
+      create: Veranstaltung erstellen
       description: Beschreibung
       errors_prevented:
         one: '1 Fehler hat das Speichern verhindert:'
         other: "%{count} Fehler haben das Speichern verhindert:"
       kind: Art
       name: Name
-      organization: Organisation
-      select_organization: Organisation wählen
-      update: Programm aktualisieren
+      organization: Veranstalter
+      select_organization: Veranstalter wählen
+      update: Veranstaltung aktualisieren
     index:
-      empty: Noch keine Programme.
-      new: Neues Programm
-      page_title: Programme
+      empty: Noch keine Veranstaltungen.
+      new: Neue Veranstaltung
+      page_title: Veranstaltungen
       table:
         kind: Art
-        organization: Organisation
-        program: Programm
+        organization: Veranstalter
+        program: Veranstaltung
         units: Einheiten
-      title: Programme
+      title: Veranstaltungen
     new:
       breadcrumb_current: Neu
-      breadcrumb_root: Programme
-      page_title: Neues Programm
+      breadcrumb_root: Veranstaltungen
+      page_title: Neue Veranstaltung
     show:
-      breadcrumb_root: Programme
-      confirm_delete: Dieses Programm löschen?
+      breadcrumb_root: Veranstaltungen
+      confirm_delete: Diese Veranstaltung löschen?
       delete: Löschen
       edit: Bearbeiten
       new_unit: Neue Einheit
-      no_units: Noch keine Einheiten in diesem Programm.
+      no_units: Noch keine Einheiten in dieser Veranstaltung.
       table:
         date: Datum
         location: Ort
         unit: Einheit
       units: Einheiten
     update:
-      updated: Programm wurde erfolgreich aktualisiert.
+      updated: Veranstaltung wurde erfolgreich aktualisiert.
   pundit:
     default: Du bist nicht berechtigt, diese Aktion auszuführen.
   time:
@@ -224,8 +224,8 @@ de:
       location: Ort
       name: Name
       no_coverage: Noch keine Inhalte abgedeckt.
-      program: Programm
-      select_program: Programm wählen
+      program: Veranstaltung
+      select_program: Veranstaltung wählen
       starts_at: Beginn
       update: Einheit aktualisieren
     index:
@@ -237,8 +237,8 @@ de:
         attendees: Teilnehmende
         date: Datum
         location: Ort
-        organization: Organisation
-        program: Programm
+        organization: Veranstalter
+        program: Veranstaltung
         unit: Einheit
       tabs:
         all: Alle
@@ -252,7 +252,7 @@ de:
     show:
       all_registered: Alle Benutzer sind bereits für diese Einheit registriert.
       attendees: Teilnehmende
-      breadcrumb_programs: Programme
+      breadcrumb_programs: Veranstaltungen
       confirm_delete: Diese Einheit löschen?
       confirm_remove_attendance: Teilnahme entfernen?
       covered_via: abgedeckt über %{title}
@@ -302,7 +302,7 @@ de:
       keep_password: Leer lassen, um das aktuelle Passwort zu behalten
       language: Sprache
       not_a_member: Kein Mitglied
-      organizations: Organisationen
+      organizations: Veranstalter
       password: Passwort
       role: Rolle
       update: Benutzer aktualisieren
@@ -330,7 +330,7 @@ de:
       breadcrumb_root: Benutzer
       edit: Bearbeiten
       no_attendance: Noch keine Einheitenteilnahmen erfasst.
-      no_organization: Keine Organisation
+      no_organization: Kein Veranstalter
       table:
         status: Status
         unit: Einheit

@@ -14,13 +14,13 @@ de:
         description: Beschreibung
         kind: Art
         name: Name
-        organization: Organisation
+        organization: Veranstalter
       unit:
         description: Beschreibung
         ends_at: Ende
         location: Ort
         name: Name
-        program: Programm
+        program: Veranstaltung
         starts_at: Beginn
       unit_attendance:
         status: Status
@@ -63,9 +63,9 @@ de:
               after_start_time: muss nach dem Beginn liegen
     models:
       content: Inhalt
-      organization: Organisation
+      organization: Veranstalter
       organization_membership: Mitgliedschaft
-      program: Programm
+      program: Veranstaltung
       unit: Einheit
       unit_attendance: Teilnahme
       unit_coverage: Abdeckung
