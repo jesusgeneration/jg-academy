@@ -66,7 +66,8 @@
       <aside class="drawer-side z-40">
         <label for="portal-drawer" aria-label="<%= t("layouts.application.close_sidebar") %>" class="drawer-overlay"></label>
         <div class="menu bg-base-100 min-h-full w-72 p-4 gap-2">
-          <div class="px-2 py-4 mb-2 border-b border-base-300">
+          <div class="px-2 py-2 mb-1 border-b border-base-300 flex flex-col items-center text-center">
+            <%= image_tag "Logo.svg", alt: t("layouts.application.app_name"), class: "w-24 h-auto max-w-full mb-2" %>
             <span class="text-xl font-bold"><%= t("layouts.application.app_name") %></span>
           </div>
           <ul class="w-full gap-1">
