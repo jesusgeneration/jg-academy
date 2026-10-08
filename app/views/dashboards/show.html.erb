@@ -1,33 +1,33 @@
-<% content_for :page_title, "Dashboard" %>
+<% content_for :page_title, "Überblick" %>
 
 <div class="stats stats-vertical lg:stats-horizontal shadow bg-base-100 w-full mb-6">
   <div class="stat">
-    <div class="stat-title">Users</div>
+    <div class="stat-title">Benutzer</div>
     <div class="stat-value"><%= @user_count %></div>
-    <div class="stat-desc">registered accounts</div>
+    <div class="stat-desc">registrierte Konten</div>
   </div>
   <div class="stat">
-    <div class="stat-title">Upcoming Courses</div>
+    <div class="stat-title">Bevorstehende Kurse</div>
     <div class="stat-value"><%= @upcoming_course_count %></div>
-    <div class="stat-desc"><%= link_to "view courses", courses_path, class: "link link-hover" %></div>
+    <div class="stat-desc"><%= link_to "Kurse ansehen", courses_path, class: "link link-hover" %></div>
   </div>
   <div class="stat">
-    <div class="stat-title">Content Items</div>
+    <div class="stat-title">Inhalte</div>
     <div class="stat-value"><%= Content.count %></div>
-    <div class="stat-desc">levels, sections and details</div>
+    <div class="stat-desc">Ebenen, Bereiche und Details</div>
   </div>
 </div>
 
 <div class="card bg-base-100 shadow">
   <div class="card-body">
     <h2 class="card-title justify-between">
-      Recent Courses
-      <%= link_to "All courses", courses_path, class: "btn btn-ghost btn-xs" %>
+      Letzte Kurse
+      <%= link_to "Alle Kurse", courses_path, class: "btn btn-ghost btn-xs" %>
     </h2>
     <% if @recent_courses.any? %>
       <table class="table table-sm">
         <thead>
-          <tr><th>Course</th><th>Date</th><th>Attendees</th></tr>
+          <tr><th>Kurs</th><th>Datum</th><th>Teilnehmende</th></tr>
         </thead>
         <tbody>
           <% @recent_courses.each do |course| %>
@@ -40,7 +40,7 @@
         </tbody>
       </table>
     <% else %>
-      <p class="opacity-60 py-4">No courses yet.</p>
+      <p class="opacity-60 py-4">Noch keine Kurse.</p>
     <% end %>
   </div>
 </div>

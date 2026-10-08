@@ -5,7 +5,7 @@ class CourseCoveragesController < BaseController
     authorize @course, :update?
     @coverage = @course.course_coverages.build(content_id: coverage_params[:content_id])
     if @coverage.save
-      redirect_to @course, notice: "#{@coverage.content.title} is now covered by this course."
+      redirect_to @course, notice: "#{@coverage.content.title} wird jetzt von diesem Kurs abgedeckt."
     else
       redirect_to @course, alert: @coverage.errors.full_messages.to_sentence
     end
@@ -15,7 +15,7 @@ class CourseCoveragesController < BaseController
     authorize @course, :update?
     @coverage = @course.course_coverages.find(params[:id])
     @coverage.destroy
-    redirect_to @course, notice: "Coverage was removed."
+    redirect_to @course, notice: "Abdeckung wurde entfernt."
   end
 
   private

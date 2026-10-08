@@ -1,0 +1,57 @@
+de:
+  hello: "Hallo Welt"
+  pundit:
+    default: "Du hast keine Berechtigung für diese Aktion."
+  errors:
+    messages:
+      not_saved:
+        one: "1 Fehler hat das Speichern dieses %{resource} verhindert:"
+        other: "%{count} Fehler haben das Speichern dieses %{resource} verhindert:"
+  activerecord:
+    errors:
+      messages:
+        blank: "muss ausgefüllt werden"
+        present: "muss leer sein"
+        empty: "muss ausgefüllt werden"
+        taken: "ist bereits vergeben"
+        invalid: "ist ungültig"
+        inclusion: "ist kein gültiger Wert"
+        exclusion: "ist reserviert"
+        too_short:
+          one: "ist zu kurz (mindestens 1 Zeichen)"
+          other: "ist zu kurz (mindestens %{count} Zeichen)"
+        too_long:
+          one: "ist zu lang (höchstens 1 Zeichen)"
+          other: "ist zu lang (höchstens %{count} Zeichen)"
+        wrong_length:
+          one: "hat die falsche Länge (muss genau 1 Zeichen haben)"
+          other: "hat die falsche Länge (muss genau %{count} Zeichen haben)"
+        not_a_number: "ist keine Zahl"
+        not_an_integer: "muss eine ganze Zahl sein"
+        greater_than: "muss größer als %{count} sein"
+        greater_than_or_equal_to: "muss größer oder gleich %{count} sein"
+        equal_to: "muss genau %{count} sein"
+        less_than: "muss kleiner als %{count} sein"
+        less_than_or_equal_to: "muss kleiner oder gleich %{count} sein"
+        other_than: "muss ein anderer Wert als %{count} sein"
+        odd: "muss ungerade sein"
+        even: "muss gerade sein"
+        confirmation: "stimmt nicht mit der Bestätigung überein"
+        accepted: "muss akzeptiert werden"
+      models:
+        user:
+          attributes:
+            email:
+              taken: "ist bereits vergeben"
+            password:
+              too_short:
+                one: "ist zu kurz (mindestens 1 Zeichen)"
+                other: "ist zu kurz (mindestens %{count} Zeichen)"
+  date:
+    formats:
+      default: "%d.%m.%Y"
+      short: "%d.%m.%Y, %H:%M"
+  time:
+    formats:
+      default: "%d.%m.%Y, %H:%M"
+      short: "%d.%m.%Y, %H:%M"

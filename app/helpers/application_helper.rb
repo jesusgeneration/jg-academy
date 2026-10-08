@@ -2,13 +2,13 @@ module ApplicationHelper
   def portal_nav_items
     items = []
     if current_user.staff?
-      items << nav_entry("Dashboard", dashboard_path)
-      items << nav_entry("Users", users_path) if policy(User).index?
+      items << nav_entry("Überblick", dashboard_path)
+      items << nav_entry("Benutzer", users_path) if policy(User).index?
     else
-      items << nav_entry("My Account", user_path(current_user))
+      items << nav_entry("Mein Überblick", user_path(current_user))
     end
-    items << nav_entry("Courses", courses_path)
-    items << nav_entry("Organizations", organizations_path) if policy(Organization).index?
+    items << nav_entry("Kurse", courses_path)
+    items << nav_entry("Veranstalter", organizations_path) if policy(Organization).index?
     items
   end
 
@@ -33,11 +33,31 @@ module ApplicationHelper
     }.fetch(status.to_s, "badge-ghost")
   end
 
+  def display_attendance_status(status)
+    {
+      "registered" => "Angemeldet",
+      "attended" => "Teilgenommen",
+      "cancelled" => "Abgesagt",
+      "no_show" => "Nicht erschienen"
+    }.fetch(status.to_s, status.to_s)
+  end
+
   def role_badge_class(role)
     {
       "user" => "badge-ghost",
       "admin" => "badge-primary"
     }.fetch(role.to_s, "badge-ghost")
+  end
+
+  def display_role(role)
+    {
+      "user" => "Benutzer",
+      "admin" => "Administrator"
+    }.fetch(role.to_s, role.to_s)
+  end
+
+  def role_options_for_select
+    User.roles.keys.map { |role| [ display_role(role), role ] }
   end
 
   def membership_role_badge_class(role)
@@ -47,20 +67,35 @@ module ApplicationHelper
     }.fetch(role.to_s, "badge-ghost")
   end
 
+  def display_membership_role(role)
+    {
+      "member" => "Mitglied",
+      "organiser" => "Organisator"
+    }.fetch(role.to_s, role.to_s)
+  end
+
+  def display_content_type(content_type)
+    {
+      "level" => "Ebene",
+      "section" => "Bereich",
+      "detail" => "Detail"
+    }.fetch(content_type.to_s, content_type.to_s)
+  end
+
   def format_datetime(datetime)
-    datetime.strftime("%d %b %Y, %H:%M")
+    I18n.l(datetime, format: :short)
   end
 
   def coverage_toggle_button(course, content, coverages_by_content_id)
     coverage = coverages_by_content_id[content.id]
     if coverage
-      button_to "Remove",
+      button_to "Entfernen",
         course_course_coverage_path(course, coverage),
         method: :delete,
         form: { class: "inline" },
         class: "btn btn-error btn-outline btn-xs w-20"
     else
-      button_to "Add",
+      button_to "Hinzufügen",
         course_course_coverages_path(course),
         params: { course_coverage: { content_id: content.id } },
         form: { class: "inline" },

@@ -1,16 +1,16 @@
-<h2 class="card-title mb-4">Set a new password</h2>
+<h2 class="card-title mb-4">Neues Passwort festlegen</h2>
 
 <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
   <%= render "devise/shared/error_messages", resource: resource %>
   <%= f.hidden_field :reset_password_token %>
 
   <fieldset class="fieldset space-y-3">
-    <%= f.password_field :password, autofocus: true, autocomplete: "new-password", placeholder: "New password#{@minimum_password_length ? " (#{@minimum_password_length} characters minimum)" : ""}", class: "input w-full", required: true %>
-    <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "Confirm new password", class: "input w-full", required: true %>
+    <%= f.password_field :password, autofocus: true, autocomplete: "new-password", placeholder: "Neues Passwort#{@minimum_password_length ? " (mindestens #{@minimum_password_length} Zeichen)" : ""}", class: "input w-full", required: true %>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "Neues Passwort bestätigen", class: "input w-full", required: true %>
   </fieldset>
 
   <div class="mt-4">
-    <%= f.submit "Change my password", class: "btn btn-primary w-full" %>
+    <%= f.submit "Mein Passwort ändern", class: "btn btn-primary w-full" %>
   </div>
 <% end %>
 

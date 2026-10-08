@@ -21,7 +21,7 @@ class OrganizationsController < BaseController
     @organization = Organization.new(organization_params)
     authorize @organization
     if @organization.save
-      redirect_to organizations_path, notice: "Organization was successfully created."
+      redirect_to organizations_path, notice: "Veranstalter wurde erfolgreich erstellt."
     else
       render :new, status: :unprocessable_content
     end
@@ -34,7 +34,7 @@ class OrganizationsController < BaseController
   def update
     authorize @organization
     if @organization.update(organization_params)
-      redirect_to organizations_path, notice: "Organization was successfully updated."
+      redirect_to organizations_path, notice: "Veranstalter wurde erfolgreich aktualisiert."
     else
       render :edit, status: :unprocessable_content
     end
@@ -43,7 +43,7 @@ class OrganizationsController < BaseController
   def destroy
     authorize @organization
     if @organization.destroy
-      redirect_to organizations_path, notice: "Organization was successfully deleted."
+      redirect_to organizations_path, notice: "Veranstalter wurde erfolgreich gelöscht."
     else
       redirect_to organizations_path, alert: @organization.errors.full_messages.to_sentence
     end

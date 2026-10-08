@@ -1,8 +1,8 @@
 <% content_for :page_title, @user.email %>
 
-<nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
+<nav aria-label="Brotkrumen" class="breadcrumbs mb-2">
   <% if policy(User).index? %>
-    <ul><li><%= link_to "Users", users_path %></li><li><%= @user.email %></li></ul>
+    <ul><li><%= link_to "Benutzer", users_path %></li><li><%= @user.email %></li></ul>
   <% end %>
 </nav>
 
@@ -11,17 +11,17 @@
     <div>
       <h1 class="card-title"><%= @user.email %></h1>
       <p class="text-sm opacity-70">
-        <span class="badge capitalize mr-2 <%= role_badge_class(@user.role) %>"><%= @user.role %></span>
+        <span class="badge capitalize mr-2 <%= role_badge_class(@user.role) %>"><%= display_role(@user.role) %></span>
         <% if @user.organizations.any? %>
           <%= @user.organizations.map(&:name).join(", ") %>
         <% else %>
-          No organization
+          Kein Veranstalter
         <% end %>
       </p>
     </div>
     <div>
       <% if policy(@user).update? && @user != current_user %>
-        <%= link_to "Edit", edit_user_path(@user), class: "btn btn-outline btn-sm" %>
+        <%= link_to "Bearbeiten", edit_user_path(@user), class: "btn btn-outline btn-sm" %>
       <% end %>
     </div>
   </div>
@@ -29,24 +29,24 @@
 
 <div class="card bg-base-100 shadow">
   <div class="card-body">
-    <h2 class="card-title">Course Attendance</h2>
+    <h2 class="card-title">Kursteilnahmen</h2>
     <% attendances = @user.course_attendances.includes(:course).order("courses.starts_at") %>
     <% if attendances.any? %>
       <table class="table table-sm">
         <thead>
-          <tr><th>Course</th><th>Status</th></tr>
+          <tr><th>Kurs</th><th>Status</th></tr>
         </thead>
         <tbody>
           <% attendances.each do |attendance| %>
             <tr>
               <td><%= link_to attendance.course.name, course_path(attendance.course), class: "link link-hover" %></td>
-              <td><span class="badge <%= attendance_status_badge_class(attendance.status) %>"><%= attendance.status.humanize %></span></td>
+              <td><span class="badge <%= attendance_status_badge_class(attendance.status) %>"><%= display_attendance_status(attendance.status) %></span></td>
             </tr>
           <% end %>
         </tbody>
       </table>
     <% else %>
-      <p class="opacity-60">No course attendance recorded yet.</p>
+      <p class="opacity-60">Noch keine Kursteilnahmen erfasst.</p>
     <% end %>
   </div>
 </div>

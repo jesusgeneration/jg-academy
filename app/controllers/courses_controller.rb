@@ -35,7 +35,7 @@ class CoursesController < BaseController
     authorize @course
     ensure_permitted_organization
     if @course.save
-      redirect_to @course, notice: "Course was successfully created."
+      redirect_to @course, notice: "Kurs wurde erfolgreich erstellt."
     else
       prepare_form
       render :new, status: :unprocessable_content
@@ -52,7 +52,7 @@ class CoursesController < BaseController
     @course.assign_attributes(course_params)
     ensure_permitted_organization
     if @course.save
-      redirect_to @course, notice: "Course was successfully updated."
+      redirect_to @course, notice: "Kurs wurde erfolgreich aktualisiert."
     else
       prepare_form
       render :edit, status: :unprocessable_content
@@ -62,7 +62,7 @@ class CoursesController < BaseController
   def destroy
     authorize @course
     @course.destroy
-    redirect_to courses_path, notice: "Course was successfully deleted."
+    redirect_to courses_path, notice: "Kurs wurde erfolgreich gelöscht."
   end
 
   private

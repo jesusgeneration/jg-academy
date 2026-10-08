@@ -12,7 +12,7 @@ RSpec.describe "Dashboard" do
 
         aggregate_failures do
           expect(response).to have_http_status(:ok)
-          expect(response.body).to include("Recent Courses")
+          expect(response.body).to include("Letzte Kurse")
         end
       end
     end

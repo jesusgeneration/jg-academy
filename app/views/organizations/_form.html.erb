@@ -1,7 +1,7 @@
 <%= form_with model: organization, class: "space-y-4" do |f| %>
   <% if organization.errors.any? %>
     <div role="alert" class="alert alert-error">
-      <span><%= pluralize(organization.errors.count, "error") %> prevented saving:</span>
+      <span><%= organization.errors.count %> Fehler verhinderten das Speichern:</span>
     </div>
   <% end %>
 
@@ -14,12 +14,12 @@
   </fieldset>
 
   <fieldset class="fieldset">
-    <legend class="fieldset-legend">Description</legend>
+    <legend class="fieldset-legend">Beschreibung</legend>
     <%= f.text_area :description, rows: 3, class: "textarea w-full" %>
   </fieldset>
 
   <div class="flex gap-2">
-    <%= f.submit organization.new_record? ? "Create organization" : "Update organization", class: "btn btn-primary" %>
-    <%= link_to "Cancel", organizations_path, class: "btn btn-ghost" %>
+    <%= f.submit organization.new_record? ? "Veranstalter erstellen" : "Veranstalter aktualisieren", class: "btn btn-primary" %>
+    <%= link_to "Abbrechen", organizations_path, class: "btn btn-ghost" %>
   </div>
 <% end %>

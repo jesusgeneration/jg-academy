@@ -1,7 +1,7 @@
 <%= form_with model: course, class: "space-y-4" do |f| %>
   <% if course.errors.any? %>
     <div role="alert" class="alert alert-error">
-      <span><%= pluralize(course.errors.count, "error") %> prevented saving:</span>
+      <span><%= course.errors.count %> Fehler verhinderten das Speichern:</span>
     </div>
   <% end %>
 
@@ -12,48 +12,48 @@
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <fieldset class="fieldset">
-      <legend class="fieldset-legend">Organization</legend>
+      <legend class="fieldset-legend">Veranstalter</legend>
       <%= f.collection_select :organization_id, @permitted_organizations, :id, :name,
-            { prompt: "Select organization" }, { class: "select w-full", required: true } %>
+            { prompt: "Veranstalter wählen" }, { class: "select w-full", required: true } %>
     </fieldset>
 
     <fieldset class="fieldset">
-      <legend class="fieldset-legend">Location</legend>
+      <legend class="fieldset-legend">Ort</legend>
       <%= f.text_field :location, class: "input w-full" %>
     </fieldset>
 
     <fieldset class="fieldset">
-      <legend class="fieldset-legend">Starts at</legend>
+      <legend class="fieldset-legend">Beginn</legend>
       <%= f.datetime_field :starts_at, class: "input w-full", required: true %>
     </fieldset>
 
     <fieldset class="fieldset">
-      <legend class="fieldset-legend">Ends at</legend>
+      <legend class="fieldset-legend">Ende</legend>
       <%= f.datetime_field :ends_at, class: "input w-full", required: true %>
     </fieldset>
   </div>
 
   <fieldset class="fieldset">
-    <legend class="fieldset-legend">Description</legend>
+    <legend class="fieldset-legend">Beschreibung</legend>
     <%= f.text_area :description, rows: 3, class: "textarea w-full" %>
   </fieldset>
 
   <div class="border border-base-300 rounded-box p-4">
-    <h2 class="font-semibold mb-2">Content coverage</h2>
-    <p class="text-xs opacity-60 mb-3">Coverage is managed separately via course coverages.</p>
+    <h2 class="font-semibold mb-2">Inhaltliche Abdeckung</h2>
+    <p class="text-xs opacity-60 mb-3">Die Abdeckung wird separat über Kursabdeckungen verwaltet.</p>
     <% if course.persisted? && course.covered_contents.any? %>
       <ul class="text-sm space-y-1">
         <% course.covered_contents.includes(:parent).ordered.each do |content| %>
-          <li><span class="badge badge-ghost badge-sm mr-1"><%= content.content_type %></span><%= content.title %></li>
+          <li><span class="badge badge-ghost badge-sm mr-1"><%= display_content_type(content.content_type) %></span><%= content.title %></li>
         <% end %>
       </ul>
     <% else %>
-      <p class="text-xs opacity-60">No content covered yet.</p>
+      <p class="text-xs opacity-60">Noch keine Inhalte abgedeckt.</p>
     <% end %>
   </div>
 
   <div class="flex gap-2">
-    <%= f.submit course.new_record? ? "Create course" : "Update course", class: "btn btn-primary" %>
-    <%= link_to "Cancel", courses_path, class: "btn btn-ghost" %>
+    <%= f.submit course.new_record? ? "Kurs erstellen" : "Kurs aktualisieren", class: "btn btn-primary" %>
+    <%= link_to "Abbrechen", courses_path, class: "btn btn-ghost" %>
   </div>
 <% end %>

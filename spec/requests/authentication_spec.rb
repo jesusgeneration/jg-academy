@@ -14,7 +14,7 @@ RSpec.describe "Authentication" do
 
     expect(response).to redirect_to(root_path)
     follow_redirect!
-    expect(response.body).not_to include("Sign in")
+    expect(response.body).not_to include("Anmelden")
   end
 
   it "shows the portal shell after sign-in" do
@@ -23,7 +23,7 @@ RSpec.describe "Authentication" do
     get root_path
 
     expect(response.body).to include("jg-academy")
-    expect(response.body).to include("Dashboard")
+    expect(response.body).to include("Überblick")
   end
 
   describe "auth pages render through the devise layout" do
@@ -32,7 +32,7 @@ RSpec.describe "Authentication" do
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("Sign in")
+        expect(response.body).to include("Anmelden")
         expect(response.body).to include("jg-academy")
       end
     end

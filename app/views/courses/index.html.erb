@@ -1,14 +1,14 @@
-<% content_for :page_title, "Courses" %>
+<% content_for :page_title, "Kurse" %>
 
 <div class="flex items-center justify-between mb-4">
-  <h1 class="text-2xl font-semibold">Courses</h1>
+  <h1 class="text-2xl font-semibold">Kurse</h1>
   <% if policy(Course).create? %>
-    <%= link_to "New course", new_course_path, class: "btn btn-primary btn-sm" %>
+    <%= link_to "Neuer Kurs", new_course_path, class: "btn btn-primary btn-sm" %>
   <% end %>
 </div>
 
 <div role="tablist" class="tabs tabs-box mb-4">
-  <% [["upcoming", "Upcoming"], ["past", "Past"], ["all", "All"]].each do |tab, label| %>
+  <% [["upcoming", "Bevorstehend"], ["past", "Vergangen"], ["all", "Alle"]].each do |tab, label| %>
     <%= link_to label, courses_path(tab: tab), role: "tab",
           class: "tab #{'tab-active' if @tab == tab}" %>
   <% end %>
@@ -20,8 +20,8 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Course</th><th>Organization</th><th>Date</th><th>Location</th>
-          <% if show_attendees %><th>Attendees</th><% end %>
+          <th>Kurs</th><th>Veranstalter</th><th>Datum</th><th>Ort</th>
+          <% if show_attendees %><th>Teilnehmende</th><% end %>
         </tr>
       </thead>
       <tbody>
@@ -36,7 +36,7 @@
                 <span class="badge badge-ghost"><%= course.course_attendances.size %></span>
                 <% attended = course.course_attendances.count(&:attended?) %>
                 <% if attended.positive? %>
-                  <span class="badge badge-success badge-outline badge-sm ml-1"><%= attended %> attended</span>
+                  <span class="badge badge-success badge-outline badge-sm ml-1"><%= attended %> teilgenommen</span>
                 <% end %>
               </td>
             <% end %>
@@ -46,5 +46,5 @@
     </table>
   </div>
 <% else %>
-  <div class="alert alert-info"><span>No courses in this view yet.</span></div>
+  <div class="alert alert-info"><span>In dieser Ansicht noch keine Kurse.</span></div>
 <% end %>

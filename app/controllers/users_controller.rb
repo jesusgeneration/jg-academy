@@ -21,7 +21,7 @@ class UsersController < BaseController
     @user = User.new(user_params)
     authorize @user
     if @user.save
-      redirect_to users_path, notice: "User was successfully created."
+      redirect_to users_path, notice: "Benutzer wurde erfolgreich erstellt."
     else
       build_membership_rows
       render :new, status: :unprocessable_content
@@ -36,7 +36,7 @@ class UsersController < BaseController
   def update
     authorize @user
     if @user.update(user_params)
-      redirect_to users_path, notice: "User was successfully updated."
+      redirect_to users_path, notice: "Benutzer wurde erfolgreich aktualisiert."
     else
       build_membership_rows
       render :edit, status: :unprocessable_content
@@ -46,9 +46,9 @@ class UsersController < BaseController
   def destroy
     authorize @user
     if @user == current_user
-      redirect_to users_path, alert: "You cannot delete your own account."
+      redirect_to users_path, alert: "Du kannst dein eigenes Konto nicht löschen."
     elsif @user.destroy
-      redirect_to users_path, notice: "User was successfully deleted."
+      redirect_to users_path, notice: "Benutzer wurde erfolgreich gelöscht."
     else
       redirect_to users_path, alert: @user.errors.full_messages.to_sentence
     end

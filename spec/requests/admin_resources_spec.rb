@@ -89,7 +89,7 @@ RSpec.describe "Admin resources" do
 
       aggregate_failures do
         expect(response.body).to include("member@example.com")
-        expect(response.body).to include(">organiser</span>")
+        expect(response.body).to include(">Organisator</span>")
       end
     end
   end
@@ -172,7 +172,7 @@ RSpec.describe "Admin resources" do
       aggregate_failures do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(CGI.escapeHTML(organization.name))
-        expect(response.body).to include("Organiser")
+        expect(response.body).to include("Organisator")
         expect(response.body).to include('selected="selected"')
       end
     end
@@ -185,7 +185,7 @@ RSpec.describe "Admin resources" do
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
-        expect(response.body.scan("Not a member").size).to eq(2)
+        expect(response.body.scan("Kein Mitglied").size).to eq(2)
       end
     end
 
@@ -206,7 +206,7 @@ RSpec.describe "Admin resources" do
 
       expect(response).to redirect_to(users_path)
       follow_redirect!
-      expect(flash[:alert]).to include("cannot delete your own account")
+      expect(flash[:alert]).to include("kannst dein eigenes Konto nicht löschen")
     end
 
     it "updates system role without requiring a password" do

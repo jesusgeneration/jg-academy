@@ -1,4 +1,4 @@
-<h2 class="card-title mb-4">Change password</h2>
+<h2 class="card-title mb-4">Passwort ändern</h2>
 
 <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
   <%= render "devise/shared/error_messages", resource: resource %>
@@ -7,19 +7,19 @@
     <%= f.email_field :email, autocomplete: "email", class: "input w-full", disabled: true %>
 
     <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-      <p class="text-sm opacity-60">Currently waiting confirmation for: <%= resource.unconfirmed_email %></p>
+      <p class="text-sm opacity-60">Wartet derzeit auf Bestätigung für: <%= resource.unconfirmed_email %></p>
     <% end %>
 
-    <%= f.password_field :password, autocomplete: "new-password", placeholder: "New password#{@minimum_password_length ? " (#{@minimum_password_length} characters minimum)" : ""}", class: "input w-full" %>
-    <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "Confirm new password", class: "input w-full" %>
-    <%= f.password_field :current_password, autocomplete: "current-password", placeholder: "Current password (required)", class: "input w-full", required: true %>
+    <%= f.password_field :password, autocomplete: "new-password", placeholder: "Neues Passwort#{@minimum_password_length ? " (mindestens #{@minimum_password_length} Zeichen)" : ""}", class: "input w-full" %>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "Neues Passwort bestätigen", class: "input w-full" %>
+    <%= f.password_field :current_password, autocomplete: "current-password", placeholder: "Aktuelles Passwort (erforderlich)", class: "input w-full", required: true %>
   </fieldset>
 
   <div class="mt-4">
-    <%= f.submit "Update", class: "btn btn-primary w-full" %>
+    <%= f.submit "Aktualisieren", class: "btn btn-primary w-full" %>
   </div>
 <% end %>
 
 <div class="mt-4">
-  <%= link_to "Back", :back, class: "btn btn-ghost btn-sm w-full" %>
+  <%= link_to "Zurück", :back, class: "btn btn-ghost btn-sm w-full" %>
 </div>

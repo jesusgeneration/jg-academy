@@ -1,5 +1,5 @@
-<nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
-  <ul><li><%= link_to "Courses", courses_path %></li><li><%= @course.name %></li></ul>
+<nav aria-label="Brotkrumen" class="breadcrumbs mb-2">
+  <ul><li><%= link_to "Kurse", courses_path %></li><li><%= @course.name %></li></ul>
 </nav>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -10,7 +10,7 @@
           <h1 class="card-title"><%= @course.name %></h1>
           <p class="text-sm opacity-60"><%= @course.organization.name %><% if @course.location.present? %> · <%= @course.location %><% end %></p>
         </div>
-        <span class="badge <%= @course.past? ? "badge-ghost" : "badge-info" %>"><%= @course.past? ? "Past" : "Upcoming" %></span>
+        <span class="badge <%= @course.past? ? "badge-ghost" : "badge-info" %>"><%= @course.past? ? "Vergangen" : "Bevorstehend" %></span>
       </div>
 
       <% if @course.description.present? %>
@@ -18,17 +18,17 @@
       <% end %>
 
       <dl class="grid grid-cols-2 gap-2 text-sm mt-4 max-w-md">
-        <dt class="opacity-60">Starts</dt><dd><%= format_datetime(@course.starts_at) %></dd>
-        <dt class="opacity-60">Ends</dt><dd><%= format_datetime(@course.ends_at) %></dd>
+        <dt class="opacity-60">Beginn</dt><dd><%= format_datetime(@course.starts_at) %></dd>
+        <dt class="opacity-60">Ende</dt><dd><%= format_datetime(@course.ends_at) %></dd>
       </dl>
 
       <% if policy(@course).update? || policy(@course).destroy? %>
         <div class="card-actions justify-end mt-4">
           <% if policy(@course).update? %>
-            <%= link_to "Edit", edit_course_path(@course), class: "btn btn-outline btn-sm" %>
+            <%= link_to "Bearbeiten", edit_course_path(@course), class: "btn btn-outline btn-sm" %>
           <% end %>
           <% if policy(@course).destroy? %>
-            <%= button_to "Delete", course_path(@course), method: :delete, form: { class: "inline" }, data: { turbo_confirm: "Delete this course?" }, class: "btn btn-error btn-outline btn-sm" %>
+            <%= button_to "Löschen", course_path(@course), method: :delete, form: { class: "inline" }, data: { turbo_confirm: "Diesen Kurs löschen?" }, class: "btn btn-error btn-outline btn-sm" %>
           <% end %>
         </div>
       <% end %>
@@ -37,20 +37,20 @@
 
   <div class="card bg-base-100 shadow h-fit">
     <div class="card-body">
-      <h2 class="card-title">Covers</h2>
-      <p class="text-xs opacity-60">Covering a level or section automatically covers everything below it.</p>
+      <h2 class="card-title">Abgedeckte Inhalte</h2>
+      <p class="text-xs opacity-60">Wird eine Ebene oder ein Bereich abgedeckt, gilt das automatisch für alle darunterliegenden Inhalte.</p>
       <% covered = @course.covered_contents.order(:position) %>
       <% if covered.any? %>
         <ul class="space-y-1 text-sm mt-2">
           <% covered.each do |content| %>
             <li>
-              <span class="badge badge-ghost badge-sm mr-1"><%= content.content_type %></span>
+              <span class="badge badge-ghost badge-sm mr-1"><%= display_content_type(content.content_type) %></span>
               <%= content.title %>
             </li>
           <% end %>
         </ul>
       <% else %>
-        <p class="opacity-60">This course does not cover any content yet.</p>
+        <p class="opacity-60">Dieser Kurs deckt noch keine Inhalte ab.</p>
       <% end %>
     </div>
   </div>
@@ -59,8 +59,8 @@
 <% if policy(@course).update? %>
   <div class="card bg-base-100 shadow mt-6">
     <div class="card-body">
-      <h2 class="card-title">Manage coverage</h2>
-      <p class="text-sm opacity-60">Add or remove the points in the hierarchy where coverage starts. Descendants of a covered item are covered automatically.</p>
+      <h2 class="card-title">Abdeckung verwalten</h2>
+      <p class="text-sm opacity-60">Lege fest, ab welchen Punkten der Hierarchie die Abdeckung beginnt. Untergeordnete Inhalte werden automatisch abgedeckt.</p>
       <% if @coverage_tree.any? %>
         <div class="space-y-2 mt-2">
           <% @coverage_tree.each do |level| %>
@@ -70,7 +70,7 @@
               <div class="collapse collapse-arrow bg-base-200 flex-1">
                 <input type="checkbox" <%= "checked" if level_open %> />
                 <div class="collapse-title text-sm font-medium py-2 min-h-0">
-                  <span class="badge badge-primary badge-outline badge-sm mr-1"><%= level.content_type %></span>
+                  <span class="badge badge-primary badge-outline badge-sm mr-1"><%= display_content_type(level.content_type) %></span>
                   <%= level.title %>
                 </div>
                 <div class="collapse-content">
@@ -84,10 +84,10 @@
                           <div class="collapse collapse-arrow bg-base-100 flex-1">
                             <input type="checkbox" <%= "checked" if section_open %> />
                             <div class="collapse-title text-sm py-2 min-h-0">
-                              <span class="badge badge-secondary badge-outline badge-sm mr-1"><%= section.content_type %></span>
+                              <span class="badge badge-secondary badge-outline badge-sm mr-1"><%= display_content_type(section.content_type) %></span>
                               <%= section.title %>
                               <% if section_via_ancestor %>
-                                <span class="text-xs opacity-50 ml-1">covered via <%= level.title %></span>
+                                <span class="text-xs opacity-50 ml-1">abgedeckt über <%= level.title %></span>
                               <% end %>
                             </div>
                             <div class="collapse-content">
@@ -101,10 +101,10 @@
                                              end %>
                                     <li class="flex items-center justify-between gap-2">
                                       <span>
-                                        <span class="badge badge-ghost badge-sm mr-1"><%= detail.content_type %></span>
+                                        <span class="badge badge-ghost badge-sm mr-1"><%= display_content_type(detail.content_type) %></span>
                                         <%= detail.title %>
                                         <% if via %>
-                                          <span class="text-xs opacity-50 ml-1">covered via <%= via %></span>
+                                          <span class="text-xs opacity-50 ml-1">abgedeckt über <%= via %></span>
                                         <% end %>
                                       </span>
                                       <%= coverage_row_button(@course, detail, @coverages_by_content_id, ancestor_covered: via.present?) %>
@@ -130,7 +130,7 @@
           <% end %>
         </div>
       <% else %>
-        <p class="opacity-60">No content items exist yet.</p>
+        <p class="opacity-60">Noch keine Inhalte vorhanden.</p>
       <% end %>
     </div>
   </div>
@@ -139,19 +139,19 @@
 <% if policy(@course).view_attendees? %>
   <div class="card bg-base-100 shadow mt-6">
     <div class="card-body">
-      <h2 class="card-title">Attendees</h2>
+      <h2 class="card-title">Teilnehmende</h2>
 
       <% if @attendee_management %>
         <% if @registrable_users.any? %>
           <%= form_with model: [@course, CourseAttendance.new], url: course_course_attendances_path(@course), method: :post, class: "flex flex-wrap items-end gap-2 mb-4" do |f| %>
             <fieldset class="fieldset w-full sm:w-72">
-              <legend class="fieldset-legend">Register attendee</legend>
-              <%= f.select :user_id, options_from_collection_for_select(@registrable_users, :id, :email), { prompt: "Select user" }, class: "select w-full", required: true %>
+              <legend class="fieldset-legend">Teilnehmer anmelden</legend>
+              <%= f.select :user_id, options_from_collection_for_select(@registrable_users, :id, :email), { prompt: "Nutzer wählen" }, class: "select w-full", required: true %>
             </fieldset>
-            <%= f.submit "Register", class: "btn btn-primary" %>
+            <%= f.submit "Anmelden", class: "btn btn-primary" %>
           <% end %>
         <% else %>
-          <p class="text-sm opacity-60 mb-4">All users are already registered for this course.</p>
+          <p class="text-sm opacity-60 mb-4">Alle Nutzer sind bereits für diesen Kurs angemeldet.</p>
         <% end %>
       <% end %>
 
@@ -159,30 +159,30 @@
         <table class="table table-sm">
           <thead>
             <tr>
-              <th>User</th><th>Status</th>
-              <% if @attendee_management %><th class="text-right">Actions</th><% end %>
+              <th>Nutzer</th><th>Status</th>
+              <% if @attendee_management %><th class="text-right">Aktionen</th><% end %>
             </tr>
           </thead>
           <tbody>
             <% @attendances.each do |attendance| %>
               <tr>
                 <td><%= link_to attendance.user.email, user_path(attendance.user), class: "link link-hover" %></td>
-                <td><span class="badge <%= attendance_status_badge_class(attendance.status) %>"><%= attendance.status.humanize %></span></td>
+                <td><span class="badge <%= attendance_status_badge_class(attendance.status) %>"><%= display_attendance_status(attendance.status) %></span></td>
                 <% if policy(attendance).update? %>
                   <td class="text-right space-x-1 whitespace-nowrap">
                     <% (CourseAttendance.statuses.keys - [attendance.status]).each do |status| %>
-                      <%= button_to status.humanize,
+                      <%= button_to display_attendance_status(status),
                             course_course_attendance_path(@course, attendance),
                             method: :patch,
                             params: { course_attendance: { status: status } },
                             form: { class: "inline" },
                             class: "btn btn-xs #{'btn-success' if status == 'attended'} #{'btn-outline' unless status == 'attended'}" %>
                     <% end %>
-                    <%= button_to "Remove",
+                    <%= button_to "Entfernen",
                           course_course_attendance_path(@course, attendance),
                           method: :delete,
                           form: { class: "inline" },
-                          data: { turbo_confirm: "Remove attendance record?" },
+                          data: { turbo_confirm: "Anwesenheitseintrag entfernen?" },
                           class: "btn btn-error btn-outline btn-xs" %>
                   </td>
                 <% end %>
@@ -191,7 +191,7 @@
           </tbody>
         </table>
       <% else %>
-        <p class="opacity-60">No attendees registered yet.</p>
+        <p class="opacity-60">Noch keine Teilnehmenden angemeldet.</p>
       <% end %>
     </div>
   </div>
