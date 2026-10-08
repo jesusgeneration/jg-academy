@@ -79,7 +79,7 @@ en:
       language: Language
       nav:
         dashboard: Dashboard
-        my_account: My Account
+        my_account: My Progress
         organizations: Organizations
         programs: Programs
         units: Units
@@ -326,10 +326,10 @@ en:
       breadcrumb_root: Users
       page_title: New User
     show:
-      attendance_title: Unit Attendance
+      attendance_title: Completed trainings
       breadcrumb_root: Users
       edit: Edit
-      no_attendance: No unit attendance recorded yet.
+      no_attendance: No completed trainings yet.
       no_organization: No organization
       table:
         status: Status

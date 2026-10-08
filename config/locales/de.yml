@@ -79,7 +79,7 @@ de:
       language: Sprache
       nav:
         dashboard: Dashboard
-        my_account: Mein Konto
+        my_account: Mein Fortschritt
         organizations: Veranstalter (Organisation)
         programs: Veranstaltungen
         units: Einheiten
@@ -326,10 +326,10 @@ de:
       breadcrumb_root: Benutzer
       page_title: Neuer Benutzer
     show:
-      attendance_title: Einheitenteilnahmen
+      attendance_title: Absolvierte Schulungen
       breadcrumb_root: Benutzer
       edit: Bearbeiten
-      no_attendance: Noch keine Einheitenteilnahmen erfasst.
+      no_attendance: Noch keine Schulungen absolviert.
       no_organization: Kein Veranstalter
       table:
         status: Status
