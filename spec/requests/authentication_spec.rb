@@ -22,8 +22,11 @@ RSpec.describe "Authentication" do
 
     get root_path
 
-    expect(response.body).to include("jg-academy")
-    expect(response.body).to include(I18n.t("layouts.application.nav.dashboard"))
+    aggregate_failures do
+      expect(response.body).to include("jg-academy")
+      expect(response.body).to include(I18n.t("layouts.application.nav.dashboard"))
+      expect(response.body).to match(%r{Logo(-\w+)?.svg})
+    end
   end
 
   describe "auth pages render through the devise layout" do
@@ -34,6 +37,7 @@ RSpec.describe "Authentication" do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(I18n.t("devise_views.sessions.new.title"))
         expect(response.body).to include("jg-academy")
+        expect(response.body).to match(%r{Logo(-\w+)?.svg})
       end
     end
 
