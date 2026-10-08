@@ -9,7 +9,9 @@ Rails.application.routes.draw do
   resource :dashboard, only: :show
 
   resources :organizations
-  resources :users
+  resources :users do
+    patch :confirm, on: :member
+  end
   resources :programs
 
   resources :units do

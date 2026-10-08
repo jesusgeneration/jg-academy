@@ -21,7 +21,7 @@ RSpec.describe UserPolicy do
     end
   end
 
-  permissions :index?, :new?, :create?, :edit?, :update?, :destroy? do
+  permissions :index?, :new?, :create?, :edit?, :update?, :destroy?, :confirm? do
     it "are admin-only" do
       aggregate_failures do
         expect(policy_class).to permit(build_stubbed(:user, :admin), other_user)
