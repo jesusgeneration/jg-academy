@@ -189,6 +189,33 @@ RSpec.describe "Admin resources" do
       end
     end
 
+    it "preselects not a member for every organization on the new form" do
+      organization
+      create(:organization, name: "Church B")
+
+      get new_user_path
+
+      expect(response.body.scan('<option selected="selected" value="">').size).to eq(2)
+    end
+
+    it "creates a user without memberships when no organization role is chosen" do
+      expect {
+        post users_path, params: {
+          user: {
+            email: "nomember@example.com",
+            password: "sup3rsecret!",
+            password_confirmation: "sup3rsecret!",
+            role: "user",
+            organization_memberships_attributes: {
+              "0" => { organization_id: organization.id, role: "" }
+            }
+          }
+        }
+      }.to change(User, :count).by(1)
+
+      expect(User.find_by!(email: "nomember@example.com").organization_memberships).to be_empty
+    end
+
     it "deletes another user" do
       user = create(:user)
 

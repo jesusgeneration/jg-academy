@@ -76,10 +76,12 @@ class UsersController < BaseController
   end
 
   # One membership row per organization so every organization gets a role select.
+  # New rows default to no role ("Not a member") instead of the database
+  # default so blank rows are discarded on save.
   def build_membership_rows
     existing = @user.organization_memberships.index_by(&:organization_id)
     @membership_rows = @organizations.map do |organization|
-      existing[organization.id] || @user.organization_memberships.build(organization: organization)
+      existing[organization.id] || @user.organization_memberships.build(organization: organization, role: nil)
     end
   end
 
