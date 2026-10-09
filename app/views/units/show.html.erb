@@ -28,6 +28,7 @@
       <dl class="grid grid-cols-2 gap-2 text-sm mt-4 max-w-md">
         <dt class="opacity-60"><%= t(".starts") %></dt><dd><%= format_datetime(@unit.starts_at) %></dd>
         <dt class="opacity-60"><%= t(".ends") %></dt><dd><%= format_datetime(@unit.ends_at) %></dd>
+        <dt class="opacity-60"><%= t(".instructor") %></dt><dd><%= @unit.instructor ? @unit.instructor.email : t(".no_instructor") %></dd>
       </dl>
 
       <% if policy(@unit).update? || policy(@unit).destroy? %>

@@ -30,7 +30,7 @@ RSpec.describe "Users" do
 
     it "lists the user's attendance" do
       sign_in alice
-      unit = create(:unit, name: "Youth Leadership Weekend")
+      unit = create(:unit, name: "Youth Leadership Weekend", instructor: create(:user, :admin))
       create(:unit_attendance, :attended, unit: unit, user: alice)
 
       get user_path(alice)

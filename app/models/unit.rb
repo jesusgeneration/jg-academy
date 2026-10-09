@@ -1,5 +1,6 @@
 class Unit < ApplicationRecord
   belongs_to :program
+  belongs_to :instructor, class_name: "User", optional: true
 
   has_many :unit_attendances, dependent: :destroy
   has_many :users, through: :unit_attendances
@@ -46,6 +47,7 @@ class Unit < ApplicationRecord
 
   validates :name, presence: true
   validate :ends_at_after_starts_at
+  validate :instructor_must_be_eligible
 
   # Optional duration in minutes selected from the form. When present it
   # computes ends_at from starts_at; it is never stored.
@@ -125,5 +127,12 @@ class Unit < ApplicationRecord
     return if starts_at.blank? || ends_at.blank?
 
     errors.add(:ends_at, :after_start_time) if ends_at <= starts_at
+  end
+
+  def instructor_must_be_eligible
+    return if instructor.nil?
+    return if instructor.eligible_instructor?
+
+    errors.add(:instructor, :ineligible)
   end
 end

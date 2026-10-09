@@ -248,6 +248,8 @@ de:
       errors_prevented:
         one: '1 Fehler hat das Speichern verhindert:'
         other: "%{count} Fehler haben das Speichern verhindert:"
+      instructor: Referent
+      instructor_hint: Erforderlich, bevor Teilnehmende als teilgenommen markiert werden.
       location: Ort
       manage_coverage: Abdeckung verwalten
       manage_coverage_hint: Wähle die Inhalte, die diese Einheit abdeckt. Ebenen und Abschnitte schließen alles darunter ein.
@@ -255,6 +257,7 @@ de:
       no_coverage: Noch keine Inhalte abgedeckt.
       program: Veranstaltung
       select_duration: Dauer wählen
+      select_instructor: Referent wählen
       select_program: Veranstaltung wählen
       select_time: Uhrzeit wählen
       starts_at: Beginn
@@ -304,11 +307,13 @@ de:
       inherit_none: Alle Teilnehmenden der Veranstaltung sind bereits aktuell in dieser Einheit eingetragen.
       inherit_summary: 'Neu: %{added} · Unverändert: %{unchanged} · Konflikte: %{conflicts}'
       inherit_title: Teilnehmende aus der Veranstaltung übernehmen
+      instructor: Referent
       manage_coverage: Abdeckung verwalten
       manage_coverage_hint: Lege fest, an welchen Punkten der Hierarchie die Abdeckung beginnt. Untergeordnete Punkte gelten automatisch als abgedeckt.
       no_attendees: Noch keine Teilnehmenden registriert.
       no_content: Noch keine Inhalte vorhanden.
       no_coverage: Diese Einheit deckt noch keine Inhalte ab.
+      no_instructor: Noch kein Referent eingetragen.
       register: Registrieren
       register_attendee: Teilnehmer registrieren
       remove: Entfernen

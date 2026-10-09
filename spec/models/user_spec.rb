@@ -45,6 +45,31 @@ RSpec.describe User do
     end
   end
 
+  describe "eligible instructors" do
+    it "marks admins and organisers as eligible" do
+      organiser = create(:user)
+      create(:organization_membership, :organiser, user: organiser)
+
+      aggregate_failures do
+        expect(create(:user, :admin)).to be_eligible_instructor
+        expect(organiser).to be_eligible_instructor
+        expect(create(:user)).not_to be_eligible_instructor
+      end
+    end
+
+    it "scopes eligible instructors to admins and organisers" do
+      admin = create(:user, :admin)
+      organiser = create(:user)
+      create(:organization_membership, :organiser, user: organiser)
+      member = create(:user)
+      create(:organization_membership, user: member, role: :member)
+      plain = create(:user)
+
+      expect(User.eligible_instructors).to contain_exactly(admin, organiser)
+      expect(User.eligible_instructors).not_to include(member, plain)
+    end
+  end
+
   describe "locale" do
     it "defaults to German" do
       expect(User.new.locale).to eq("de")

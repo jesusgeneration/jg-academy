@@ -104,6 +104,41 @@ RSpec.describe Unit do
     end
   end
 
+  describe "instructor" do
+    it "is optional" do
+      expect(build(:unit, instructor: nil)).to be_valid
+    end
+
+    it "accepts an admin as instructor" do
+      expect(build(:unit, instructor: build(:user, :admin))).to be_valid
+    end
+
+    it "accepts an organiser as instructor" do
+      organiser = create(:user)
+      create(:organization_membership, :organiser, user: organiser)
+
+      expect(build(:unit, instructor: organiser)).to be_valid
+    end
+
+    it "rejects plain users as instructor" do
+      unit = build(:unit, instructor: build(:user))
+
+      aggregate_failures do
+        expect(unit).not_to be_valid
+        expect(unit.errors[:instructor]).to include(
+          I18n.t("activerecord.errors.models.unit.attributes.instructor.ineligible")
+        )
+      end
+    end
+
+    it "rejects members without an organiser role as instructor" do
+      member = create(:user)
+      create(:organization_membership, user: member, role: :member)
+
+      expect(build(:unit, instructor: member)).not_to be_valid
+    end
+  end
+
   describe "organization delegation" do
     it "delegates to the program" do
       program = create(:program)
