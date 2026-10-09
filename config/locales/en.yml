@@ -244,12 +244,13 @@ en:
       create: Create unit
       date: Date
       description: Description
-      duration: Duration (optional)
-      duration_hint: A selected duration overrides the end time.
+      duration: Duration
       errors_prevented:
         one: '1 error prevented saving:'
         other: "%{count} errors prevented saving:"
       location: Location
+      manage_coverage: Manage coverage
+      manage_coverage_hint: Select the contents this unit covers. Levels and sections include everything below them.
       name: Name
       no_coverage: No content covered yet.
       program: Program
@@ -275,6 +276,7 @@ en:
       tabs:
         all: All
         past: Past
+        planned: Planned
         upcoming: Upcoming
       title: Units
     new:

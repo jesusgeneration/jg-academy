@@ -41,7 +41,6 @@
     <fieldset class="fieldset min-w-0">
       <legend class="fieldset-legend"><%= t(".duration") %></legend>
       <%= f.select :duration_minutes, unit_duration_options(unit_duration_value(unit)), { prompt: t(".select_duration") }, class: "select w-full" %>
-      <p class="label"><%= t(".duration_hint") %></p>
     </fieldset>
   </div>
 
@@ -50,10 +49,13 @@
     <%= f.text_area :description, rows: 3, class: "textarea w-full" %>
   </fieldset>
 
+  <% if unit.new_record? %>
+    <%= render "coverage_fields", coverage_tree: @coverage_tree %>
+  <% else %>
   <div class="border border-base-300 rounded-box p-4">
     <h2 class="font-semibold mb-2"><%= t(".coverage_title") %></h2>
     <p class="text-xs opacity-60 mb-3"><%= t(".coverage_hint") %></p>
-    <% if unit.persisted? && unit.covered_contents.any? %>
+    <% if unit.covered_contents.any? %>
       <ul class="text-sm space-y-1">
         <% unit.covered_contents.includes(:parent).ordered.each do |content| %>
           <li><span class="badge badge-ghost badge-sm mr-1"><%= human_enum_label("content", "content_type", content.content_type) %></span><%= content.title %></li>
@@ -63,6 +65,7 @@
       <p class="text-xs opacity-60"><%= t(".no_coverage") %></p>
     <% end %>
   </div>
+  <% end %>
 
   <div class="flex gap-2">
     <%= f.submit unit.new_record? ? t(".create") : t(".update"), class: "btn btn-primary" %>
