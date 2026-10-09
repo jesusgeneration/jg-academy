@@ -53,6 +53,7 @@ en:
       new:
         confirm_password: Confirm password
         email: Email
+        email_hint: Please use your jg email address only.
         password: Password
         password_with_minimum: Password (%{count} characters minimum)
         submit: Sign up

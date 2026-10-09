@@ -74,6 +74,10 @@ en:
           attributes:
             ends_at:
               after_start_time: must be after the start time
+        user:
+          attributes:
+            email:
+              jg_only: must end with @jesusgeneration.de
     models:
       content: Content
       organization: Organization
