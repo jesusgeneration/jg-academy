@@ -61,6 +61,7 @@ class Unit < ApplicationRecord
 
   scope :upcoming, -> { where(ends_at: Time.current..).order(:starts_at) }
   scope :past, -> { where(ends_at: ...Time.current).order(starts_at: :desc) }
+  scope :planned, -> { where(starts_at: nil).order(created_at: :desc) }
 
   def past?
     ends_at.present? && ends_at < Time.current

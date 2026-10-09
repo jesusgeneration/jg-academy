@@ -124,6 +124,12 @@ RSpec.describe Unit do
     it ".past returns units already finished" do
       expect(Unit.past).to contain_exactly(past_unit)
     end
+
+    it ".planned returns units without a start date" do
+      planned = create(:unit, starts_at: nil, ends_at: nil)
+
+      expect(Unit.planned).to contain_exactly(planned)
+    end
   end
 
   describe "associations" do
