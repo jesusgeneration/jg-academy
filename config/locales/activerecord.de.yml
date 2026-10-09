@@ -74,6 +74,10 @@ de:
           attributes:
             ends_at:
               after_start_time: muss nach dem Beginn liegen
+        user:
+          attributes:
+            email:
+              jg_only: muss auf @jesusgeneration.de enden
     models:
       content: Inhalt
       organization: Veranstalter

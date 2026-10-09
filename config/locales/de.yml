@@ -53,6 +53,7 @@ de:
       new:
         confirm_password: Passwort bestätigen
         email: E-Mail
+        email_hint: Bitte ausschließlich jg-Mailadresse verwenden.
         password: Passwort
         password_with_minimum: Passwort (mindestens %{count} Zeichen)
         submit: Registrieren

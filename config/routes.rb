@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  devise_for :users, path: "auth"
+  devise_for :users, path: "auth", controllers: { registrations: "users/registrations" }
 
   root "dashboards#show"
 
