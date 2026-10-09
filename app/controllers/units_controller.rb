@@ -1,5 +1,5 @@
 class UnitsController < BaseController
-  before_action :set_unit, only: %i[show edit update destroy]
+  before_action :set_unit, only: %i[show edit update destroy inherit_attendances apply_attendances]
 
   def index
     authorize Unit
@@ -22,6 +22,8 @@ class UnitsController < BaseController
     @registrable_users = User.order(:email) - @unit.users
     @coverage_tree = Content.includes(children: :children).where(parent_id: nil).ordered
     @coverages_by_content_id = @unit.unit_coverages.index_by(&:content_id)
+    @inheritance_preview = @unit.attendance_inheritance_preview
+    @program_has_attendances = @unit.program.program_attendances.exists?
   end
 
   def new
@@ -66,6 +68,37 @@ class UnitsController < BaseController
     redirect_to program, notice: t(".destroyed")
   end
 
+  def inherit_attendances
+    authorize @unit, :inherit_attendances?
+    @preview = @unit.attendance_inheritance_preview
+  end
+
+  def apply_attendances
+    authorize @unit, :inherit_attendances?
+    preview = @unit.attendance_inheritance_preview
+    conflict_ids = preview[:conflicts].map { |conflict| conflict[:user].id }
+    import_ids = Array(inheritance_params[:import_user_ids]).map(&:to_i) & conflict_ids
+    added = 0
+    resolved = 0
+    ActiveRecord::Base.transaction do
+      preview[:add].each do |program_attendance|
+        @unit.unit_attendances.create!(
+          user: program_attendance.user,
+          status: Unit.inherited_status(program_attendance.status)
+        )
+        added += 1
+      end
+      import_ids.each do |user_id|
+        conflict = preview[:conflicts].find { |entry| entry[:user].id == user_id }
+        conflict[:unit_attendance].update!(status: conflict[:mapped_status])
+        resolved += 1
+      end
+    end
+    kept = preview[:unchanged] + preview[:conflicts].size - resolved
+    redirect_to unit_path(@unit, anchor: "attendees"),
+      notice: t(".inherited", added: added, kept: kept, resolved: resolved)
+  end
+
   private
 
   def set_unit
@@ -74,6 +107,10 @@ class UnitsController < BaseController
 
   def unit_params
     params.require(:unit).permit(:name, :description, :starts_at, :ends_at, :location, :program_id)
+  end
+
+  def inheritance_params
+    params.permit(import_user_ids: [])
   end
 
   def permitted_programs

@@ -58,3 +58,64 @@
     <% end %>
   </div>
 </div>
+
+<% if policy(@program).view_attendees? %>
+  <div class="card bg-base-100 shadow mt-6">
+    <div class="card-body">
+      <h2 class="card-title"><%= t(".attendees") %></h2>
+
+      <% if @attendee_management %>
+        <% if @registrable_users.any? %>
+          <%= form_with model: [@program, ProgramAttendance.new], url: program_program_attendances_path(@program), method: :post, class: "flex flex-wrap items-end gap-2 mb-4" do |f| %>
+            <fieldset class="fieldset w-full sm:w-72">
+              <legend class="fieldset-legend"><%= t(".register_attendee") %></legend>
+              <%= f.select :user_id, options_from_collection_for_select(@registrable_users, :id, :email), { prompt: t(".select_user") }, class: "select w-full", required: true %>
+            </fieldset>
+            <%= f.submit t(".register"), class: "btn btn-primary" %>
+          <% end %>
+        <% else %>
+          <p class="text-sm opacity-60 mb-4"><%= t(".all_registered") %></p>
+        <% end %>
+      <% end %>
+
+      <% if @attendances.any? %>
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th><%= t(".table.user") %></th><th><%= t(".table.status") %></th>
+              <% if @attendee_management %><th class="text-right"><%= t(".table.actions") %></th><% end %>
+            </tr>
+          </thead>
+          <tbody>
+            <% @attendances.each do |attendance| %>
+              <tr>
+                <td><%= link_to attendance.user.email, user_path(attendance.user), class: "link link-hover" %></td>
+                <td><span class="badge <%= attendance_status_badge_class(attendance.status) %>"><%= human_enum_label("program_attendance", "status", attendance.status) %></span></td>
+                <% if policy(attendance).update? %>
+                  <td class="text-right space-x-1 whitespace-nowrap">
+                    <% (ProgramAttendance.statuses.keys - [attendance.status]).each do |status| %>
+                      <%= button_to human_enum_label("program_attendance", "status", status),
+                            program_program_attendance_path(@program, attendance),
+                            method: :patch,
+                            params: { program_attendance: { status: status } },
+                            form: { class: "inline" },
+                            class: "btn btn-xs #{'btn-success' if status == 'attended'} #{'btn-outline' unless status == 'attended'}" %>
+                    <% end %>
+                    <%= button_to t(".remove"),
+                          program_program_attendance_path(@program, attendance),
+                          method: :delete,
+                          form: { class: "inline" },
+                          data: { turbo_confirm: t(".confirm_remove_attendance") },
+                          class: "btn btn-error btn-outline btn-xs" %>
+                  </td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p class="opacity-60"><%= t(".no_attendees") %></p>
+      <% end %>
+    </div>
+  </div>
+<% end %>

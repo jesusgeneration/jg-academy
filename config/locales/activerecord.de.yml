@@ -15,6 +15,10 @@ de:
         kind: Art
         name: Name
         organization: Veranstalter
+      program_attendance:
+        program: Veranstaltung
+        status: Status
+        user: Benutzer
       unit:
         description: Beschreibung
         ends_at: Ende
@@ -48,6 +52,12 @@ de:
           seminar_day: Seminartag
           staff_preparation: MA Vorbereitung
           youth_weekend: Jugendwochenende
+      program_attendance:
+        status:
+          attended: Teilgenommen
+          cancelled: Abgesagt
+          no_show: Nicht erschienen
+          registered: Registriert
       unit_attendance:
         status:
           attended: Teilgenommen
@@ -69,6 +79,7 @@ de:
       organization: Veranstalter
       organization_membership: Mitgliedschaft
       program: Veranstaltung
+      program_attendance: Programmteilnahme
       unit: Einheit
       unit_attendance: Teilnahme
       unit_coverage: Abdeckung

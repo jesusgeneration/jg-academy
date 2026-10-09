@@ -12,10 +12,16 @@ Rails.application.routes.draw do
   resources :users do
     patch :confirm, on: :member
   end
-  resources :programs
+  resources :programs do
+    resources :program_attendances, only: %i[create update destroy]
+  end
 
   resources :units do
     resources :unit_attendances, only: %i[create update destroy]
     resources :unit_coverages, only: %i[create destroy]
+    member do
+      get :inherit_attendances
+      post :inherit_attendances, action: :apply_attendances
+    end
   end
 end

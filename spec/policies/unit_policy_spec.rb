@@ -33,7 +33,7 @@ RSpec.describe UnitPolicy do
     end
   end
 
-  permissions :update?, :destroy?, :view_attendees? do
+  permissions :update?, :destroy?, :view_attendees?, :inherit_attendances? do
     it "grant admins" do
       expect(policy_class).to permit(build_stubbed(:user, :admin), unit)
     end

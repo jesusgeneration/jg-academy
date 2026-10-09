@@ -141,6 +141,13 @@ en:
         program: Program
     update:
       updated: Organization was successfully updated.
+  program_attendances:
+    create:
+      created: "%{email} was registered for this program."
+    destroy:
+      destroyed: Attendance record was removed.
+    update:
+      updated: Attendance was updated.
   programs:
     create:
       created: Program was successfully created.
@@ -177,16 +184,27 @@ en:
       breadcrumb_root: Programs
       page_title: New Program
     show:
+      all_registered: All users are already registered for this program.
+      attendees: Attendees
       breadcrumb_root: Programs
       confirm_delete: Delete this program?
+      confirm_remove_attendance: Remove attendance record?
       delete: Delete
       edit: Edit
       new_unit: New unit
+      no_attendees: No attendees registered yet.
       no_units: No units in this program yet.
+      register: Register
+      register_attendee: Register attendee
+      remove: Remove
+      select_user: Select user
       table:
+        actions: Actions
         date: Date
         location: Location
+        status: Status
         unit: Unit
+        user: User
       units: Units
     update:
       updated: Program was successfully updated.
@@ -208,6 +226,8 @@ en:
     destroy:
       destroyed: Coverage was removed.
   units:
+    apply_attendances:
+      inherited: 'Inherited: %{added}, kept: %{kept}, conflicts resolved: %{resolved} – please review the list and adjust if needed.'
     create:
       created: Unit was successfully created.
     destroy:
@@ -266,6 +286,15 @@ en:
       delete: Delete
       edit: Edit
       ends: Ends
+      inherit_apply: Apply
+      inherit_back: Back
+      inherit_button: Inherit participants
+      inherit_conflicts: The following participants are already registered with a different status. Choose which entries to take over from the program.
+      inherit_import_label: 'Take over: %{program_status} (unit currently: %{unit_status})'
+      inherit_intro: 'Participants of the program are taken over into this unit with the same status. Exception: “Attended” is taken over as “Registered”. Participants already registered for the unit are kept.'
+      inherit_none: All participants of the program are already up to date in this unit.
+      inherit_summary: 'New: %{added} · Unchanged: %{unchanged} · Conflicts: %{conflicts}'
+      inherit_title: Inherit participants from the program
       manage_coverage: Manage coverage
       manage_coverage_hint: Add or remove the points in the hierarchy where coverage starts. Descendants of a covered item are covered automatically.
       no_attendees: No attendees registered yet.

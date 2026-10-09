@@ -19,6 +19,11 @@ class ProgramPolicy < ApplicationPolicy
     update?
   end
 
+  # Roster visibility for a specific program.
+  def view_attendees?
+    update?
+  end
+
   class Scope < ApplicationPolicy::Scope
   end
 end

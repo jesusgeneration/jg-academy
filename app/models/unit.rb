@@ -11,6 +11,39 @@ class Unit < ApplicationRecord
 
   delegate :organization, to: :program
 
+  # Status mapping when copying the program roster onto a unit:
+  # a program-level "attended" becomes "registered" on the unit.
+  def self.inherited_status(status)
+    status.to_s == "attended" ? "registered" : status.to_s
+  end
+
+  # Splits the program roster into unit additions, conflicts needing a
+  # decision, and entries already matching. Existing unit entries are never
+  # removed by inheritance.
+  def attendance_inheritance_preview
+    existing = unit_attendances.index_by(&:user_id)
+    add = []
+    conflicts = []
+    unchanged = 0
+    program.program_attendances.includes(:user).order("users.email").each do |program_attendance|
+      mapped = self.class.inherited_status(program_attendance.status)
+      unit_attendance = existing[program_attendance.user_id]
+      if unit_attendance.nil?
+        add << program_attendance
+      elsif unit_attendance.status == mapped
+        unchanged += 1
+      else
+        conflicts << {
+          user: program_attendance.user,
+          program_attendance: program_attendance,
+          unit_attendance: unit_attendance,
+          mapped_status: mapped
+        }
+      end
+    end
+    { add: add, conflicts: conflicts, unchanged: unchanged }
+  end
+
   validates :name, presence: true
   validates :starts_at, :ends_at, presence: true
   validate :ends_at_after_starts_at

@@ -141,6 +141,13 @@ de:
         program: Veranstaltung
     update:
       updated: Veranstalter wurde erfolgreich aktualisiert.
+  program_attendances:
+    create:
+      created: "%{email} wurde für diese Veranstaltung registriert."
+    destroy:
+      destroyed: Teilnahme wurde entfernt.
+    update:
+      updated: Teilnahme wurde aktualisiert.
   programs:
     create:
       created: Veranstaltung wurde erfolgreich erstellt.
@@ -177,16 +184,27 @@ de:
       breadcrumb_root: Veranstaltungen
       page_title: Neue Veranstaltung
     show:
+      all_registered: Alle Benutzer sind bereits für diese Veranstaltung registriert.
+      attendees: Teilnehmende
       breadcrumb_root: Veranstaltungen
       confirm_delete: Diese Veranstaltung löschen?
+      confirm_remove_attendance: Teilnahme entfernen?
       delete: Löschen
       edit: Bearbeiten
       new_unit: Neue Einheit
+      no_attendees: Noch keine Teilnehmenden registriert.
       no_units: Noch keine Einheiten in dieser Veranstaltung.
+      register: Registrieren
+      register_attendee: Teilnehmer registrieren
+      remove: Entfernen
+      select_user: Benutzer wählen
       table:
+        actions: Aktionen
         date: Datum
         location: Ort
+        status: Status
         unit: Einheit
+        user: Benutzer
       units: Einheiten
     update:
       updated: Veranstaltung wurde erfolgreich aktualisiert.
@@ -208,6 +226,8 @@ de:
     destroy:
       destroyed: Abdeckung wurde entfernt.
   units:
+    apply_attendances:
+      inherited: 'Übernommen: %{added}, behalten: %{kept}, Konflikte gelöst: %{resolved} – bitte die Liste prüfen und ggf. anpassen.'
     create:
       created: Einheit wurde erfolgreich erstellt.
     destroy:
@@ -266,6 +286,15 @@ de:
       delete: Löschen
       edit: Bearbeiten
       ends: Ende
+      inherit_apply: Übernehmen
+      inherit_back: Zurück
+      inherit_button: Teilnehmende übernehmen
+      inherit_conflicts: Folgende Teilnehmende sind bereits mit abweichendem Status eingetragen. Wähle, welche Einträge aus der Veranstaltung übernommen werden sollen.
+      inherit_import_label: 'Übernehmen: %{program_status} (Einheit derzeit: %{unit_status})'
+      inherit_intro: 'Teilnehmende der Veranstaltung werden mit demselben Status in diese Einheit übernommen. Ausnahme: „Teilgenommen“ wird als „Registriert“ übernommen. Bereits eingetragene Teilnehmende bleiben erhalten.'
+      inherit_none: Alle Teilnehmenden der Veranstaltung sind bereits aktuell in dieser Einheit eingetragen.
+      inherit_summary: 'Neu: %{added} · Unverändert: %{unchanged} · Konflikte: %{conflicts}'
+      inherit_title: Teilnehmende aus der Veranstaltung übernehmen
       manage_coverage: Abdeckung verwalten
       manage_coverage_hint: Lege fest, an welchen Punkten der Hierarchie die Abdeckung beginnt. Untergeordnete Punkte gelten automatisch als abgedeckt.
       no_attendees: Noch keine Teilnehmenden registriert.
