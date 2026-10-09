@@ -5,35 +5,47 @@
     </div>
   <% end %>
 
-  <fieldset class="fieldset">
+  <fieldset class="fieldset min-w-0">
     <legend class="fieldset-legend"><%= t(".name") %></legend>
     <%= f.text_field :name, class: "input w-full", required: true, autofocus: true %>
   </fieldset>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <fieldset class="fieldset">
+    <fieldset class="fieldset min-w-0">
       <legend class="fieldset-legend"><%= t(".program") %></legend>
       <%= f.collection_select :program_id, @permitted_programs, :id, :name,
             { prompt: t(".select_program") }, { class: "select w-full", required: true } %>
     </fieldset>
 
-    <fieldset class="fieldset">
+    <fieldset class="fieldset min-w-0">
       <legend class="fieldset-legend"><%= t(".location") %></legend>
       <%= f.text_field :location, class: "input w-full" %>
     </fieldset>
 
-    <fieldset class="fieldset">
+    <fieldset class="fieldset min-w-0 sm:col-span-2">
       <legend class="fieldset-legend"><%= t(".starts_at") %></legend>
-      <%= f.datetime_field :starts_at, class: "input w-full", required: true %>
+      <% start_parts = unit_datetime_parts(unit) %>
+      <div class="grid grid-cols-[1fr_auto] gap-2">
+        <div class="min-w-0">
+          <%= f.date_field :start_date, value: start_parts[0], class: "input w-full" %>
+          <p class="label"><%= t(".date") %></p>
+        </div>
+        <div>
+          <%= f.select :start_time, unit_time_options(start_parts[1]), { prompt: t(".select_time") }, class: "select w-auto max-w-40" %>
+          <p class="label"><%= t(".time") %></p>
+        </div>
+      </div>
+      <p class="label"><%= t(".starts_at_hint") %></p>
     </fieldset>
 
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend"><%= t(".ends_at") %></legend>
-      <%= f.datetime_field :ends_at, class: "input w-full", required: true %>
+    <fieldset class="fieldset min-w-0">
+      <legend class="fieldset-legend"><%= t(".duration") %></legend>
+      <%= f.select :duration_minutes, unit_duration_options(unit_duration_value(unit)), { prompt: t(".select_duration") }, class: "select w-full" %>
+      <p class="label"><%= t(".duration_hint") %></p>
     </fieldset>
   </div>
 
-  <fieldset class="fieldset">
+  <fieldset class="fieldset min-w-0">
     <legend class="fieldset-legend"><%= t(".description") %></legend>
     <%= f.text_area :description, rows: 3, class: "textarea w-full" %>
   </fieldset>

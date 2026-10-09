@@ -74,6 +74,10 @@ en:
           attributes:
             ends_at:
               after_start_time: must be after the start time
+        unit_attendance:
+          attributes:
+            status:
+              requires_start_time: requires the unit to have a start time
         user:
           attributes:
             email:

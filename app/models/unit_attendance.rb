@@ -10,4 +10,11 @@ class UnitAttendance < ApplicationRecord
   }
 
   validates :user_id, uniqueness: { scope: :unit_id }
+  validate :attended_requires_start_time, if: :attended?
+
+  private
+
+  def attended_requires_start_time
+    errors.add(:status, :requires_start_time) if unit&.starts_at.blank?
+  end
 end

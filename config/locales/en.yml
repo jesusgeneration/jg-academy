@@ -242,8 +242,10 @@ en:
       coverage_hint: Coverage is managed separately via unit coverages.
       coverage_title: Content coverage
       create: Create unit
+      date: Date
       description: Description
-      ends_at: Ends at
+      duration: Duration (optional)
+      duration_hint: A selected duration overrides the end time.
       errors_prevented:
         one: '1 error prevented saving:'
         other: "%{count} errors prevented saving:"
@@ -251,8 +253,12 @@ en:
       name: Name
       no_coverage: No content covered yet.
       program: Program
+      select_duration: Select duration
       select_program: Select program
+      select_time: Select time
       starts_at: Starts at
+      starts_at_hint: Required before participants can be marked as attended.
+      time: Time
       update: Update unit
     index:
       attended_count: "%{count} attended"
@@ -308,6 +314,7 @@ en:
       starts: Starts
       status:
         past: Past
+        unscheduled: Not scheduled yet
         upcoming: Upcoming
       table:
         actions: Actions

@@ -19,6 +19,30 @@ RSpec.describe UnitAttendance do
     it "defaults to registered" do
       expect(described_class.new.status).to eq("registered")
     end
+
+    it "allows non-attended statuses without a start time" do
+      unit = create(:unit, starts_at: nil, ends_at: nil)
+
+      expect(build(:unit_attendance, unit: unit, status: :registered)).to be_valid
+    end
+
+    it "requires a start time for attended" do
+      unscheduled = create(:unit, starts_at: nil, ends_at: nil)
+      attendance = build(:unit_attendance, unit: unscheduled, status: :attended)
+
+      aggregate_failures do
+        expect(attendance).not_to be_valid
+        expect(attendance.errors[:status]).to include(
+          I18n.t("activerecord.errors.models.unit_attendance.attributes.status.requires_start_time")
+        )
+      end
+    end
+
+    it "allows attended with only a start time" do
+      unit = create(:unit, starts_at: 2.weeks.from_now, ends_at: nil)
+
+      expect(build(:unit_attendance, unit: unit, status: :attended)).to be_valid
+    end
   end
 
   describe "status enum" do
