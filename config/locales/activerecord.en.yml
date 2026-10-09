@@ -45,6 +45,9 @@ en:
         kind:
           freizeit: freizeit
           schooling: schooling
+          seminar_day: seminar day
+          staff_preparation: staff preparation
+          youth_weekend: youth weekend
       unit_attendance:
         status:
           attended: Attended

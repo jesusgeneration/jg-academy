@@ -9,8 +9,14 @@ RSpec.describe Program do
       expect(build(:program, kind: nil)).not_to be_valid
     end
 
-    it "defines schooling and freizeit kinds" do
-      expect(described_class.kinds).to eq("schooling" => 0, "freizeit" => 1)
+    it "defines all program kinds" do
+      expect(described_class.kinds).to eq(
+        "schooling" => 0,
+        "freizeit" => 1,
+        "seminar_day" => 2,
+        "youth_weekend" => 3,
+        "staff_preparation" => 4
+      )
     end
   end
 

@@ -45,6 +45,9 @@ de:
         kind:
           freizeit: Freizeit
           schooling: Schulung
+          seminar_day: Seminartag
+          staff_preparation: MA Vorbereitung
+          youth_weekend: Jugendwochenende
       unit_attendance:
         status:
           attended: Teilgenommen
