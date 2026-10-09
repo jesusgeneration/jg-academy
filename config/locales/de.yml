@@ -242,8 +242,10 @@ de:
       coverage_hint: Die Abdeckung wird separat über Unit-Coverages verwaltet.
       coverage_title: Inhaltsabdeckung
       create: Einheit erstellen
+      date: Datum
       description: Beschreibung
-      ends_at: Ende
+      duration: Dauer (optional)
+      duration_hint: Eine gewählte Dauer überschreibt die Ende-Zeit.
       errors_prevented:
         one: '1 Fehler hat das Speichern verhindert:'
         other: "%{count} Fehler haben das Speichern verhindert:"
@@ -251,8 +253,12 @@ de:
       name: Name
       no_coverage: Noch keine Inhalte abgedeckt.
       program: Veranstaltung
+      select_duration: Dauer wählen
       select_program: Veranstaltung wählen
+      select_time: Uhrzeit wählen
       starts_at: Beginn
+      starts_at_hint: Erforderlich, bevor Teilnehmende als teilgenommen markiert werden.
+      time: Uhrzeit
       update: Einheit aktualisieren
     index:
       attended_count: "%{count} teilgenommen"
@@ -308,6 +314,7 @@ de:
       starts: Beginn
       status:
         past: Vergangen
+        unscheduled: Noch nicht terminiert
         upcoming: Bevorstehend
       table:
         actions: Aktionen

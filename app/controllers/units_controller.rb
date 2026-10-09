@@ -27,7 +27,7 @@ class UnitsController < BaseController
   end
 
   def new
-    @unit = Unit.new(program: permitted_programs.first)
+    @unit = Unit.new
     authorize @unit
     @permitted_programs = permitted_programs
   end
@@ -106,7 +106,8 @@ class UnitsController < BaseController
   end
 
   def unit_params
-    params.require(:unit).permit(:name, :description, :starts_at, :ends_at, :location, :program_id)
+    params.require(:unit).permit(:name, :description, :location, :program_id, :duration_minutes,
+      :start_date, :start_time)
   end
 
   def inheritance_params

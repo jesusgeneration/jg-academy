@@ -59,8 +59,9 @@ RSpec.describe "Units" do
           name: "Youth Leadership Unit 2026",
           description: "A leadership unit.",
           location: "Parish Hall",
-          starts_at: "2026-10-10T18:00",
-          ends_at: "2026-10-11T17:00",
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "60",
           program_id: program.id
         }
       }
@@ -69,6 +70,8 @@ RSpec.describe "Units" do
       aggregate_failures do
         expect(response).to redirect_to(unit_path(unit))
         expect(unit.program).to eq(program)
+        expect(unit.starts_at).to eq(Time.zone.local(2026, 10, 10, 18, 0))
+        expect(unit.ends_at).to eq(Time.zone.local(2026, 10, 10, 19, 0))
       end
     end
 
@@ -76,6 +79,128 @@ RSpec.describe "Units" do
       get new_unit_path
 
       expect(response).to have_http_status(:ok)
+    end
+
+    it "renders the new form without a preselected program" do
+      get new_unit_path
+
+      program_select = response.body[/<select[^>]*name="unit\[program_id\]"[^>]*>.*?<\/select>/m]
+
+      aggregate_failures do
+        expect(program_select).to include(I18n.t("units.form.select_program"))
+        expect(program_select.scan(/selected="selected"/).size).to eq(0)
+      end
+    end
+
+    it "offers split date and time fields without free time entry" do
+      get new_unit_path
+
+      time_select = response.body[/<select[^>]*name="unit\[start_time\]"[^>]*>.*?<\/select>/m]
+
+      aggregate_failures do
+        expect(response.body).not_to include('type="datetime-local"')
+        expect(response.body).not_to include("unit[end_date]")
+        expect(response.body).to include(I18n.t("units.form.time"))
+        expect(response.body).to include("sm:col-span-2")
+        expect(response.body).to include("fieldset min-w-0")
+        expect(response.body).to include("grid-cols-[1fr_auto]")
+        expect(time_select).to include("max-w-40")
+        expect(time_select.scan(/<option value="(\d\d:\d\d)"/).flatten.size).to eq(68)
+        expect(time_select).to include('<option value="07:00">07:00</option>')
+        expect(time_select).to include('<option value="23:45">23:45</option>')
+      end
+    end
+
+    it "rounds legacy times to the nearest quarter hour on the edit form" do
+      sign_in create(:user, :admin)
+      unit = create(:unit, program: program,
+        starts_at: Time.zone.local(2026, 10, 10, 18, 10),
+        ends_at: Time.zone.local(2026, 10, 10, 20, 0))
+
+      get edit_unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include('<option selected="selected" value="18:15">18:15</option>')
+      end
+    end
+
+    it "keeps legacy hours outside 7-23 selectable on the edit form" do
+      sign_in create(:user, :admin)
+      unit = create(:unit, program: program,
+        starts_at: Time.zone.local(2026, 10, 10, 6, 15),
+        ends_at: Time.zone.local(2026, 10, 10, 20, 0))
+
+      get edit_unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include('<option selected="selected" value="06:15">06:15</option>')
+      end
+    end
+
+    it "creates a unit from start date, time and duration" do
+      post units_path, params: {
+        unit: {
+          name: "Split Unit",
+          start_date: "2026-10-10",
+          start_time: "18:15",
+          duration_minutes: "75",
+          program_id: program.id
+        }
+      }
+
+      unit = Unit.find_by!(name: "Split Unit")
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.starts_at).to eq(Time.zone.local(2026, 10, 10, 18, 15))
+        expect(unit.ends_at).to eq(Time.zone.local(2026, 10, 10, 19, 30))
+      end
+    end
+
+    it "creates an unscheduled unit without dates" do
+      post units_path, params: {
+        unit: {
+          name: "Planned Unit",
+          program_id: program.id
+        }
+      }
+
+      unit = Unit.find_by!(name: "Planned Unit")
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.starts_at).to be_nil
+        expect(unit.ends_at).to be_nil
+      end
+    end
+
+    it "flags unscheduled units on the unit page" do
+      unit = create(:unit, program: program, starts_at: nil, ends_at: nil)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.status.unscheduled"))
+      end
+    end
+
+    it "creates a unit from start plus duration" do
+      post units_path, params: {
+        unit: {
+          name: "Evening Unit",
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "75",
+          program_id: program.id
+        }
+      }
+
+      unit = Unit.find_by!(name: "Evening Unit")
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.ends_at).to eq(Time.zone.local(2026, 10, 10, 19, 15))
+      end
     end
 
     it "rejects invalid submissions" do
@@ -113,8 +238,9 @@ RSpec.describe "Units" do
       patch unit_path(unit), params: {
         unit: {
           name: "Renamed Unit",
-          starts_at: "2026-10-10T18:00",
-          ends_at: "2026-10-11T17:00",
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "60",
           program_id: program.id
         }
       }
@@ -164,6 +290,24 @@ RSpec.describe "Units" do
       expect(unit.reload.program).to eq(program)
     end
 
+    it "updates a unit from duration" do
+      sign_in_organiser_for(organization)
+
+      patch unit_path(unit), params: {
+        unit: {
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "60",
+          program_id: program.id
+        }
+      }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.reload.ends_at).to eq(Time.zone.local(2026, 10, 10, 19, 0))
+      end
+    end
+
     it "prevents organisers of another organization from editing its units" do
       sign_in_organiser_for(other_organization)
 
@@ -188,8 +332,9 @@ RSpec.describe "Units" do
     def unit_params_for(tampered_program_id)
       {
         name: "Organiser Unit",
-        starts_at: "2026-10-10T18:00",
-        ends_at: "2026-10-11T17:00",
+        start_date: "2026-10-10",
+        start_time: "18:00",
+        duration_minutes: "60",
         program_id: tampered_program_id
       }
     end
@@ -370,6 +515,34 @@ RSpec.describe "Units" do
       }.not_to change(UnitAttendance, :count)
 
       expect(response).to redirect_to(root_path)
+    end
+
+    it "blocks attended on unscheduled units but allows registered" do
+      unscheduled = create(:unit, program: program, starts_at: nil, ends_at: nil)
+      attendance = create(:unit_attendance, unit: unscheduled, user: create(:user))
+
+      patch unit_unit_attendance_path(unscheduled, attendance),
+            params: { unit_attendance: { status: "attended" } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unscheduled))
+        follow_redirect!
+        expect(flash[:alert]).to be_present
+        expect(attendance.reload.status).to eq("registered")
+      end
+    end
+
+    it "allows attended with only a start time" do
+      start_only = create(:unit, program: program, starts_at: 2.weeks.from_now, ends_at: nil)
+      attendance = create(:unit_attendance, unit: start_only, user: create(:user))
+
+      patch unit_unit_attendance_path(start_only, attendance),
+            params: { unit_attendance: { status: "attended" } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(start_only))
+        expect(attendance.reload.status).to eq("attended")
+      end
     end
   end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_10_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -94,10 +94,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_000001) do
   create_table "units", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
-    t.datetime "ends_at", null: false
+    t.datetime "ends_at"
     t.string "location"
     t.string "name", null: false
-    t.datetime "starts_at", null: false
+    t.datetime "starts_at"
     t.datetime "updated_at", null: false
     t.bigint "program_id", null: false
     t.index ["program_id"], name: "index_units_on_program_id"

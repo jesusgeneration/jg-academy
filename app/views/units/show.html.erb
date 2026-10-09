@@ -14,7 +14,11 @@
           <h1 class="card-title"><%= @unit.name %></h1>
           <p class="text-sm opacity-60"><%= @unit.program.organization.name %> · <%= link_to @unit.program.name, program_path(@unit.program), class: "link link-hover" %><% if @unit.location.present? %> · <%= @unit.location %><% end %></p>
         </div>
-        <span class="badge <%= @unit.past? ? "badge-ghost" : "badge-info" %>"><%= @unit.past? ? t(".status.past") : t(".status.upcoming") %></span>
+        <% if @unit.scheduled? %>
+          <span class="badge <%= @unit.past? ? "badge-ghost" : "badge-info" %>"><%= @unit.past? ? t(".status.past") : t(".status.upcoming") %></span>
+        <% else %>
+          <span class="badge badge-warning"><%= t(".status.unscheduled") %></span>
+        <% end %>
       </div>
 
       <% if @unit.description.present? %>
