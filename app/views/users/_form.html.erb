@@ -31,7 +31,7 @@
         <%= ff.hidden_field :id %>
         <%= ff.hidden_field :organization_id %>
         <%= ff.select :role,
-              options_for_select([[ t(".not_a_member"), "" ], [ human_enum_label("organization_membership", "role", "member"), "member" ], [ human_enum_label("organization_membership", "role", "organiser"), "organiser" ]], ff.object.role),
+              options_for_select([[ t(".not_a_member"), "" ], [ human_enum_label("organization_membership", "role", "member"), "member" ], [ human_enum_label("organization_membership", "role", "organiser"), "organiser" ]], ff.object.role || ""),
               {}, class: "select select-sm" %>
       </div>
     <% end %>
