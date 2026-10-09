@@ -4,9 +4,10 @@ class UnitsController < BaseController
   def index
     authorize Unit
     scope = policy_scope(Unit).includes(program: :organization, unit_attendances: :user)
-    @tab = %w[upcoming past all].include?(params[:tab]) ? params[:tab] : "upcoming"
+    @tab = %w[upcoming past planned all].include?(params[:tab]) ? params[:tab] : "upcoming"
     @units = case @tab
     when "past" then scope.past
+    when "planned" then scope.planned
     when "all" then scope.order(starts_at: :desc)
     else scope.upcoming
     end
@@ -30,15 +31,22 @@ class UnitsController < BaseController
     @unit = Unit.new
     authorize @unit
     @permitted_programs = permitted_programs
+    @coverage_tree = coverage_tree
   end
 
   def create
     @unit = Unit.new(unit_params)
     authorize @unit
     ensure_permitted_program
-    if @unit.save
+    begin
+      ActiveRecord::Base.transaction do
+        @unit.save!
+        coverage_content_ids.each do |content_id|
+          @unit.unit_coverages.create!(content_id: content_id)
+        end
+      end
       redirect_to @unit, notice: t(".created")
-    else
+    rescue ActiveRecord::RecordInvalid
       prepare_form
       render :new, status: :unprocessable_content
     end
@@ -132,5 +140,15 @@ class UnitsController < BaseController
 
   def prepare_form
     @permitted_programs = permitted_programs
+    @coverage_tree = coverage_tree
+  end
+
+  def coverage_tree
+    Content.includes(children: :children).where(parent_id: nil).ordered
+  end
+
+  def coverage_content_ids
+    ids = Array(params.permit(coverage_content_ids: [])[:coverage_content_ids]).map(&:to_i).uniq
+    Content.where(id: ids).pluck(:id)
   end
 end

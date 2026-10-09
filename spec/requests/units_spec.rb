@@ -32,6 +32,21 @@ RSpec.describe "Units" do
 
       expect(response.body).to include(past_unit.name)
     end
+
+    it "supports the planned tab for units without dates" do
+      sign_in create(:user)
+      planned_unit = create(:unit, program: program, name: "Planned Vision", starts_at: nil, ends_at: nil)
+      scheduled_unit = create(:unit, program: program)
+
+      get units_path, params: { tab: "planned" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.index.tabs.planned"))
+        expect(response.body).to include(planned_unit.name)
+        expect(response.body).not_to include(scheduled_unit.name)
+      end
+    end
   end
 
   describe "GET /units/:id" do
@@ -79,6 +94,74 @@ RSpec.describe "Units" do
       get new_unit_path
 
       expect(response).to have_http_status(:ok)
+    end
+
+    it "shows the coverage tree on the new form" do
+      level = create(:content, :level, title: "Level Tree")
+
+      get new_unit_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.form.manage_coverage"))
+        expect(response.body).to include("Level Tree")
+        expect(response.body).to include("coverage_content_ids[]")
+      end
+    end
+
+    it "creates coverages for selected contents" do
+      level = create(:content, :level)
+      detail = create(:content, :detail)
+
+      expect {
+        post units_path, params: {
+          unit: {
+            name: "Covered Unit",
+            start_date: "2026-10-10",
+            start_time: "18:00",
+            duration_minutes: "60",
+            program_id: program.id
+          },
+          coverage_content_ids: [ level.id.to_s, detail.id.to_s ]
+        }
+      }.to change(UnitCoverage, :count).by(2)
+
+      unit = Unit.find_by!(name: "Covered Unit")
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.covered_contents).to contain_exactly(level, detail)
+      end
+    end
+
+    it "ignores invalid coverage ids" do
+      expect {
+        post units_path, params: {
+          unit: {
+            name: "Plain Unit",
+            start_date: "2026-10-10",
+            start_time: "18:00",
+            program_id: program.id
+          },
+          coverage_content_ids: [ "999999" ]
+        }
+      }.to change(UnitCoverage, :count).by(0)
+
+      expect(response).to redirect_to(unit_path(Unit.find_by!(name: "Plain Unit")))
+    end
+
+    it "re-renders the coverage tree on invalid submissions" do
+      level = create(:content, :level, title: "Level Rerender")
+
+      post units_path, params: {
+        unit: { name: "", program_id: program.id },
+        coverage_content_ids: [ level.id.to_s ]
+      }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include("Level Rerender")
+        expect(response.body).to include("checked=\"checked\"")
+      end
     end
 
     it "renders the new form without a preselected program" do

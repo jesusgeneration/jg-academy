@@ -1,0 +1,60 @@
+<div class="border border-base-300 rounded-box p-4">
+  <h2 class="font-semibold mb-2"><%= t("units.form.manage_coverage") %></h2>
+  <p class="text-xs opacity-60 mb-3"><%= t("units.form.manage_coverage_hint") %></p>
+  <% selected_ids = Array(params[:coverage_content_ids]).map(&:to_s) %>
+  <% if coverage_tree.any? %>
+    <div class="space-y-2">
+      <% coverage_tree.each do |level| %>
+        <div class="flex items-start gap-2">
+          <div class="pt-3">
+            <%= check_box_tag "coverage_content_ids[]", level.id, selected_ids.include?(level.id.to_s), class: "checkbox checkbox-sm", id: "coverage_content_#{level.id}" %>
+          </div>
+          <div class="collapse collapse-arrow bg-base-200 flex-1">
+            <input type="checkbox" />
+            <div class="collapse-title text-sm font-medium py-2 min-h-0">
+              <span class="badge badge-primary badge-outline badge-sm mr-1"><%= human_enum_label("content", "content_type", level.content_type) %></span>
+              <%= level.title %>
+            </div>
+            <div class="collapse-content">
+              <% if level.children.any? %>
+                <div class="space-y-2">
+                  <% level.children.each do |section| %>
+                    <div class="flex items-start gap-2">
+                      <div class="pt-2">
+                        <%= check_box_tag "coverage_content_ids[]", section.id, selected_ids.include?(section.id.to_s), class: "checkbox checkbox-sm", id: "coverage_content_#{section.id}" %>
+                      </div>
+                      <div class="collapse collapse-arrow bg-base-100 flex-1">
+                        <input type="checkbox" />
+                        <div class="collapse-title text-sm py-2 min-h-0">
+                          <span class="badge badge-secondary badge-outline badge-sm mr-1"><%= human_enum_label("content", "content_type", section.content_type) %></span>
+                          <%= section.title %>
+                        </div>
+                        <div class="collapse-content">
+                          <% if section.children.any? %>
+                            <ul class="space-y-1">
+                              <% section.children.each do |detail| %>
+                                <li class="flex items-center gap-2">
+                                  <%= check_box_tag "coverage_content_ids[]", detail.id, selected_ids.include?(detail.id.to_s), class: "checkbox checkbox-sm", id: "coverage_content_#{detail.id}" %>
+                                  <span>
+                                    <span class="badge badge-ghost badge-sm mr-1"><%= human_enum_label("content", "content_type", detail.content_type) %></span>
+                                    <%= detail.title %>
+                                  </span>
+                                </li>
+                              <% end %>
+                            </ul>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="text-xs opacity-60"><%= t("units.form.no_coverage") %></p>
+  <% end %>
+</div>

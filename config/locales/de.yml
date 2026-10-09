@@ -244,12 +244,13 @@ de:
       create: Einheit erstellen
       date: Datum
       description: Beschreibung
-      duration: Dauer (optional)
-      duration_hint: Eine gewählte Dauer überschreibt die Ende-Zeit.
+      duration: Dauer
       errors_prevented:
         one: '1 Fehler hat das Speichern verhindert:'
         other: "%{count} Fehler haben das Speichern verhindert:"
       location: Ort
+      manage_coverage: Abdeckung verwalten
+      manage_coverage_hint: Wähle die Inhalte, die diese Einheit abdeckt. Ebenen und Abschnitte schließen alles darunter ein.
       name: Name
       no_coverage: Noch keine Inhalte abgedeckt.
       program: Veranstaltung
@@ -275,6 +276,7 @@ de:
       tabs:
         all: Alle
         past: Vergangen
+        planned: Geplant
         upcoming: Bevorstehend
       title: Einheiten
     new:
