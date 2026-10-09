@@ -9,6 +9,11 @@ class ProgramsController < BaseController
   def show
     authorize @program
     @units = @program.units.order(:starts_at)
+    @attendances = @program.program_attendances.includes(:user).order("users.email")
+    return unless policy(@program).update?
+
+    @attendee_management = true
+    @registrable_users = User.order(:email) - @program.users
   end
 
   def new

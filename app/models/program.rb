@@ -3,6 +3,9 @@ class Program < ApplicationRecord
 
   has_many :units, dependent: :restrict_with_error
 
+  has_many :program_attendances, dependent: :destroy
+  has_many :users, through: :program_attendances
+
   enum :kind, {
     schooling: 0,
     freizeit: 1,

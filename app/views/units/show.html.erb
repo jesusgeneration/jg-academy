@@ -141,9 +141,14 @@
 <% end %>
 
 <% if policy(@unit).view_attendees? %>
-  <div class="card bg-base-100 shadow mt-6">
+  <div id="attendees" class="card bg-base-100 shadow mt-6 scroll-mt-24">
     <div class="card-body">
-      <h2 class="card-title"><%= t(".attendees") %></h2>
+      <h2 class="card-title justify-between">
+        <%= t(".attendees") %>
+        <% if @attendee_management && @program_has_attendances %>
+          <%= link_to t(".inherit_button"), inherit_attendances_unit_path(@unit), class: "btn btn-outline btn-sm" %>
+        <% end %>
+      </h2>
 
       <% if @attendee_management %>
         <% if @registrable_users.any? %>

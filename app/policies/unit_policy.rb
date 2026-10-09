@@ -24,6 +24,11 @@ class UnitPolicy < ApplicationPolicy
     update?
   end
 
+  # Bulk copy of the program roster onto this unit.
+  def inherit_attendances?
+    update?
+  end
+
   # Whether the attendee summary column may appear on the units index.
   def view_attendance_summary?
     admin? || organiser_anywhere?

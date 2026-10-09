@@ -99,4 +99,22 @@ FactoryBot.define do
       status { :no_show }
     end
   end
+
+  factory :program_attendance do
+    association :program
+    user
+    status { :registered }
+
+    trait :attended do
+      status { :attended }
+    end
+
+    trait :cancelled do
+      status { :cancelled }
+    end
+
+    trait :no_show do
+      status { :no_show }
+    end
+  end
 end

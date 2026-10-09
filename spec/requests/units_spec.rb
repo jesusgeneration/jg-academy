@@ -261,6 +261,118 @@ RSpec.describe "Units" do
     end
   end
 
+  describe "attendance inheritance" do
+    let!(:unit) { create(:unit, program: program) }
+
+    before { sign_in_organiser_for(organization) }
+
+    it "copies program participants with attended mapped to registered" do
+      newcomer = create(:user)
+      cancel_user = create(:user)
+      create(:program_attendance, :attended, program: program, user: newcomer)
+      create(:program_attendance, :cancelled, program: program, user: cancel_user)
+
+      expect {
+        post inherit_attendances_unit_path(unit)
+      }.to change(UnitAttendance, :count).by(2)
+
+      aggregate_failures do
+        expect(UnitAttendance.find_by!(unit: unit, user: newcomer).status).to eq("registered")
+        expect(UnitAttendance.find_by!(unit: unit, user: cancel_user).status).to eq("cancelled")
+        expect(response).to redirect_to(unit_path(unit, anchor: "attendees"))
+        follow_redirect!
+        expect(response.body).to include(I18n.t("units.show.attendees"))
+      end
+    end
+
+    it "keeps existing unit entries and only adds missing users" do
+      keeper = create(:user)
+      create(:unit_attendance, unit: unit, user: keeper, status: :cancelled)
+      create(:program_attendance, program: program, user: keeper, status: :cancelled)
+      newcomer = create(:user)
+      create(:program_attendance, program: program, user: newcomer)
+
+      expect {
+        post inherit_attendances_unit_path(unit)
+      }.to change(UnitAttendance, :count).by(1)
+
+      aggregate_failures do
+        expect(UnitAttendance.find_by!(unit: unit, user: keeper).status).to eq("cancelled")
+        expect(UnitAttendance.find_by!(unit: unit, user: newcomer).status).to eq("registered")
+      end
+    end
+
+    it "resolves conflicts only for explicitly imported users" do
+      imported = create(:user)
+      kept = create(:user)
+      create(:program_attendance, :attended, program: program, user: imported)
+      create(:unit_attendance, unit: unit, user: imported, status: :cancelled)
+      create(:program_attendance, :attended, program: program, user: kept)
+      create(:unit_attendance, unit: unit, user: kept, status: :no_show)
+
+      expect {
+        post inherit_attendances_unit_path(unit), params: { import_user_ids: [ imported.id ] }
+      }.not_to change(UnitAttendance, :count)
+
+      aggregate_failures do
+        expect(UnitAttendance.find_by!(unit: unit, user: imported).status).to eq("registered")
+        expect(UnitAttendance.find_by!(unit: unit, user: kept).status).to eq("no_show")
+      end
+    end
+
+    it "links to the inherit preview page from the unit page" do
+      conflict_user = create(:user)
+      create(:program_attendance, :attended, program: program, user: conflict_user)
+      create(:unit_attendance, unit: unit, user: conflict_user, status: :cancelled)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.inherit_button"))
+        expect(response.body).to include(inherit_attendances_unit_path(unit))
+      end
+    end
+
+    it "renders the inherit preview with conflict choices" do
+      conflict_user = create(:user)
+      create(:program_attendance, :attended, program: program, user: conflict_user)
+      create(:unit_attendance, unit: unit, user: conflict_user, status: :cancelled)
+      newcomer = create(:user)
+      create(:program_attendance, program: program, user: newcomer)
+
+      get inherit_attendances_unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.inherit_title"))
+        expect(response.body).to include(conflict_user.email)
+        expect(response.body).to include(I18n.t("units.show.inherit_apply"))
+        expect(response.body).to include(I18n.t("units.show.inherit_back"))
+      end
+    end
+
+    it "forbids plain users from viewing the inherit preview" do
+      sign_in create(:user)
+
+      get inherit_attendances_unit_path(unit)
+
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "forbids plain users from inheriting" do
+      sign_in create(:user)
+      newcomer = create(:user)
+      create(:program_attendance, program: program, user: newcomer)
+
+      expect {
+        post inherit_attendances_unit_path(unit)
+      }.not_to change(UnitAttendance, :count)
+
+      expect(response).to redirect_to(root_path)
+    end
+  end
+
   describe "coverage management" do
     let!(:unit) { create(:unit, program: program) }
     let!(:level) { create(:content, :level, title: "Level 1") }

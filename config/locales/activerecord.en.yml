@@ -15,6 +15,10 @@ en:
         kind: Kind
         name: Name
         organization: Organization
+      program_attendance:
+        program: Program
+        status: Status
+        user: User
       unit:
         description: Description
         ends_at: Ends at
@@ -48,6 +52,12 @@ en:
           seminar_day: seminar day
           staff_preparation: staff preparation
           youth_weekend: youth weekend
+      program_attendance:
+        status:
+          attended: Attended
+          cancelled: Cancelled
+          no_show: No show
+          registered: Registered
       unit_attendance:
         status:
           attended: Attended
@@ -69,6 +79,7 @@ en:
       organization: Organization
       organization_membership: Membership
       program: Program
+      program_attendance: Program attendance
       unit: Unit
       unit_attendance: Attendance
       unit_coverage: Coverage
