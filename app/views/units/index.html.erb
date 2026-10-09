@@ -8,7 +8,7 @@
 </div>
 
 <div role="tablist" class="tabs tabs-box mb-4">
-  <% [["upcoming", t(".tabs.upcoming")], ["past", t(".tabs.past")], ["all", t(".tabs.all")]].each do |tab, label| %>
+  <% [["upcoming", t(".tabs.upcoming")], ["past", t(".tabs.past")], ["planned", t(".tabs.planned")], ["all", t(".tabs.all")]].each do |tab, label| %>
     <%= link_to label, units_path(tab: tab), role: "tab",
           class: "tab #{'tab-active' if @tab == tab}" %>
   <% end %>
