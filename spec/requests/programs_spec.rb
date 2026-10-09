@@ -97,6 +97,23 @@ RSpec.describe "Programs" do
       end
     end
 
+    it "lets an admin create a program with a new kind" do
+      sign_in create(:user, :admin)
+
+      expect {
+        post programs_path, params: {
+          program: { name: "Seminartag", kind: "seminar_day", organization_id: organization.id }
+        }
+      }.to change(Program, :count).by(1)
+
+      aggregate_failures do
+        expect(Program.last).to be_seminar_day
+        expect(response).to redirect_to(program_path(Program.last))
+        follow_redirect!
+        expect(response.body).to include("Seminartag")
+      end
+    end
+
     it "rejects invalid submissions" do
       sign_in create(:user, :admin)
 
