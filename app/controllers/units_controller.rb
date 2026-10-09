@@ -31,6 +31,7 @@ class UnitsController < BaseController
     @unit = Unit.new
     authorize @unit
     @permitted_programs = permitted_programs
+    @eligible_instructors = User.eligible_instructors
     @coverage_tree = coverage_tree
   end
 
@@ -61,6 +62,7 @@ class UnitsController < BaseController
     authorize @unit
     @unit.assign_attributes(unit_params)
     ensure_permitted_program
+    authorize @unit, :change_instructor? if @unit.instructor_id_changed?
     if @unit.save
       redirect_to @unit, notice: t(".updated")
     else
@@ -114,8 +116,8 @@ class UnitsController < BaseController
   end
 
   def unit_params
-    params.require(:unit).permit(:name, :description, :location, :program_id, :duration_minutes,
-      :start_date, :start_time)
+    params.require(:unit).permit(:name, :description, :location, :program_id, :instructor_id,
+      :duration_minutes, :start_date, :start_time)
   end
 
   def inheritance_params
@@ -140,6 +142,7 @@ class UnitsController < BaseController
 
   def prepare_form
     @permitted_programs = permitted_programs
+    @eligible_instructors = User.eligible_instructors
     @coverage_tree = coverage_tree
   end
 

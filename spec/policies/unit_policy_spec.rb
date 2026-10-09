@@ -71,4 +71,48 @@ RSpec.describe UnitPolicy do
       expect(policy_class).not_to permit(user, Unit)
     end
   end
+
+  permissions :change_instructor? do
+    let(:policy_organization) { create(:organization) }
+    let(:policy_program) { create(:program, organization: policy_organization) }
+    let(:instructor) do
+      user = create(:user)
+      create(:organization_membership, :organiser, user: user, organization: policy_organization)
+      user
+    end
+    let(:fellow_organiser) do
+      user = create(:user)
+      create(:organization_membership, :organiser, user: user, organization: policy_organization)
+      user
+    end
+
+    it "permits everyone when nobody attended yet" do
+      unit = create(:unit, program: policy_program, instructor: instructor)
+
+      aggregate_failures do
+        expect(policy_class).to permit(create(:user, :admin), unit)
+        expect(policy_class).to permit(create(:user), unit)
+      end
+    end
+
+    it "permits the current instructor and admins once somebody attended" do
+      unit = create(:unit, program: policy_program, instructor: instructor)
+      create(:unit_attendance, :attended, unit: unit, user: create(:user))
+
+      aggregate_failures do
+        expect(policy_class).to permit(create(:user, :admin), unit)
+        expect(policy_class).to permit(instructor, unit)
+      end
+    end
+
+    it "denies other users once somebody attended" do
+      unit = create(:unit, program: policy_program, instructor: instructor)
+      create(:unit_attendance, :attended, unit: unit, user: create(:user))
+
+      aggregate_failures do
+        expect(policy_class).not_to permit(create(:user), unit)
+        expect(policy_class).not_to permit(fellow_organiser, unit)
+      end
+    end
+  end
 end

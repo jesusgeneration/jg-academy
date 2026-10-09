@@ -424,7 +424,7 @@ RSpec.describe "Units" do
   end
 
   describe "attendance management" do
-    let!(:unit) { create(:unit, program: program) }
+    let!(:unit) { create(:unit, program: program, instructor: create(:user, :admin)) }
     let!(:participant) { create(:user) }
 
     before { sign_in_organiser_for(organization) }
@@ -485,6 +485,163 @@ RSpec.describe "Units" do
       aggregate_failures do
         expect(response.body).not_to include(I18n.t("units.show.attendees"))
         expect(response.body).not_to include("otherchurch@example.com")
+      end
+    end
+  end
+
+  describe "instructor management" do
+    let!(:unit) { create(:unit, program: program) }
+
+    def eligible_organiser(email)
+      user = create(:user, email: email)
+      create(:organization_membership, :organiser, user: user, organization: organization)
+      user
+    end
+
+    it "offers only eligible instructors on the new form" do
+      sign_in_organiser_for(organization)
+      instructor = eligible_organiser("instructor@example.com")
+      admin = create(:user, :admin, email: "admin@example.com")
+      plain = create(:user, email: "plain@example.com")
+
+      get new_unit_path
+
+      select = response.body[/<select[^>]*name="unit\[instructor_id\]"[^>]*>.*?<\/select>/m]
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.form.instructor"))
+        expect(select).to include(I18n.t("units.form.select_instructor"))
+        expect(select).to include(instructor.email)
+        expect(select).to include(admin.email)
+        expect(select).not_to include(plain.email)
+      end
+    end
+
+    it "creates a unit with an instructor" do
+      instructor = eligible_organiser("instructor@example.com")
+      sign_in_organiser_for(organization)
+
+      post units_path, params: {
+        unit: { name: "Instructed Unit", program_id: program.id, instructor_id: instructor.id }
+      }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(Unit.find_by!(name: "Instructed Unit")))
+        expect(Unit.find_by!(name: "Instructed Unit").instructor).to eq(instructor)
+      end
+    end
+
+    it "rejects an ineligible instructor" do
+      sign_in_organiser_for(organization)
+
+      expect {
+        post units_path, params: {
+          unit: { name: "Bad Instructor Unit", program_id: program.id, instructor_id: create(:user).id }
+        }
+      }.not_to change(Unit, :count)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include(I18n.t("units.form.errors_prevented", count: 1))
+      end
+    end
+
+    it "shows the instructor on the unit page" do
+      instructor = eligible_organiser("instructor@example.com")
+      unit.update!(instructor: instructor)
+      sign_in instructor
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.instructor"))
+        expect(response.body).to include(instructor.email)
+      end
+    end
+
+    it "shows a placeholder without an instructor" do
+      sign_in_organiser_for(organization)
+
+      get unit_path(unit)
+
+      expect(response.body).to include(I18n.t("units.show.no_instructor"))
+    end
+
+    it "blocks attended without an instructor but allows it with one" do
+      sign_in_organiser_for(organization)
+      attendance = create(:unit_attendance, unit: unit, user: create(:user))
+
+      patch unit_unit_attendance_path(unit, attendance),
+            params: { unit_attendance: { status: "attended" } }
+      expect(attendance.reload.status).to eq("registered")
+
+      unit.update!(instructor: create(:user, :admin))
+      patch unit_unit_attendance_path(unit, attendance),
+            params: { unit_attendance: { status: "attended" } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(attendance.reload.status).to eq("attended")
+      end
+    end
+
+    it "lets a fellow organiser still edit other fields after attended" do
+      instructor = eligible_organiser("instructor@example.com")
+      unit.update!(instructor: instructor)
+      create(:unit_attendance, :attended, unit: unit, user: create(:user))
+      sign_in_organiser_for(organization)
+
+      patch unit_path(unit), params: { unit: { name: "Renamed After Attended" } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.reload.name).to eq("Renamed After Attended")
+      end
+    end
+
+    it "prevents a fellow organiser from changing the instructor after attended" do
+      instructor = eligible_organiser("instructor@example.com")
+      unit.update!(instructor: instructor)
+      create(:unit_attendance, :attended, unit: unit, user: create(:user))
+      replacement = eligible_organiser("replacement@example.com")
+      sign_in replacement
+
+      patch unit_path(unit), params: { unit: { instructor_id: replacement.id } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(root_path)
+        expect(unit.reload.instructor).to eq(instructor)
+      end
+    end
+
+    it "lets the instructor change the instructor after attended" do
+      instructor = eligible_organiser("instructor@example.com")
+      unit.update!(instructor: instructor)
+      create(:unit_attendance, :attended, unit: unit, user: create(:user))
+      replacement = eligible_organiser("replacement@example.com")
+      sign_in instructor
+
+      patch unit_path(unit), params: { unit: { instructor_id: replacement.id } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.reload.instructor).to eq(replacement)
+      end
+    end
+
+    it "lets an admin change the instructor after attended" do
+      instructor = eligible_organiser("instructor@example.com")
+      unit.update!(instructor: instructor)
+      create(:unit_attendance, :attended, unit: unit, user: create(:user))
+      replacement = create(:user, :admin)
+      sign_in replacement
+
+      patch unit_path(unit), params: { unit: { instructor_id: replacement.id } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.reload.instructor).to eq(replacement)
       end
     end
   end
@@ -616,7 +773,8 @@ RSpec.describe "Units" do
     end
 
     it "allows attended with only a start time" do
-      start_only = create(:unit, program: program, starts_at: 2.weeks.from_now, ends_at: nil)
+      start_only = create(:unit, program: program, starts_at: 2.weeks.from_now, ends_at: nil,
+        instructor: create(:user, :admin))
       attendance = create(:unit_attendance, unit: start_only, user: create(:user))
 
       patch unit_unit_attendance_path(start_only, attendance),
@@ -746,7 +904,7 @@ RSpec.describe "Units" do
   end
 
   describe "attendee visibility" do
-    let!(:unit) { create(:unit, program: program) }
+    let!(:unit) { create(:unit, program: program, instructor: create(:user, :admin)) }
     let!(:attendee) { create(:user, email: "attendee@example.com") }
 
     before { create(:unit_attendance, :attended, unit: unit, user: attendee) }

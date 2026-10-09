@@ -22,6 +22,7 @@ en:
       unit:
         description: Description
         ends_at: Ends at
+        instructor: Instructor
         location: Location
         name: Name
         program: Program
@@ -74,9 +75,12 @@ en:
           attributes:
             ends_at:
               after_start_time: must be after the start time
+            instructor:
+              ineligible: must be an organiser or admin
         unit_attendance:
           attributes:
             status:
+              requires_instructor: requires the unit to have an instructor
               requires_start_time: requires the unit to have a start time
         user:
           attributes:

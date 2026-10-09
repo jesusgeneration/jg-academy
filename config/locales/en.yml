@@ -248,6 +248,8 @@ en:
       errors_prevented:
         one: '1 error prevented saving:'
         other: "%{count} errors prevented saving:"
+      instructor: Instructor
+      instructor_hint: Required before participants can be marked as attended.
       location: Location
       manage_coverage: Manage coverage
       manage_coverage_hint: Select the contents this unit covers. Levels and sections include everything below them.
@@ -255,6 +257,7 @@ en:
       no_coverage: No content covered yet.
       program: Program
       select_duration: Select duration
+      select_instructor: Select instructor
       select_program: Select program
       select_time: Select time
       starts_at: Starts at
@@ -304,11 +307,13 @@ en:
       inherit_none: All participants of the program are already up to date in this unit.
       inherit_summary: 'New: %{added} · Unchanged: %{unchanged} · Conflicts: %{conflicts}'
       inherit_title: Inherit participants from the program
+      instructor: Instructor
       manage_coverage: Manage coverage
       manage_coverage_hint: Add or remove the points in the hierarchy where coverage starts. Descendants of a covered item are covered automatically.
       no_attendees: No attendees registered yet.
       no_content: No content items exist yet.
       no_coverage: This unit does not cover any content yet.
+      no_instructor: No instructor assigned yet.
       register: Register
       register_attendee: Register attendee
       remove: Remove

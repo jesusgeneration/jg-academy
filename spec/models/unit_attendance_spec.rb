@@ -39,7 +39,26 @@ RSpec.describe UnitAttendance do
     end
 
     it "allows attended with only a start time" do
-      unit = create(:unit, starts_at: 2.weeks.from_now, ends_at: nil)
+      unit = create(:unit, starts_at: 2.weeks.from_now, ends_at: nil,
+        instructor: create(:user, :admin))
+
+      expect(build(:unit_attendance, unit: unit, status: :attended)).to be_valid
+    end
+
+    it "requires an instructor for attended" do
+      unit = create(:unit)
+      attendance = build(:unit_attendance, unit: unit, status: :attended)
+
+      aggregate_failures do
+        expect(attendance).not_to be_valid
+        expect(attendance.errors[:status]).to include(
+          I18n.t("activerecord.errors.models.unit_attendance.attributes.status.requires_instructor")
+        )
+      end
+    end
+
+    it "allows attended with an instructor" do
+      unit = create(:unit, instructor: create(:user, :admin))
 
       expect(build(:unit_attendance, unit: unit, status: :attended)).to be_valid
     end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_10_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_10_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -100,6 +100,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_000001) do
     t.datetime "starts_at"
     t.datetime "updated_at", null: false
     t.bigint "program_id", null: false
+    t.bigint "instructor_id"
+    t.index ["instructor_id"], name: "index_units_on_instructor_id"
     t.index ["program_id"], name: "index_units_on_program_id"
   end
 
@@ -134,4 +136,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_000001) do
   add_foreign_key "unit_coverages", "contents"
   add_foreign_key "unit_coverages", "units"
   add_foreign_key "units", "programs"
+  add_foreign_key "units", "users", column: "instructor_id"
 end

@@ -42,6 +42,13 @@
       <legend class="fieldset-legend"><%= t(".duration") %></legend>
       <%= f.select :duration_minutes, unit_duration_options(unit_duration_value(unit)), { prompt: t(".select_duration") }, class: "select w-full" %>
     </fieldset>
+
+    <fieldset class="fieldset min-w-0">
+      <legend class="fieldset-legend"><%= t(".instructor") %></legend>
+      <%= f.collection_select :instructor_id, @eligible_instructors, :id, :email,
+            { prompt: t(".select_instructor") }, { class: "select w-full" } %>
+      <p class="label"><%= t(".instructor_hint") %></p>
+    </fieldset>
   </div>
 
   <fieldset class="fieldset min-w-0">
