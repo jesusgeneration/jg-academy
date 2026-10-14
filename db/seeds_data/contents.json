@@ -240,5 +240,18 @@
         ]
       }
     ]
+  },
+  {
+    "title": "Pflichtkurse",
+    "sections": [
+      {
+        "title": "Prävention sexualisierter Gewalt",
+        "details": []
+      },
+      {
+        "title": "Erste Hilfe",
+        "details": []
+      }
+    ]
   }
 ]

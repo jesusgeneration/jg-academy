@@ -115,6 +115,21 @@ RSpec.describe ApplicationHelper, type: :helper do
 
       expect(helper.user_topic_progress(section, Set[section.id])).to eq([ 2, 2 ])
     end
+
+    it "treats a topic without details as a binary check-off via direct coverage" do
+      section = create(:content, :section)
+
+      aggregate_failures do
+        expect(helper.user_topic_progress(section, Set[section.id])).to eq([ 1, 1 ])
+        expect(helper.user_topic_progress(section, Set.new)).to eq([ 0, 1 ])
+      end
+    end
+
+    it "ignores ancestor coverage for topics without details" do
+      section = create(:content, :section)
+
+      expect(helper.user_topic_progress(section, Set.new, ancestor_covered: true)).to eq([ 0, 1 ])
+    end
   end
 
   describe "#user_topic_area_progress" do
@@ -135,6 +150,38 @@ RSpec.describe ApplicationHelper, type: :helper do
       create_list(:content, 2, :detail, parent: section)
 
       expect(helper.user_topic_area_progress(level, Set[level.id])).to eq([ 2, 2 ])
+    end
+
+    it "counts topics without details as binary items in mixed topic areas" do
+      level = create(:content, :level)
+      with_details = create(:content, :section, parent: level)
+      detail = create(:content, :detail, parent: with_details)
+      bare = create(:content, :section, parent: level)
+
+      aggregate_failures do
+        expect(helper.user_topic_area_progress(level, Set[detail.id, bare.id])).to eq([ 2, 2 ])
+        expect(helper.user_topic_area_progress(level, Set[detail.id])).to eq([ 1, 2 ])
+      end
+    end
+
+    it "counts a topic area of only bare topics as covered topics over total topics" do
+      level = create(:content, :level)
+      first = create(:content, :section, parent: level)
+      second = create(:content, :section, parent: level)
+
+      aggregate_failures do
+        expect(helper.user_topic_area_progress(level, Set.new)).to eq([ 0, 2 ])
+        expect(helper.user_topic_area_progress(level, Set[first.id])).to eq([ 1, 2 ])
+        expect(helper.user_topic_area_progress(level, Set[first.id, second.id])).to eq([ 2, 2 ])
+      end
+    end
+
+    it "ignores direct level coverage for topic areas with only bare topics" do
+      level = create(:content, :level)
+      create(:content, :section, parent: level)
+      create(:content, :section, parent: level)
+
+      expect(helper.user_topic_area_progress(level, Set[level.id])).to eq([ 0, 2 ])
     end
   end
 

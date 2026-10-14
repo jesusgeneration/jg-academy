@@ -198,10 +198,15 @@ module ApplicationHelper
 
   # User progress for a topic: [covered details, total details] as a pure
   # detail ratio. Direct topic coverage or an ancestor topic-area coverage
-  # counts all details as covered.
+  # counts all details as covered. Topics without details (e.g. the
+  # Pflichtkurse check-offs) are binary instead: only a direct link on the
+  # topic itself counts as covered ([1, 1]); an ancestor level link does
+  # not fulfill them, so they stay ([0, 1]).
   def user_topic_progress(section, covered_ids, ancestor_covered: false)
     details = section.children.to_a
-    return [ 0, 0 ] if details.empty?
+    if details.empty?
+      return covered_ids.include?(section.id) ? [ 1, 1 ] : [ 0, 1 ]
+    end
     return [ details.size, details.size ] if ancestor_covered || covered_ids.include?(section.id)
 
     [ details.count { |detail| covered_ids.include?(detail.id) }, details.size ]
@@ -209,21 +214,35 @@ module ApplicationHelper
 
   # User progress for a topic area: [covered details, total details] as a
   # pure detail ratio across all its topics. No partial-topic weighting.
+  # Topics without details count as one binary item each (covered only via
+  # a direct link). A topic area holding only such topics (e.g.
+  # Pflichtkurse) therefore shows [covered topics, total topics], and a
+  # direct level link alone fulfills nothing there.
   def user_topic_area_progress(level, covered_ids)
     sections = level.children.to_a
-    details = sections.flat_map { |section| section.children.to_a }
-    return [ 0, 0 ] if details.empty?
-    return [ details.size, details.size ] if covered_ids.include?(level.id)
+    children_by_section = sections.to_h { |section| [ section, section.children.to_a ] }
+    details = children_by_section.values.flatten
+    bare_sections = sections.select { |section| children_by_section[section].empty? }
+
+    if details.empty?
+      covered = sections.count { |section| covered_ids.include?(section.id) }
+      return [ covered, sections.size ]
+    end
+
+    total = details.size + bare_sections.size
+    return [ total, total ] if covered_ids.include?(level.id)
 
     covered = sections.sum do |section|
-      section_details = section.children.to_a
-      if covered_ids.include?(section.id)
+      section_details = children_by_section[section]
+      if section_details.empty?
+        covered_ids.include?(section.id) ? 1 : 0
+      elsif covered_ids.include?(section.id)
         section_details.size
       else
         section_details.count { |detail| covered_ids.include?(detail.id) }
       end
     end
-    [ covered, details.size ]
+    [ covered, total ]
   end
 
   # Percent (0-100) for a covered/total pair; empty totals show 0%.

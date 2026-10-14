@@ -82,6 +82,46 @@ RSpec.describe "Users" do
       end
     end
 
+    it "shows mandatory courses without details as binary check-offs" do
+      sign_in alice
+      level = create(:content, :level, title: "Pflichtkurse")
+      prevention = create(:content, :section, parent: level, title: "Prävention sexualisierter Gewalt")
+      create(:content, :section, parent: level, title: "Erste Hilfe")
+      unit = create(:unit, instructor: create(:user, :admin))
+      create(:unit_coverage, unit: unit, content: prevention)
+      create(:unit_attendance, :attended, unit: unit, user: alice)
+
+      get user_path(alice)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Pflichtkurse")
+        expect(response.body).to include("Prävention sexualisierter Gewalt")
+        expect(response.body).to include("Erste Hilfe")
+        expect(response.body).to include(I18n.t("users.show.progress_count", covered: 1, total: 1))
+        expect(response.body).to include(I18n.t("users.show.progress_count", covered: 0, total: 1))
+        expect(response.body).to include(I18n.t("users.show.progress_count", covered: 1, total: 2))
+      end
+    end
+
+    it "does not fulfill mandatory courses through a level link alone" do
+      sign_in alice
+      level = create(:content, :level, title: "Pflichtkurse")
+      create(:content, :section, parent: level, title: "Prävention sexualisierter Gewalt")
+      create(:content, :section, parent: level, title: "Erste Hilfe")
+      unit = create(:unit, instructor: create(:user, :admin))
+      create(:unit_coverage, unit: unit, content: level)
+      create(:unit_attendance, :attended, unit: unit, user: alice)
+
+      get user_path(alice)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("users.show.progress_count", covered: 0, total: 2))
+        expect(response.body).to include(I18n.t("users.show.progress_count", covered: 0, total: 1))
+      end
+    end
+
     it "ignores non-attended units for progress" do
       sign_in alice
       level = create(:content, :level)
