@@ -11,7 +11,7 @@ en:
       recent_units: Recent Units
       stats:
         content_items: Content Items
-        levels_sections_details: levels, sections and details
+        levels_sections_details: topic areas, topics and details
         registered_accounts: registered accounts
         upcoming_units: Upcoming Units
         users: Users
@@ -252,7 +252,7 @@ en:
       instructor_hint: Required before participants can be marked as attended.
       location: Location
       manage_coverage: Manage coverage
-      manage_coverage_hint: Select the contents this unit covers. Levels and sections include everything below them.
+      manage_coverage_hint: Select the contents this unit covers. Topic areas and topics include everything below them.
       name: Name
       no_coverage: No content covered yet.
       program: Program
@@ -292,9 +292,10 @@ en:
       breadcrumb_programs: Programs
       confirm_delete: Delete this unit?
       confirm_remove_attendance: Remove attendance record?
+      coverage_progress: "%{percent}% covered"
       covered_via: covered via %{title}
       covers: Covers
-      covers_hint: Covering a level or section automatically covers everything below it.
+      covers_hint: Covering a topic area or topic automatically covers everything below it.
       delete: Delete
       edit: Edit
       ends: Ends

@@ -843,9 +843,10 @@ RSpec.describe "Units" do
         expect(response.body).to include(I18n.t("units.show.covered_via", title: "Level 1"))
         expect(response.body).to include("collapse")
         expect(response.body).to include("checked")
-        # Covered level keeps Remove; its section and detail get no button.
-        # Only the 3 uncovered items of the other tree keep Add.
-        expect(response.body.scan(">#{(I18n.t("helpers.coverage.remove"))}</button>").size).to eq(1)
+        # Covered level keeps Remove; its section and detail show disabled
+        # Remove buttons. Only the 3 uncovered items of the other tree keep Add.
+        expect(response.body.scan(">#{(I18n.t("helpers.coverage.remove"))}</button>").size).to eq(3)
+        expect(response.body.scan(/<button[^>]*disabled[^>]*>#{(Regexp.escape(I18n.t("helpers.coverage.remove")))}<\/button>/).size).to eq(2)
         expect(response.body.scan(">#{(I18n.t("helpers.coverage.add"))}</button>").size).to eq(3)
       end
     end
@@ -860,9 +861,68 @@ RSpec.describe "Units" do
       aggregate_failures do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(I18n.t("units.show.covered_via", title: "Level 1.1"))
-        # Level, section keep their buttons; the detail gets none.
-        expect(response.body.scan(">#{(I18n.t("helpers.coverage.remove"))}</button>").size).to eq(1)
+        # Level, section keep their buttons; the detail shows a disabled Remove.
+        expect(response.body.scan(">#{(I18n.t("helpers.coverage.remove"))}</button>").size).to eq(2)
+        expect(response.body.scan(/<button[^>]*disabled[^>]*>#{(Regexp.escape(I18n.t("helpers.coverage.remove")))}<\/button>/).size).to eq(1)
         expect(response.body.scan(">#{(I18n.t("helpers.coverage.add"))}</button>").size).to eq(4)
+      end
+    end
+
+    it "fills type badges proportionally to covered subtopics" do
+      section = create(:content, :section, parent: level, title: "Topic Alpha")
+      details = create_list(:content, 3, :detail, parent: section)
+      create(:unit_coverage, unit: unit, content: details.first)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("activerecord.enums.content.content_type.level"))
+        expect(response.body).to include(I18n.t("activerecord.enums.content.content_type.section"))
+        expect(response.body).to include("linear-gradient")
+        expect(response.body).to include(I18n.t("units.show.coverage_progress", percent: 33))
+      end
+    end
+
+    it "scores a partially covered section as half a section on its level" do
+      section = create(:content, :section, parent: level, title: "Topic Alpha")
+      details = create_list(:content, 3, :detail, parent: section)
+      create(:content, :section, parent: level, title: "Topic Beta")
+      create(:unit_coverage, unit: unit, content: details.first)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.coverage_progress", percent: 33))
+        expect(response.body).to include(I18n.t("units.show.coverage_progress", percent: 25))
+      end
+    end
+
+    it "fills the topic badge completely when the whole topic is covered" do
+      section = create(:content, :section, parent: level, title: "Topic Alpha")
+      create_list(:content, 2, :detail, parent: section)
+      create(:unit_coverage, unit: unit, content: section)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.coverage_progress", percent: 100))
+      end
+    end
+
+    it "fills the detail badge when the detail itself is covered" do
+      section = create(:content, :section, parent: level, title: "Topic Alpha")
+      detail = create(:content, :detail, parent: section, title: "Detail Alpha 1")
+      create(:unit_coverage, unit: unit, content: detail)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Detail Alpha 1")
+        expect(response.body).to include(I18n.t("units.show.coverage_progress", percent: 100))
       end
     end
 

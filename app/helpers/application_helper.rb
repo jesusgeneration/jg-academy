@@ -129,12 +129,93 @@ module ApplicationHelper
     end
   end
 
-  # A row gets no button when an ancestor is covered and the item itself
-  # has no direct coverage record (there is nothing to add or remove).
-  def coverage_row_button(unit, content, coverages_by_content_id, ancestor_covered: false)
-    return nil if ancestor_covered && !coverages_by_content_id.key?(content.id)
+  # A row with ancestor coverage and no direct record shows a disabled
+  # button in the "added" look: descendants are covered via the ancestor,
+  # so there is nothing to add or remove on the row itself.
+  def coverage_row_button(unit, content, coverages_by_content_id, ancestor_covered: false, via_title: nil)
+    if ancestor_covered && !coverages_by_content_id.key?(content.id)
+      hint = via_title ? t("units.show.covered_via", title: via_title) : nil
+      return button_tag(t("helpers.coverage.remove"),
+        disabled: true,
+        class: "btn btn-error btn-outline btn-xs w-20",
+        title: hint)
+    end
 
     coverage_toggle_button(unit, content, coverages_by_content_id)
+  end
+
+  # Fraction of a section's details covered by the unit (0.0-1.0).
+  # Direct section coverage or an ancestor level coverage counts as complete.
+  def section_coverage_fraction(section, coverages_by_content_id, ancestor_covered: false)
+    return 1.0 if ancestor_covered || coverages_by_content_id.key?(section.id)
+
+    details = section.children.to_a
+    return 0.0 if details.empty?
+
+    covered = details.count { |detail| coverages_by_content_id.key?(detail.id) }
+    covered.to_f / details.size
+  end
+
+  # Fraction of a level's sections covered by the unit (0.0-1.0).
+  # A fully covered section scores 1.0, a section with at least one
+  # covered detail scores 0.5, otherwise 0.0. Direct level coverage
+  # counts as complete.
+  def level_coverage_fraction(level, coverages_by_content_id)
+    return 1.0 if coverages_by_content_id.key?(level.id)
+
+    sections = level.children.to_a
+    return 0.0 if sections.empty?
+
+    total = sections.sum do |section|
+      if coverages_by_content_id.key?(section.id)
+        1.0
+      else
+        details = section.children.to_a
+        if details.empty?
+          0.0
+        else
+          covered = details.count { |detail| coverages_by_content_id.key?(detail.id) }
+          if covered == details.size
+            1.0
+          elsif covered.positive?
+            0.5
+          else
+            0.0
+          end
+        end
+      end
+    end
+    total / sections.size
+  end
+
+  # Whether a detail counts as covered: directly, or via its section
+  # or level ancestor.
+  def detail_covered?(detail, coverages_by_content_id, ancestor_covered: false)
+    ancestor_covered || coverages_by_content_id.key?(detail.id)
+  end
+
+  # Content-type badge with a progress-bar style fill for coverage.
+  # Uncovered items keep the plain badge look; anything covered
+  # (partial or complete) gets a proportional fill. Details are binary.
+  def coverage_progress_badge(content, fraction)
+    label = human_enum_label("content", "content_type", content.content_type)
+    base_class = case content.content_type
+    when "level" then "badge badge-primary badge-outline badge-sm mr-1"
+    when "section" then "badge badge-secondary badge-outline badge-sm mr-1"
+    else "badge badge-ghost badge-sm mr-1"
+    end
+    return content_tag(:span, label, class: base_class) if fraction <= 0.0
+
+    percent = [ (fraction * 100).round, 100 ].min
+    fill = case content.content_type
+    when "level" then "var(--color-primary)"
+    when "section" then "var(--color-secondary)"
+    else "var(--color-neutral)"
+    end
+    style = "background: linear-gradient(to right, " \
+      "color-mix(in oklab, #{fill} 30%, transparent) #{percent}%, transparent #{percent}%)"
+    hint = t("units.show.coverage_progress", percent: percent)
+    content_tag(:span, label, class: base_class, style: style, title: hint, aria: { label: hint })
   end
 
   private

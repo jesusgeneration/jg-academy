@@ -79,7 +79,7 @@
               <div class="collapse collapse-arrow bg-base-200 flex-1">
                 <input type="checkbox" <%= "checked" if level_open %> />
                 <div class="collapse-title text-sm font-medium py-2 min-h-0">
-                  <span class="badge badge-primary badge-outline badge-sm mr-1"><%= human_enum_label("content", "content_type", level.content_type) %></span>
+                  <%= coverage_progress_badge(level, level_coverage_fraction(level, @coverages_by_content_id)) %>
                   <%= level.title %>
                 </div>
                 <div class="collapse-content">
@@ -93,7 +93,7 @@
                           <div class="collapse collapse-arrow bg-base-100 flex-1">
                             <input type="checkbox" <%= "checked" if section_open %> />
                             <div class="collapse-title text-sm py-2 min-h-0">
-                              <span class="badge badge-secondary badge-outline badge-sm mr-1"><%= human_enum_label("content", "content_type", section.content_type) %></span>
+                              <%= coverage_progress_badge(section, section_coverage_fraction(section, @coverages_by_content_id, ancestor_covered: section_via_ancestor)) %>
                               <%= section.title %>
                               <% if section_via_ancestor %>
                                 <span class="text-xs opacity-50 ml-1"><%= t(".covered_via", title: level.title) %></span>
@@ -110,13 +110,13 @@
                                              end %>
                                     <li class="flex items-center justify-between gap-2">
                                       <span>
-                                        <span class="badge badge-ghost badge-sm mr-1"><%= human_enum_label("content", "content_type", detail.content_type) %></span>
+                                        <%= coverage_progress_badge(detail, detail_covered?(detail, @coverages_by_content_id, ancestor_covered: via.present?) ? 1.0 : 0.0) %>
                                         <%= detail.title %>
                                         <% if via %>
                                           <span class="text-xs opacity-50 ml-1"><%= t(".covered_via", title: via) %></span>
                                         <% end %>
                                       </span>
-                                      <%= coverage_row_button(@unit, detail, @coverages_by_content_id, ancestor_covered: via.present?) %>
+                                      <%= coverage_row_button(@unit, detail, @coverages_by_content_id, ancestor_covered: via.present?, via_title: via) %>
                                     </li>
                                   <% end %>
                                 </ul>
@@ -124,7 +124,7 @@
                             </div>
                           </div>
                           <div class="pt-2">
-                            <%= coverage_row_button(@unit, section, @coverages_by_content_id, ancestor_covered: section_via_ancestor) %>
+                            <%= coverage_row_button(@unit, section, @coverages_by_content_id, ancestor_covered: section_via_ancestor, via_title: (level.title if section_via_ancestor)) %>
                           </div>
                         </div>
                       <% end %>

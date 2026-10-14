@@ -11,7 +11,7 @@ de:
       recent_units: Aktuelle Einheiten
       stats:
         content_items: Inhalte
-        levels_sections_details: Ebenen, Abschnitte und Details
+        levels_sections_details: Themenbereiche, Themen und Details
         registered_accounts: registrierte Konten
         upcoming_units: Bevorstehende Einheiten
         users: Benutzer
@@ -252,7 +252,7 @@ de:
       instructor_hint: Erforderlich, bevor Teilnehmende als teilgenommen markiert werden.
       location: Ort
       manage_coverage: Abdeckung verwalten
-      manage_coverage_hint: Wähle die Inhalte, die diese Einheit abdeckt. Ebenen und Abschnitte schließen alles darunter ein.
+      manage_coverage_hint: Wähle die Inhalte, die diese Einheit abdeckt. Themenbereiche und Themen schließen alles darunter ein.
       name: Name
       no_coverage: Noch keine Inhalte abgedeckt.
       program: Veranstaltung
@@ -292,9 +292,10 @@ de:
       breadcrumb_programs: Veranstaltungen
       confirm_delete: Diese Einheit löschen?
       confirm_remove_attendance: Teilnahme entfernen?
+      coverage_progress: "%{percent} % abgedeckt"
       covered_via: abgedeckt über %{title}
       covers: Abdeckung
-      covers_hint: Wird eine Ebene oder ein Abschnitt abgedeckt, gilt automatisch alles darunter als abgedeckt.
+      covers_hint: Wird ein Themenbereich oder ein Thema abgedeckt, gilt automatisch alles darunter als abgedeckt.
       delete: Löschen
       edit: Bearbeiten
       ends: Ende

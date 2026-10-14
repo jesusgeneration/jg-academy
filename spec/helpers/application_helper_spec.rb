@@ -1,0 +1,148 @@
+require "rails_helper"
+
+RSpec.describe ApplicationHelper, type: :helper do
+  describe "#section_coverage_fraction" do
+    it "returns one third when one of three details is covered" do
+      section = create(:content, :section)
+      details = create_list(:content, 3, :detail, parent: section)
+      coverages = { details.first.id => instance_double(UnitCoverage) }
+
+      expect(helper.section_coverage_fraction(section, coverages)).to be_within(0.001).of(1.0 / 3)
+    end
+
+    it "returns complete for direct section coverage" do
+      section = create(:content, :section)
+      create_list(:content, 3, :detail, parent: section)
+      coverages = { section.id => instance_double(UnitCoverage) }
+
+      expect(helper.section_coverage_fraction(section, coverages)).to eq(1.0)
+    end
+
+    it "returns complete when an ancestor level is covered" do
+      section = create(:content, :section)
+      create_list(:content, 2, :detail, parent: section)
+
+      expect(helper.section_coverage_fraction(section, {}, ancestor_covered: true)).to eq(1.0)
+    end
+
+    it "returns zero for sections without details unless directly covered" do
+      section = create(:content, :section)
+
+      expect(helper.section_coverage_fraction(section, {})).to eq(0.0)
+    end
+  end
+
+  describe "#level_coverage_fraction" do
+    it "counts a fully covered section as one and a partial section as half" do
+      level = create(:content, :level)
+      full = create(:content, :section, parent: level)
+      full_details = create_list(:content, 2, :detail, parent: full)
+      partial = create(:content, :section, parent: level)
+      partial_details = create_list(:content, 3, :detail, parent: partial)
+      coverages = {
+        full_details.first.id => instance_double(UnitCoverage),
+        full_details.second.id => instance_double(UnitCoverage),
+        partial_details.first.id => instance_double(UnitCoverage)
+      }
+
+      expect(helper.level_coverage_fraction(level, coverages)).to be_within(0.001).of(0.75)
+    end
+
+    it "returns complete for direct level coverage" do
+      level = create(:content, :level)
+      section = create(:content, :section, parent: level)
+      create(:content, :detail, parent: section)
+
+      expect(helper.level_coverage_fraction(level, { level.id => instance_double(UnitCoverage) })).to eq(1.0)
+    end
+
+    it "returns zero for levels without sections unless directly covered" do
+      level = create(:content, :level)
+
+      expect(helper.level_coverage_fraction(level, {})).to eq(0.0)
+    end
+  end
+
+  describe "#coverage_row_button" do
+    it "renders a disabled Remove button with a tooltip when covered via an ancestor" do
+      section = create(:content, :section)
+
+      html = helper.coverage_row_button(build(:unit), section, {}, ancestor_covered: true, via_title: "Topic Area 1")
+
+      aggregate_failures do
+        expect(html).to include(I18n.t("helpers.coverage.remove"))
+        expect(html).to include("disabled")
+        expect(html).to include(I18n.t("units.show.covered_via", title: "Topic Area 1"))
+      end
+    end
+
+    it "renders the toggle button when there is no ancestor coverage" do
+      detail = create(:content, :detail)
+      unit = create(:unit)
+
+      html = helper.coverage_row_button(unit, detail, {})
+
+      expect(html).to include(I18n.t("helpers.coverage.add"))
+    end
+  end
+
+  describe "#detail_covered?" do
+    it "returns true for direct, section, and level coverage" do
+      level = create(:content, :level)
+      section = create(:content, :section, parent: level)
+      detail = create(:content, :detail, parent: section)
+
+      aggregate_failures do
+        expect(helper.detail_covered?(detail, { detail.id => instance_double(UnitCoverage) })).to be(true)
+        expect(helper.detail_covered?(detail, { section.id => instance_double(UnitCoverage) }, ancestor_covered: true)).to be(true)
+        expect(helper.detail_covered?(detail, {}, ancestor_covered: true)).to be(true)
+        expect(helper.detail_covered?(detail, {})).to be(false)
+      end
+    end
+  end
+
+  describe "#coverage_progress_badge" do
+    it "renders a partial fill with a translated tooltip" do
+      section = create(:content, :section)
+
+      html = helper.coverage_progress_badge(section, 1.0 / 3)
+
+      aggregate_failures do
+        expect(html).to include("linear-gradient")
+        expect(html).to include("33%")
+        expect(html).to include(I18n.t("units.show.coverage_progress", percent: 33))
+        expect(html).to include(I18n.t("activerecord.enums.content.content_type.section"))
+      end
+    end
+
+    it "renders a plain badge when coverage is empty" do
+      level = create(:content, :level)
+
+      expect(helper.coverage_progress_badge(level, 0.0)).not_to include("linear-gradient")
+    end
+
+    it "renders a full fill with a translated tooltip when complete" do
+      section = create(:content, :section)
+
+      html = helper.coverage_progress_badge(section, 1.0)
+
+      aggregate_failures do
+        expect(html).to include("linear-gradient")
+        expect(html).to include("100%")
+        expect(html).to include(I18n.t("units.show.coverage_progress", percent: 100))
+      end
+    end
+
+    it "renders a binary full fill for a covered detail and plain when uncovered" do
+      detail = create(:content, :detail)
+
+      covered = helper.coverage_progress_badge(detail, 1.0)
+
+      aggregate_failures do
+        expect(covered).to include("linear-gradient")
+        expect(covered).to include(I18n.t("units.show.coverage_progress", percent: 100))
+        expect(helper.coverage_progress_badge(detail, 0.0)).not_to include("linear-gradient")
+      end
+    end
+  end
+end
