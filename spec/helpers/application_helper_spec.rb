@@ -101,6 +101,44 @@ RSpec.describe ApplicationHelper, type: :helper do
     end
   end
 
+  describe "#unit_detail_coverage_count" do
+    it "counts directly linked details" do
+      unit = create(:unit)
+      detail = create(:content, :detail)
+      create(:unit_coverage, unit: unit, content: detail)
+
+      coverages = { unit.id => unit.unit_coverages.to_a }
+      expect(helper.unit_detail_coverage_count(unit, coverages, { detail.id => [ detail.id ] })).to eq(1)
+    end
+
+    it "expands section and level links without double counting" do
+      level = create(:content, :level)
+      section = create(:content, :section, parent: level)
+      details = create_list(:content, 2, :detail, parent: section)
+      other_detail = create(:content, :detail)
+      unit = create(:unit)
+      create(:unit_coverage, unit: unit, content: level)
+      create(:unit_coverage, unit: unit, content: details.first)
+      create(:unit_coverage, unit: unit, content: other_detail)
+      map = {
+        level.id => details.map(&:id),
+        section.id => details.map(&:id),
+        details.first.id => [ details.first.id ],
+        details.second.id => [ details.second.id ],
+        other_detail.id => [ other_detail.id ]
+      }
+
+      coverages = { unit.id => unit.unit_coverages.to_a }
+      expect(helper.unit_detail_coverage_count(unit, coverages, map)).to eq(3)
+    end
+
+    it "returns zero without coverages" do
+      unit = create(:unit)
+
+      expect(helper.unit_detail_coverage_count(unit, {}, {})).to eq(0)
+    end
+  end
+
   describe "#user_topic_progress" do
     it "returns a pure detail ratio without partial weighting" do
       section = create(:content, :section)

@@ -5,12 +5,15 @@ class UnitsController < BaseController
     authorize Unit
     scope = policy_scope(Unit).includes(program: :organization, unit_attendances: :user)
     @tab = %w[upcoming past planned all].include?(params[:tab]) ? params[:tab] : "upcoming"
-    @units = case @tab
+    units = case @tab
     when "past" then scope.past
     when "planned" then scope.planned
     when "all" then scope.order(starts_at: :desc)
     else scope.upcoming
     end
+    @units_by_program = units.group_by(&:program).sort_by { |program, _| program.name }
+    @coverages_by_unit_id = UnitCoverage.where(unit_id: units.select(:id)).group_by(&:unit_id)
+    @coverage_detail_map = coverage_detail_map(Content.includes(children: :children).where(parent_id: nil).ordered)
     @show_attendance_summary = policy(Unit).view_attendance_summary?
   end
 
@@ -149,6 +152,22 @@ class UnitsController < BaseController
 
   def coverage_tree
     Content.includes(children: :children).where(parent_id: nil).ordered
+  end
+
+  # Maps every content id to the detail ids it covers: a detail covers
+  # itself, a section its details, a level all descendant details.
+  def coverage_detail_map(levels)
+    map = {}
+    levels.each do |level|
+      details = level.children.flat_map { |section| section.children.to_a }
+      map[level.id] = details.map(&:id)
+      level.children.each do |section|
+        section_details = section.children.to_a
+        map[section.id] = section_details.map(&:id)
+        section_details.each { |detail| map[detail.id] = [ detail.id ] }
+      end
+    end
+    map
   end
 
   def coverage_content_ids

@@ -14,37 +14,51 @@
   <% end %>
 </div>
 
-<% if @units.any? %>
+<% if @units_by_program.any? %>
   <% show_attendees = @show_attendance_summary %>
-  <div class="card bg-base-100 shadow">
-    <table class="table">
-      <thead>
-        <tr>
-          <th><%= t(".table.unit") %></th><th><%= t(".table.program") %></th><th><%= t(".table.organization") %></th><th><%= t(".table.date") %></th><th><%= t(".table.location") %></th>
-          <% if show_attendees %><th><%= t(".table.attendees") %></th><% end %>
-        </tr>
-      </thead>
-      <tbody>
-        <% @units.each do |unit| %>
-          <tr>
-            <td><%= link_to unit.name, unit_path(unit), class: "link link-hover font-medium" %></td>
-            <td><%= link_to unit.program.name, program_path(unit.program), class: "link link-hover" %></td>
-            <td><%= unit.program.organization.name %></td>
-            <td class="whitespace-nowrap"><%= format_datetime(unit.starts_at) %></td>
-            <td><%= unit.location %></td>
-            <% if show_attendees %>
-              <td>
-                <span class="badge badge-ghost"><%= unit.unit_attendances.size %></span>
-                <% attended = unit.unit_attendances.count(&:attended?) %>
-                <% if attended.positive? %>
-                  <span class="badge badge-success badge-outline badge-sm ml-1"><%= t(".attended_count", count: attended) %></span>
-                <% end %>
-              </td>
-            <% end %>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+  <div class="space-y-6">
+    <% @units_by_program.each_with_index do |(program, program_units), group_index| %>
+      <div class="collapse collapse-arrow bg-base-100 shadow">
+        <input type="checkbox" <%= "checked" if group_index.zero? %> />
+        <div class="collapse-title">
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 class="card-title text-base"><%= link_to program.name, program_path(program), class: "link link-hover" %></h2>
+            <span class="badge badge-ghost badge-sm"><%= t(".unit_count", count: program_units.size) %></span>
+            <span class="text-xs opacity-60"><%= program.organization.name %></span>
+          </div>
+        </div>
+        <div class="collapse-content">
+          <table class="table">
+            <thead>
+              <tr>
+                <th><%= t(".table.unit") %></th><th><%= t(".table.date") %></th><th><%= t(".table.coverage") %></th>
+                <% if show_attendees %><th><%= t(".table.attendees") %></th><% end %>
+              </tr>
+            </thead>
+            <tbody>
+              <% program_units.each do |unit| %>
+                <% detail_count = unit_detail_coverage_count(unit, @coverages_by_unit_id, @coverage_detail_map) %>
+                <% coverage_label = t(".details_covered", count: detail_count) %>
+                <tr>
+                  <td><%= link_to unit.name, unit_path(unit), class: "link link-hover font-medium" %></td>
+                  <td class="whitespace-nowrap"><%= format_datetime(unit.starts_at) %></td>
+                  <td><span class="badge badge-ghost" title="<%= coverage_label %>" aria-label="<%= coverage_label %>"><%= detail_count %></span></td>
+                  <% if show_attendees %>
+                    <td>
+                      <span class="badge badge-ghost"><%= unit.unit_attendances.size %></span>
+                      <% attended = unit.unit_attendances.count(&:attended?) %>
+                      <% if attended.positive? %>
+                        <span class="badge badge-success badge-outline badge-sm ml-1"><%= t(".attended_count", count: attended) %></span>
+                      <% end %>
+                    </td>
+                  <% end %>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% end %>
   </div>
 <% else %>
   <div class="alert alert-info"><span><%= t(".empty") %></span></div>

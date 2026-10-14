@@ -273,15 +273,16 @@ de:
       valid_until_hint: Leer lassen für unbegrenzte Gültigkeit. Bei Pflichtkursen wird das Datum aus Kursende plus Frist vorbelegt und kann angepasst werden.
     index:
       attended_count: "%{count} teilgenommen"
+      details_covered:
+        one: 1 Detail
+        other: "%{count} Details"
       empty: Keine Einheiten in dieser Ansicht.
       new: Neue Einheit
       page_title: Einheiten
       table:
         attendees: Teilnehmende
+        coverage: Abdeckung
         date: Datum
-        location: Ort
-        organization: Veranstalter
-        program: Veranstaltung
         unit: Einheit
       tabs:
         all: Alle
@@ -289,6 +290,9 @@ de:
         planned: Geplant
         upcoming: Bevorstehend
       title: Einheiten
+      unit_count:
+        one: 1 Einheit
+        other: "%{count} Einheiten"
     new:
       breadcrumb_current: Neu
       breadcrumb_root: Einheiten
