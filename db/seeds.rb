@@ -43,7 +43,8 @@ JSON.parse(File.read(Rails.root.join("db/seeds_data/contents.json"))).each_with_
   level = Content.create!(parent: nil, title: entry["title"], content_type: :level, position: level_position)
 
   entry.fetch("sections").each_with_index do |section_entry, section_position|
-    section = Content.create!(parent: level, title: section_entry["title"], content_type: :section, position: section_position)
+    section = Content.create!(parent: level, title: section_entry["title"], content_type: :section,
+      position: section_position, validity_years: section_entry["validity_years"])
 
     section_entry.fetch("details").each_with_index do |title, detail_position|
       Content.create!(parent: section, title:, content_type: :detail, position: detail_position)

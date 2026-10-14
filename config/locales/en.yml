@@ -264,6 +264,8 @@ en:
       starts_at_hint: Required before participants can be marked as attended.
       time: Time
       update: Update unit
+      valid_until: Valid until
+      valid_until_hint: Leave blank for unlimited validity. For mandatory courses the date is prefilled from the course end plus the validity period and can be adjusted.
     index:
       attended_count: "%{count} attended"
       empty: No units in this view yet.
@@ -328,6 +330,7 @@ en:
         actions: Actions
         status: Status
         user: User
+      unlimited: Valid without limitation
     update:
       updated: Unit was successfully updated.
   users:
