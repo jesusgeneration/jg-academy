@@ -45,168 +45,183 @@
   </div>
 
   <div class="card bg-base-100 shadow h-fit">
-    <div class="card-body">
-      <h2 class="card-title"><%= t(".covers") %></h2>
-      <p class="text-xs opacity-60"><%= t(".covers_hint") %></p>
-      <% covered = @unit.covered_contents.order(:position) %>
-      <% if covered.any? %>
-        <ul class="space-y-1 text-sm mt-2">
-          <% covered.each do |content| %>
-            <li>
-              <span class="badge badge-ghost badge-sm mr-1"><%= human_enum_label("content", "content_type", content.content_type) %></span>
-              <%= content.title %>
-            </li>
-          <% end %>
-        </ul>
-      <% else %>
-        <p class="opacity-60"><%= t(".no_coverage") %></p>
-      <% end %>
+    <div class="collapse collapse-arrow">
+      <input type="checkbox" checked="checked" />
+      <div class="collapse-title">
+        <h2 class="card-title"><%= t(".covers") %></h2>
+        <p class="text-xs opacity-60"><%= t(".covers_hint") %></p>
+      </div>
+      <div class="collapse-content">
+        <% covered = @unit.covered_contents.order(:position) %>
+        <% if covered.any? %>
+          <ul class="space-y-1 text-sm mt-2">
+            <% covered.each do |content| %>
+              <li>
+                <span class="badge badge-ghost badge-sm mr-1"><%= human_enum_label("content", "content_type", content.content_type) %></span>
+                <%= content.title %>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="opacity-60"><%= t(".no_coverage") %></p>
+        <% end %>
+      </div>
     </div>
   </div>
 </div>
 
-<% if policy(@unit).update? %>
-  <div class="card bg-base-100 shadow mt-6">
-    <div class="card-body">
-      <h2 class="card-title"><%= t(".manage_coverage") %></h2>
-      <p class="text-sm opacity-60"><%= t(".manage_coverage_hint") %></p>
-      <% if @coverage_tree.any? %>
-        <div class="space-y-2 mt-2">
-          <% @coverage_tree.each do |level| %>
-            <% subtree_ids = [ level.id ] + level.children.flat_map { |s| [ s.id ] + s.children.map(&:id) } %>
-            <% level_open = (@coverages_by_content_id.keys & subtree_ids).any? %>
-            <div class="flex items-start gap-2">
-              <div class="collapse collapse-arrow bg-base-200 flex-1">
-                <input type="checkbox" <%= "checked" if level_open %> />
-                <div class="collapse-title text-sm font-medium py-2 min-h-0">
-                  <%= coverage_progress_badge(level, level_coverage_fraction(level, @coverages_by_content_id)) %>
-                  <%= level.title %>
-                </div>
-                <div class="collapse-content">
-                  <% if level.children.any? %>
-                    <div class="space-y-2">
-                      <% level.children.each do |section| %>
-                        <% section_ids = [ section.id ] + section.children.map(&:id) %>
-                        <% section_open = (@coverages_by_content_id.keys & section_ids).any? %>
-                        <% section_via_ancestor = @coverages_by_content_id.key?(level.id) %>
-                        <div class="flex items-start gap-2">
-                          <div class="collapse collapse-arrow bg-base-100 flex-1">
-                            <input type="checkbox" <%= "checked" if section_open %> />
-                            <div class="collapse-title text-sm py-2 min-h-0">
-                              <%= coverage_progress_badge(section, section_coverage_fraction(section, @coverages_by_content_id, ancestor_covered: section_via_ancestor)) %>
-                              <%= section.title %>
-                              <% if section_via_ancestor %>
-                                <span class="text-xs opacity-50 ml-1"><%= t(".covered_via", title: level.title) %></span>
-                              <% end %>
-                            </div>
-                            <div class="collapse-content">
-                              <% if section.children.any? %>
-                                <ul class="space-y-1">
-                                  <% section.children.each do |detail| %>
-                                    <% via = if @coverages_by_content_id.key?(section.id)
-                                               section.title
-                                             elsif section_via_ancestor
-                                               level.title
-                                             end %>
-                                    <li class="flex items-center justify-between gap-2">
-                                      <span>
-                                        <%= coverage_progress_badge(detail, detail_covered?(detail, @coverages_by_content_id, ancestor_covered: via.present?) ? 1.0 : 0.0) %>
-                                        <%= detail.title %>
-                                        <% if via %>
-                                          <span class="text-xs opacity-50 ml-1"><%= t(".covered_via", title: via) %></span>
-                                        <% end %>
-                                      </span>
-                                      <%= coverage_row_button(@unit, detail, @coverages_by_content_id, ancestor_covered: via.present?, via_title: via) %>
-                                    </li>
-                                  <% end %>
-                                </ul>
-                              <% end %>
-                            </div>
-                          </div>
-                          <div class="pt-2">
-                            <%= coverage_row_button(@unit, section, @coverages_by_content_id, ancestor_covered: section_via_ancestor, via_title: (level.title if section_via_ancestor)) %>
-                          </div>
-                        </div>
-                      <% end %>
-                    </div>
-                  <% end %>
-                </div>
-              </div>
-              <div class="pt-2">
-                <%= coverage_toggle_button(@unit, level, @coverages_by_content_id) %>
-              </div>
-            </div>
+<% if policy(@unit).view_attendees? %>
+  <div id="attendees" class="card bg-base-100 shadow mt-6 scroll-mt-24">
+    <div class="collapse collapse-arrow">
+      <input type="checkbox" checked="checked" />
+      <div class="collapse-title">
+        <h2 class="card-title"><%= t(".attendees") %></h2>
+      </div>
+      <div class="collapse-content">
+        <% if @attendee_management && @program_has_attendances %>
+          <div class="flex justify-end mb-2">
+            <%= link_to t(".inherit_button"), inherit_attendances_unit_path(@unit), class: "btn btn-outline btn-sm" %>
+          </div>
+        <% end %>
+
+        <% if @attendee_management %>
+          <% if @registrable_users.any? %>
+            <%= form_with model: [@unit, UnitAttendance.new], url: unit_unit_attendances_path(@unit), method: :post, class: "flex flex-wrap items-end gap-2 mb-4" do |f| %>
+              <fieldset class="fieldset w-full sm:w-72">
+                <legend class="fieldset-legend"><%= t(".register_attendee") %></legend>
+                <%= f.select :user_id, options_from_collection_for_select(@registrable_users, :id, :email), { prompt: t(".select_user") }, class: "select w-full", required: true %>
+              </fieldset>
+              <%= f.submit t(".register"), class: "btn btn-primary" %>
+            <% end %>
+          <% else %>
+            <p class="text-sm opacity-60 mb-4"><%= t(".all_registered") %></p>
           <% end %>
-        </div>
-      <% else %>
-        <p class="opacity-60"><%= t(".no_content") %></p>
-      <% end %>
+        <% end %>
+
+        <% if @attendances.any? %>
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th><%= t(".table.user") %></th><th><%= t(".table.status") %></th>
+                <% if @attendee_management %><th class="text-right"><%= t(".table.actions") %></th><% end %>
+              </tr>
+            </thead>
+            <tbody>
+              <% @attendances.each do |attendance| %>
+                <tr>
+                  <td><%= link_to attendance.user.email, user_path(attendance.user), class: "link link-hover" %></td>
+                  <td><span class="badge <%= attendance_status_badge_class(attendance.status) %>"><%= human_enum_label("unit_attendance", "status", attendance.status) %></span></td>
+                  <% if policy(attendance).update? %>
+                    <td class="text-right space-x-1 whitespace-nowrap">
+                      <% (UnitAttendance.statuses.keys - [attendance.status]).each do |status| %>
+                        <%= button_to human_enum_label("unit_attendance", "status", status),
+                              unit_unit_attendance_path(@unit, attendance),
+                              method: :patch,
+                              params: { unit_attendance: { status: status } },
+                              form: { class: "inline" },
+                              class: "btn btn-xs #{'btn-success' if status == 'attended'} #{'btn-outline' unless status == 'attended'}" %>
+                      <% end %>
+                      <%= button_to t(".remove"),
+                            unit_unit_attendance_path(@unit, attendance),
+                            method: :delete,
+                            form: { class: "inline" },
+                            data: { turbo_confirm: t(".confirm_remove_attendance") },
+                            class: "btn btn-error btn-outline btn-xs" %>
+                    </td>
+                  <% end %>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% else %>
+          <p class="opacity-60"><%= t(".no_attendees") %></p>
+        <% end %>
+      </div>
     </div>
   </div>
 <% end %>
 
-<% if policy(@unit).view_attendees? %>
-  <div id="attendees" class="card bg-base-100 shadow mt-6 scroll-mt-24">
-    <div class="card-body">
-      <h2 class="card-title justify-between">
-        <%= t(".attendees") %>
-        <% if @attendee_management && @program_has_attendances %>
-          <%= link_to t(".inherit_button"), inherit_attendances_unit_path(@unit), class: "btn btn-outline btn-sm" %>
-        <% end %>
-      </h2>
-
-      <% if @attendee_management %>
-        <% if @registrable_users.any? %>
-          <%= form_with model: [@unit, UnitAttendance.new], url: unit_unit_attendances_path(@unit), method: :post, class: "flex flex-wrap items-end gap-2 mb-4" do |f| %>
-            <fieldset class="fieldset w-full sm:w-72">
-              <legend class="fieldset-legend"><%= t(".register_attendee") %></legend>
-              <%= f.select :user_id, options_from_collection_for_select(@registrable_users, :id, :email), { prompt: t(".select_user") }, class: "select w-full", required: true %>
-            </fieldset>
-            <%= f.submit t(".register"), class: "btn btn-primary" %>
-          <% end %>
-        <% else %>
-          <p class="text-sm opacity-60 mb-4"><%= t(".all_registered") %></p>
-        <% end %>
-      <% end %>
-
-      <% if @attendances.any? %>
-        <table class="table table-sm">
-          <thead>
-            <tr>
-              <th><%= t(".table.user") %></th><th><%= t(".table.status") %></th>
-              <% if @attendee_management %><th class="text-right"><%= t(".table.actions") %></th><% end %>
-            </tr>
-          </thead>
-          <tbody>
-            <% @attendances.each do |attendance| %>
-              <tr>
-                <td><%= link_to attendance.user.email, user_path(attendance.user), class: "link link-hover" %></td>
-                <td><span class="badge <%= attendance_status_badge_class(attendance.status) %>"><%= human_enum_label("unit_attendance", "status", attendance.status) %></span></td>
-                <% if policy(attendance).update? %>
-                  <td class="text-right space-x-1 whitespace-nowrap">
-                    <% (UnitAttendance.statuses.keys - [attendance.status]).each do |status| %>
-                      <%= button_to human_enum_label("unit_attendance", "status", status),
-                            unit_unit_attendance_path(@unit, attendance),
-                            method: :patch,
-                            params: { unit_attendance: { status: status } },
-                            form: { class: "inline" },
-                            class: "btn btn-xs #{'btn-success' if status == 'attended'} #{'btn-outline' unless status == 'attended'}" %>
+<% if policy(@unit).update? %>
+  <div class="card bg-base-100 shadow mt-6">
+    <div class="collapse collapse-arrow">
+      <input type="checkbox" checked="checked" />
+      <div class="collapse-title">
+        <h2 class="card-title"><%= t(".manage_coverage") %></h2>
+        <p class="text-sm opacity-60"><%= t(".manage_coverage_hint") %></p>
+      </div>
+      <div class="collapse-content">
+        <% if @coverage_tree.any? %>
+          <div class="space-y-2 mt-2">
+            <% @coverage_tree.each do |level| %>
+              <% subtree_ids = [ level.id ] + level.children.flat_map { |s| [ s.id ] + s.children.map(&:id) } %>
+              <% level_open = (@coverages_by_content_id.keys & subtree_ids).any? %>
+              <div class="flex items-start gap-2">
+                <div class="collapse collapse-arrow bg-base-200 flex-1">
+                  <input type="checkbox" <%= "checked" if level_open %> />
+                  <div class="collapse-title text-sm font-medium py-2 min-h-0">
+                    <%= coverage_progress_badge(level, level_coverage_fraction(level, @coverages_by_content_id)) %>
+                    <%= level.title %>
+                  </div>
+                  <div class="collapse-content">
+                    <% if level.children.any? %>
+                      <div class="space-y-2">
+                        <% level.children.each do |section| %>
+                          <% section_ids = [ section.id ] + section.children.map(&:id) %>
+                          <% section_open = (@coverages_by_content_id.keys & section_ids).any? %>
+                          <% section_via_ancestor = @coverages_by_content_id.key?(level.id) %>
+                          <div class="flex items-start gap-2">
+                            <div class="collapse collapse-arrow bg-base-100 flex-1">
+                              <input type="checkbox" <%= "checked" if section_open %> />
+                              <div class="collapse-title text-sm py-2 min-h-0">
+                                <%= coverage_progress_badge(section, section_coverage_fraction(section, @coverages_by_content_id, ancestor_covered: section_via_ancestor)) %>
+                                <%= section.title %>
+                                <% if section_via_ancestor %>
+                                  <span class="text-xs opacity-50 ml-1"><%= t(".covered_via", title: level.title) %></span>
+                                <% end %>
+                              </div>
+                              <div class="collapse-content">
+                                <% if section.children.any? %>
+                                  <ul class="space-y-1">
+                                    <% section.children.each do |detail| %>
+                                      <% via = if @coverages_by_content_id.key?(section.id)
+                                                 section.title
+                                               elsif section_via_ancestor
+                                                 level.title
+                                               end %>
+                                      <li class="flex items-center justify-between gap-2">
+                                        <span>
+                                          <%= coverage_progress_badge(detail, detail_covered?(detail, @coverages_by_content_id, ancestor_covered: via.present?) ? 1.0 : 0.0) %>
+                                          <%= detail.title %>
+                                          <% if via %>
+                                            <span class="text-xs opacity-50 ml-1"><%= t(".covered_via", title: via) %></span>
+                                          <% end %>
+                                        </span>
+                                        <%= coverage_row_button(@unit, detail, @coverages_by_content_id, ancestor_covered: via.present?, via_title: via) %>
+                                      </li>
+                                    <% end %>
+                                  </ul>
+                                <% end %>
+                              </div>
+                            </div>
+                            <div class="pt-2">
+                              <%= coverage_row_button(@unit, section, @coverages_by_content_id, ancestor_covered: section_via_ancestor, via_title: (level.title if section_via_ancestor)) %>
+                            </div>
+                          </div>
+                        <% end %>
+                      </div>
                     <% end %>
-                    <%= button_to t(".remove"),
-                          unit_unit_attendance_path(@unit, attendance),
-                          method: :delete,
-                          form: { class: "inline" },
-                          data: { turbo_confirm: t(".confirm_remove_attendance") },
-                          class: "btn btn-error btn-outline btn-xs" %>
-                  </td>
-                <% end %>
-              </tr>
+                  </div>
+                </div>
+                <div class="pt-2">
+                  <%= coverage_toggle_button(@unit, level, @coverages_by_content_id) %>
+                </div>
+              </div>
             <% end %>
-          </tbody>
-        </table>
-      <% else %>
-        <p class="opacity-60"><%= t(".no_attendees") %></p>
-      <% end %>
+          </div>
+        <% else %>
+          <p class="opacity-60"><%= t(".no_content") %></p>
+        <% end %>
+      </div>
     </div>
   </div>
 <% end %>
