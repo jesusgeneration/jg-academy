@@ -17,6 +17,53 @@ RSpec.describe Unit do
 
       expect(unit).not_to be_valid
     end
+
+    it "allows blank valid_until meaning unlimited validity" do
+      expect(build(:unit, valid_until: nil)).to be_valid
+    end
+  end
+
+  describe "validity" do
+    it "returns nil without covered validity periods" do
+      unit = create(:unit, starts_at: Time.zone.local(2026, 10, 10, 18, 0), ends_at: Time.zone.local(2026, 10, 11, 17, 0))
+      create(:unit_coverage, unit: unit, content: create(:content, :detail))
+
+      expect(unit.default_valid_until).to be_nil
+    end
+
+    it "returns nil without an end time" do
+      unit = create(:unit, starts_at: nil, ends_at: nil)
+      create(:unit_coverage, unit: unit, content: create(:content, :section, validity_years: 3))
+
+      expect(unit.default_valid_until).to be_nil
+    end
+
+    it "counts validity from the end of the course" do
+      section = create(:content, :section, validity_years: 3)
+      unit = create(:unit, starts_at: Time.zone.local(2026, 10, 10, 18, 0), ends_at: Time.zone.local(2026, 10, 11, 17, 0))
+      create(:unit_coverage, unit: unit, content: section)
+
+      expect(unit.default_valid_until).to eq(Date.new(2029, 10, 11))
+    end
+
+    it "uses the shortest validity period when several apply" do
+      unit = create(:unit, starts_at: Time.zone.local(2026, 10, 10, 18, 0), ends_at: Time.zone.local(2026, 10, 11, 17, 0))
+      create(:unit_coverage, unit: unit, content: create(:content, :section, validity_years: 5))
+      create(:unit_coverage, unit: unit, content: create(:content, :section, validity_years: 3))
+
+      expect(unit.default_valid_until).to eq(Date.new(2029, 10, 11))
+    end
+
+    it "fills a blank valid_until but never overwrites a manual value" do
+      section = create(:content, :section, validity_years: 3)
+      unit = create(:unit, starts_at: Time.zone.local(2026, 10, 10, 18, 0), ends_at: Time.zone.local(2026, 10, 11, 17, 0))
+      create(:unit_coverage, unit: unit, content: section)
+
+      expect { unit.fill_valid_until! }.to change { unit.reload.valid_until }.from(nil).to(Date.new(2029, 10, 11))
+
+      unit.update!(valid_until: Date.new(2030, 1, 1))
+      expect { unit.fill_valid_until! }.not_to change { unit.reload.valid_until }
+    end
   end
 
   describe "scheduling" do

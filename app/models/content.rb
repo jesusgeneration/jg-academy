@@ -17,6 +17,9 @@ class Content < ApplicationRecord
   validates :content_type, presence: true
   validates :position, presence: true,
     numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :validity_years,
+    numericality: { only_integer: true, greater_than: 0 },
+    allow_nil: true
   validate :hierarchy_rules
 
   scope :ordered, -> { order(:position) }

@@ -264,6 +264,8 @@ de:
       starts_at_hint: Erforderlich, bevor Teilnehmende als teilgenommen markiert werden.
       time: Uhrzeit
       update: Einheit aktualisieren
+      valid_until: Gültig bis
+      valid_until_hint: Leer lassen für unbegrenzte Gültigkeit. Bei Pflichtkursen wird das Datum aus Kursende plus Frist vorbelegt und kann angepasst werden.
     index:
       attended_count: "%{count} teilgenommen"
       empty: Keine Einheiten in dieser Ansicht.
@@ -328,6 +330,7 @@ de:
         actions: Aktionen
         status: Status
         user: Benutzer
+      unlimited: Unbegrenzt gültig
     update:
       updated: Einheit wurde erfolgreich aktualisiert.
   users:

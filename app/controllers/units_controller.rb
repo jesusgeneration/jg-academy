@@ -45,6 +45,7 @@ class UnitsController < BaseController
         coverage_content_ids.each do |content_id|
           @unit.unit_coverages.create!(content_id: content_id)
         end
+        @unit.fill_valid_until!
       end
       redirect_to @unit, notice: t(".created")
     rescue ActiveRecord::RecordInvalid
@@ -117,7 +118,7 @@ class UnitsController < BaseController
 
   def unit_params
     params.require(:unit).permit(:name, :description, :location, :program_id, :instructor_id,
-      :duration_minutes, :start_date, :start_time)
+      :duration_minutes, :start_date, :start_time, :valid_until)
   end
 
   def inheritance_params

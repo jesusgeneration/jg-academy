@@ -1,4 +1,4 @@
-<%= form_with model: unit, class: "space-y-4" do |f| %>
+<%= form_with model: unit, class: "space-y-4", data: { controller: "valid-until" } do |f| %>
   <% if unit.errors.any? %>
     <div role="alert" class="alert alert-error">
       <span><%= t(".errors_prevented", count: unit.errors.count) %></span>
@@ -27,11 +27,14 @@
       <% start_parts = unit_datetime_parts(unit) %>
       <div class="grid grid-cols-[1fr_auto] gap-2">
         <div class="min-w-0">
-          <%= f.date_field :start_date, value: start_parts[0], class: "input w-full" %>
+          <%= f.date_field :start_date, value: start_parts[0], class: "input w-full",
+                data: { valid_until_target: "startDate", action: "change->valid-until#update" } %>
           <p class="label"><%= t(".date") %></p>
         </div>
         <div>
-          <%= f.select :start_time, unit_time_options(start_parts[1]), { prompt: t(".select_time") }, class: "select w-auto max-w-40" %>
+          <%= f.select(:start_time, unit_time_options(start_parts[1]), { prompt: t(".select_time") },
+                { class: "select w-auto max-w-40",
+                  data: { valid_until_target: "startTime", action: "change->valid-until#update" } }) %>
           <p class="label"><%= t(".time") %></p>
         </div>
       </div>
@@ -40,7 +43,9 @@
 
     <fieldset class="fieldset min-w-0">
       <legend class="fieldset-legend"><%= t(".duration") %></legend>
-      <%= f.select :duration_minutes, unit_duration_options(unit_duration_value(unit)), { prompt: t(".select_duration") }, class: "select w-full" %>
+      <%= f.select(:duration_minutes, unit_duration_options(unit_duration_value(unit)), { prompt: t(".select_duration") },
+            { class: "select w-full",
+              data: { valid_until_target: "duration", action: "change->valid-until#update" } }) %>
     </fieldset>
 
     <fieldset class="fieldset min-w-0">
@@ -48,6 +53,13 @@
       <%= f.collection_select :instructor_id, @eligible_instructors, :id, :email,
             { prompt: t(".select_instructor") }, { class: "select w-full" } %>
       <p class="label"><%= t(".instructor_hint") %></p>
+    </fieldset>
+
+    <fieldset class="fieldset min-w-0">
+      <legend class="fieldset-legend"><%= t(".valid_until") %></legend>
+      <%= f.date_field :valid_until, class: "input w-full",
+            data: { valid_until_target: "field", action: "input->valid-until#markEdited" } %>
+      <p class="label"><%= t(".valid_until_hint") %></p>
     </fieldset>
   </div>
 

@@ -5,6 +5,7 @@ de:
       content:
         content_type: Typ
         title: Titel
+        validity_years: Gültigkeit in Jahren
       organization:
         description: Beschreibung
         name: Name
@@ -27,6 +28,7 @@ de:
         name: Name
         program: Veranstaltung
         starts_at: Beginn
+        valid_until: Gültig bis
       unit_attendance:
         status: Status
         user: Benutzer

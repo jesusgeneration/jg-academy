@@ -61,6 +61,30 @@ RSpec.describe "Units" do
         expect(response.body).to include(unit.name)
       end
     end
+
+    it "shows the valid_until date when present" do
+      sign_in create(:user)
+      unit = create(:unit, program: program, valid_until: Date.new(2029, 10, 10))
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.l(Date.new(2029, 10, 10)))
+      end
+    end
+
+    it "shows unlimited validity when valid_until is blank" do
+      sign_in create(:user)
+      unit = create(:unit, program: program, valid_until: nil)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.unlimited"))
+      end
+    end
   end
 
   describe "POST /units" do
@@ -147,6 +171,70 @@ RSpec.describe "Units" do
       }.to change(UnitCoverage, :count).by(0)
 
       expect(response).to redirect_to(unit_path(Unit.find_by!(name: "Plain Unit")))
+    end
+
+    it "renders the valid_until field with validity data on the new form" do
+      create(:content, :section, title: "First Aid", validity_years: 3)
+
+      get new_unit_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.form.valid_until"))
+        expect(response.body).to include(I18n.t("units.form.valid_until_hint"))
+        expect(response.body).to include('name="unit[valid_until]"')
+        expect(response.body).to include('data-validity-years="3"')
+      end
+    end
+
+    it "persists a manually entered valid_until" do
+      post units_path, params: {
+        unit: {
+          name: "Limited Unit",
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "60",
+          program_id: program.id,
+          valid_until: "2030-05-01"
+        }
+      }
+
+      expect(Unit.find_by!(name: "Limited Unit").valid_until).to eq(Date.new(2030, 5, 1))
+    end
+
+    it "prefills a blank valid_until from coverage validity on create" do
+      section = create(:content, :section, validity_years: 3)
+
+      post units_path, params: {
+        unit: {
+          name: "First Aid Unit",
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "60",
+          program_id: program.id
+        },
+        coverage_content_ids: [ section.id.to_s ]
+      }
+
+      expect(Unit.find_by!(name: "First Aid Unit").valid_until).to eq(Date.new(2029, 10, 10))
+    end
+
+    it "uses the shortest validity when several coverages apply" do
+      prevention = create(:content, :section, validity_years: 5)
+      first_aid = create(:content, :section, validity_years: 3)
+
+      post units_path, params: {
+        unit: {
+          name: "Combined Unit",
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "60",
+          program_id: program.id
+        },
+        coverage_content_ids: [ prevention.id.to_s, first_aid.id.to_s ]
+      }
+
+      expect(Unit.find_by!(name: "Combined Unit").valid_until).to eq(Date.new(2029, 10, 10))
     end
 
     it "re-renders the coverage tree on invalid submissions" do
@@ -803,6 +891,23 @@ RSpec.describe "Units" do
         expect(response).to redirect_to(unit_path(unit))
         expect(unit.reload.covers?(level)).to be(true)
       end
+    end
+
+    it "fills a blank valid_until when mandatory course coverage is added later" do
+      section = create(:content, :section, validity_years: 3)
+
+      post unit_unit_coverages_path(unit), params: { unit_coverage: { content_id: section.id } }
+
+      expect(unit.reload.valid_until).to eq(unit.ends_at.to_date.advance(years: 3))
+    end
+
+    it "never overwrites a manual valid_until when coverage is added" do
+      unit.update!(valid_until: Date.new(2030, 1, 1))
+      section = create(:content, :section, validity_years: 3)
+
+      post unit_unit_coverages_path(unit), params: { unit_coverage: { content_id: section.id } }
+
+      expect(unit.reload.valid_until).to eq(Date.new(2030, 1, 1))
     end
 
     it "refuses duplicate coverage" do

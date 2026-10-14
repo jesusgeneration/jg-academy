@@ -5,6 +5,7 @@ en:
       content:
         content_type: Type
         title: Title
+        validity_years: Validity in years
       organization:
         description: Description
         name: Name
@@ -27,6 +28,7 @@ en:
         name: Name
         program: Program
         starts_at: Starts at
+        valid_until: Valid until
       unit_attendance:
         status: Status
         user: User

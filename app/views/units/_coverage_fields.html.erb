@@ -7,7 +7,8 @@
       <% coverage_tree.each do |level| %>
         <div class="flex items-start gap-2">
           <div class="pt-3">
-            <%= check_box_tag "coverage_content_ids[]", level.id, selected_ids.include?(level.id.to_s), class: "checkbox checkbox-sm", id: "coverage_content_#{level.id}" %>
+            <%= check_box_tag "coverage_content_ids[]", level.id, selected_ids.include?(level.id.to_s), class: "checkbox checkbox-sm", id: "coverage_content_#{level.id}",
+                  data: { valid_until_target: "coverage", validity_years: level.validity_years, action: "change->valid-until#update" } %>
           </div>
           <div class="collapse collapse-arrow bg-base-200 flex-1">
             <input type="checkbox" />
@@ -21,7 +22,8 @@
                   <% level.children.each do |section| %>
                     <div class="flex items-start gap-2">
                       <div class="pt-2">
-                        <%= check_box_tag "coverage_content_ids[]", section.id, selected_ids.include?(section.id.to_s), class: "checkbox checkbox-sm", id: "coverage_content_#{section.id}" %>
+                        <%= check_box_tag "coverage_content_ids[]", section.id, selected_ids.include?(section.id.to_s), class: "checkbox checkbox-sm", id: "coverage_content_#{section.id}",
+                              data: { valid_until_target: "coverage", validity_years: section.validity_years, action: "change->valid-until#update" } %>
                       </div>
                       <div class="collapse collapse-arrow bg-base-100 flex-1">
                         <input type="checkbox" />
@@ -34,7 +36,8 @@
                             <ul class="space-y-1">
                               <% section.children.each do |detail| %>
                                 <li class="flex items-center gap-2">
-                                  <%= check_box_tag "coverage_content_ids[]", detail.id, selected_ids.include?(detail.id.to_s), class: "checkbox checkbox-sm", id: "coverage_content_#{detail.id}" %>
+                                  <%= check_box_tag "coverage_content_ids[]", detail.id, selected_ids.include?(detail.id.to_s), class: "checkbox checkbox-sm", id: "coverage_content_#{detail.id}",
+                                        data: { valid_until_target: "coverage", validity_years: detail.validity_years, action: "change->valid-until#update" } %>
                                   <span>
                                     <span class="badge badge-ghost badge-sm mr-1"><%= human_enum_label("content", "content_type", detail.content_type) %></span>
                                     <%= detail.title %>

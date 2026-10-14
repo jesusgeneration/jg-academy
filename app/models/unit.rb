@@ -73,6 +73,25 @@ class Unit < ApplicationRecord
     starts_at.present?
   end
 
+  # Earliest expiry implied by directly covered contents carrying a
+  # validity period, counted from the end of the course. Nil when no
+  # covered content implies one (valid forever) or the course has no end.
+  def default_valid_until
+    years = covered_contents.where.not(validity_years: nil).minimum(:validity_years)
+    return nil if years.nil? || ends_at.nil?
+
+    ends_at.to_date.advance(years: years)
+  end
+
+  # Fills valid_until from covered contents, but never overwrites a value
+  # entered manually.
+  def fill_valid_until!
+    return if valid_until.present?
+
+    computed = default_valid_until
+    update!(valid_until: computed) if computed
+  end
+
   def covers?(content)
     return false if content.nil? || id.nil? || content.id.nil?
 

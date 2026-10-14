@@ -50,6 +50,17 @@ RSpec.describe "db/seeds_data/contents.json" do
     end
   end
 
+  it "stores validity years on the Pflichtkurse sections only" do
+    pflichtkurse = items.find { |level| level["title"] == "Pflichtkurse" }
+    other_sections = items.reject { |level| level["title"] == "Pflichtkurse" }
+      .flat_map { |level| level.fetch("sections") }
+
+    aggregate_failures do
+      expect(pflichtkurse.fetch("sections").map { |s| s["validity_years"] }).to eq([ 5, 3 ])
+      expect(other_sections).to all(satisfy { |s| !s.key?("validity_years") })
+    end
+  end
+
   it "nests level 7 details in a section reusing the level title" do
     level7 = items.find { |level| level["title"] == "Organisatorisches rund um die JuLeiCa-Ausbildung" }
 
