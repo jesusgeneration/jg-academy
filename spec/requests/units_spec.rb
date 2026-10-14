@@ -926,6 +926,23 @@ RSpec.describe "Units" do
       end
     end
 
+    it "renders collapsible sections open by default with attendees above coverage" do
+      get unit_path(unit)
+
+      attendees_index = response.body.index(I18n.t("units.show.attendees"))
+      coverage_index = response.body.index(I18n.t("units.show.manage_coverage"))
+      covers_index = response.body.index(I18n.t("units.show.covers"))
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(attendees_index).not_to be_nil
+        expect(coverage_index).not_to be_nil
+        expect(covers_index).not_to be_nil
+        expect(attendees_index).to be < coverage_index
+        expect(response.body.scan(/<input type="checkbox" checked="checked" \/>/).size).to be >= 3
+      end
+    end
+
     it "hides the coverage editor from organisers of another organization" do
       sign_in_organiser_for(other_organization)
 
