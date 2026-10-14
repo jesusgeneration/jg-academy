@@ -109,6 +109,53 @@ RSpec.describe "Units" do
         expect(response.body).to include("Zulu Unit")
       end
     end
+
+    it "sorts units by date within their program group" do
+      sign_in create(:user)
+      early_unit = create(:unit, program: program, name: "Early Unit",
+        starts_at: Time.zone.local(2026, 10, 10, 18, 0), ends_at: Time.zone.local(2026, 10, 11, 17, 0))
+      late_unit = create(:unit, program: program, name: "Late Unit",
+        starts_at: Time.zone.local(2026, 11, 10, 18, 0), ends_at: Time.zone.local(2026, 11, 11, 17, 0))
+
+      get units_path, params: { tab: "all", sort: "date", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index(late_unit.name)).to be < response.body.index(early_unit.name)
+      end
+    end
+
+    it "sorts units by coverage within their program group" do
+      sign_in create(:user)
+      level = create(:content, :level)
+      section = create(:content, :section, parent: level)
+      create_list(:content, 3, :detail, parent: section)
+      bare_unit = create(:unit, program: program, name: "Bare Unit")
+      covered_unit = create(:unit, program: program, name: "Covered Unit")
+      create(:unit_coverage, unit: covered_unit, content: level)
+
+      get units_path, params: { tab: "all", sort: "coverage", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index(covered_unit.name)).to be < response.body.index(bare_unit.name)
+      end
+    end
+
+    it "falls back to tab order for unknown sort keys" do
+      sign_in create(:user)
+      early_unit = create(:unit, program: program, name: "Early Unit",
+        starts_at: Time.zone.local(2026, 10, 10, 18, 0), ends_at: Time.zone.local(2026, 10, 11, 17, 0))
+      late_unit = create(:unit, program: program, name: "Late Unit",
+        starts_at: Time.zone.local(2026, 11, 10, 18, 0), ends_at: Time.zone.local(2026, 11, 11, 17, 0))
+
+      get units_path, params: { tab: "all", sort: "bogus" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index(late_unit.name)).to be < response.body.index(early_unit.name)
+      end
+    end
   end
 
   describe "GET /units/:id" do

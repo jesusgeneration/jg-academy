@@ -11,9 +11,19 @@ class UnitsController < BaseController
     when "all" then scope.order(starts_at: :desc)
     else scope.upcoming
     end
+    sort = sort_key(%w[name date coverage attendees])
+    units = units.reorder(starts_at: sort_direction) if sort == "date"
     @units_by_program = units.group_by(&:program).sort_by { |program, _| program.name }
     @coverages_by_unit_id = UnitCoverage.where(unit_id: units.select(:id)).group_by(&:unit_id)
     @coverage_detail_map = coverage_detail_map(Content.includes(children: :children).where(parent_id: nil).ordered)
+    case sort
+    when "name"
+      @units_by_program = @units_by_program.map { |program, list| [ program, sort_units_by_name(list, sort_direction) ] }.to_h
+    when "coverage"
+      @units_by_program = @units_by_program.map { |program, list| [ program, sort_units_by_coverage(list, sort_direction) ] }.to_h
+    when "attendees"
+      @units_by_program = @units_by_program.map { |program, list| [ program, sort_units_by_attendees(list, sort_direction) ] }.to_h
+    end
     @show_attendance_summary = policy(Unit).view_attendance_summary?
   end
 
@@ -168,6 +178,31 @@ class UnitsController < BaseController
       end
     end
     map
+  end
+
+  # Sorts a program's units by name.
+  def sort_units_by_name(units, direction)
+    sorted = units.sort_by(&:name)
+    direction == "desc" ? sorted.reverse : sorted
+  end
+
+  # Sorts a program's units by covered detail count, name breaking ties.
+  def sort_units_by_coverage(units, direction)
+    counts = ->(unit) { helpers.unit_detail_coverage_count(unit, @coverages_by_unit_id, @coverage_detail_map) }
+    if direction == "desc"
+      units.sort_by { |unit| [ -counts.call(unit), unit.name ] }
+    else
+      units.sort_by { |unit| [ counts.call(unit), unit.name ] }
+    end
+  end
+
+  # Sorts a program's units by attendee count, name breaking ties.
+  def sort_units_by_attendees(units, direction)
+    if direction == "desc"
+      units.sort_by { |unit| [ -unit.unit_attendances.size, unit.name ] }
+    else
+      units.sort_by { |unit| [ unit.unit_attendances.size, unit.name ] }
+    end
   end
 
   def coverage_content_ids

@@ -139,6 +139,41 @@ RSpec.describe ApplicationHelper, type: :helper do
     end
   end
 
+  describe "#sort_link" do
+    it "links to ascending sort for a new column" do
+      html = helper.sort_link("name", "Name")
+
+      aggregate_failures do
+        expect(html).to include("sort=name")
+        expect(html).to include("direction=asc")
+        expect(html).not_to include("▲")
+        expect(html).not_to include("▼")
+      end
+    end
+
+    it "toggles direction and marks the active column" do
+      allow(helper).to receive(:params).and_return(ActionController::Parameters.new(sort: "name", direction: "asc"))
+
+      html = helper.sort_link("name", "Name")
+
+      aggregate_failures do
+        expect(html).to include("direction=desc")
+        expect(html).to include("▲")
+      end
+    end
+
+    it "marks a descending active column" do
+      allow(helper).to receive(:params).and_return(ActionController::Parameters.new(sort: "name", direction: "desc"))
+
+      html = helper.sort_link("name", "Name")
+
+      aggregate_failures do
+        expect(html).to include("direction=asc")
+        expect(html).to include("▼")
+      end
+    end
+  end
+
   describe "#user_topic_progress" do
     it "returns a pure detail ratio without partial weighting" do
       section = create(:content, :section)

@@ -101,6 +101,51 @@ RSpec.describe "Programs" do
         expect(response.body).not_to include(past_program.name)
       end
     end
+
+    it "sorts by name descending" do
+      sign_in create(:user)
+      create(:unit, program: create(:program, organization: organization, name: "Alpha Program"))
+      create(:unit, program: create(:program, organization: organization, name: "Zulu Program"))
+
+      get programs_path, params: { sort: "name", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index("Zulu Program")).to be < response.body.index("Alpha Program")
+      end
+    end
+
+    it "sorts by unit count" do
+      sign_in create(:user)
+      single = create(:program, organization: organization, name: "Single Program")
+      create(:unit, program: single)
+      triple = create(:program, organization: organization, name: "Triple Program")
+      create_list(:unit, 3, program: triple)
+
+      get programs_path, params: { tab: "all", sort: "units", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index(triple.name)).to be < response.body.index(single.name)
+      end
+    end
+
+    it "keeps the tab in sort links and falls back for unknown keys" do
+      sign_in create(:user)
+      beta_program = create(:program, organization: organization, name: "Beta Program")
+      create(:unit, program: beta_program)
+      alpha_program = create(:program, organization: organization, name: "Alpha Program")
+      create(:unit, program: alpha_program)
+
+      get programs_path, params: { tab: "upcoming", sort: "bogus" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("tab=upcoming")
+        expect(response.body).to include("sort=name")
+        expect(response.body.index(alpha_program.name)).to be < response.body.index(beta_program.name)
+      end
+    end
   end
 
   describe "GET /programs/:id" do

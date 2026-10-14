@@ -111,6 +111,30 @@ RSpec.describe "Admin resources" do
       end
     end
 
+    it "sorts by email descending" do
+      create(:user, email: "anna@example.com")
+      create(:user, email: "zara@example.com")
+
+      get users_path, params: { sort: "email", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index("zara@example.com")).to be < response.body.index("anna@example.com")
+      end
+    end
+
+    it "falls back to email order for unknown sort keys" do
+      create(:user, email: "zara@example.com")
+      create(:user, email: "anna@example.com")
+
+      get users_path, params: { sort: "bogus", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index("anna@example.com")).to be < response.body.index("zara@example.com")
+      end
+    end
+
     it "creates a user with a system role and an organiser membership" do
       expect {
         post users_path, params: {
@@ -301,6 +325,55 @@ RSpec.describe "Admin resources" do
       aggregate_failures do
         expect(response).to redirect_to(root_path)
         expect(pending_user.reload).not_to be_confirmed
+      end
+    end
+  end
+
+  describe "organizations ordering" do
+    before { sign_in create(:user, :admin) }
+
+    it "lists organizations with the most programs first, then most members" do
+      busy_few = create(:organization, name: "Busy Few Org")
+      create_list(:program, 2, organization: busy_few)
+      create(:organization_membership, organization: busy_few)
+      busy_many = create(:organization, name: "Busy Many Org")
+      create_list(:program, 2, organization: busy_many)
+      create_list(:organization_membership, 3, organization: busy_many)
+      quiet = create(:organization, name: "Quiet Org")
+      create(:program, organization: quiet)
+
+      get organizations_path
+
+      body = response.body
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(body.index(busy_many.name)).to be < body.index(busy_few.name)
+        expect(body.index(busy_few.name)).to be < body.index(quiet.name)
+      end
+    end
+
+    it "sorts by name descending" do
+      create(:organization, name: "Alpha Org")
+      create(:organization, name: "Zulu Org")
+
+      get organizations_path, params: { sort: "name", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index("Zulu Org")).to be < response.body.index("Alpha Org")
+      end
+    end
+
+    it "falls back to activity order for unknown sort keys" do
+      busy = create(:organization, name: "Busy Fallback Org")
+      create_list(:program, 2, organization: busy)
+      idle = create(:organization, name: "Idle Fallback Org")
+
+      get organizations_path, params: { sort: "bogus", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index(busy.name)).to be < response.body.index(idle.name)
       end
     end
   end
