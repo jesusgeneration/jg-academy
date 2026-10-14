@@ -31,8 +31,8 @@
           <table class="table">
             <thead>
               <tr>
-                <th><%= t(".table.unit") %></th><th><%= t(".table.date") %></th><th><%= t(".table.coverage") %></th>
-                <% if show_attendees %><th><%= t(".table.attendees") %></th><% end %>
+                <th><%= sort_link("name", t(".table.unit")) %></th><th><%= sort_link("date", t(".table.date")) %></th><th><%= sort_link("coverage", t(".table.coverage")) %></th>
+                <% if show_attendees %><th><%= sort_link("attendees", t(".table.attendees")) %></th><% end %>
               </tr>
             </thead>
             <tbody>

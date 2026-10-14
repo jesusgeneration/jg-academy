@@ -9,7 +9,7 @@
   <div class="card bg-base-100 shadow">
     <table class="table">
       <thead>
-        <tr><th><%= t(".table.email") %></th><th><%= t(".table.role") %></th><th><%= t(".table.confirmed") %></th><th class="text-right"><%= t(".table.actions") %></th></tr>
+        <tr><th><%= sort_link("email", t(".table.email")) %></th><th><%= sort_link("role", t(".table.role")) %></th><th><%= sort_link("confirmed", t(".table.confirmed")) %></th><th class="text-right"><%= t(".table.actions") %></th></tr>
       </thead>
       <tbody>
         <% @users.each do |user| %>

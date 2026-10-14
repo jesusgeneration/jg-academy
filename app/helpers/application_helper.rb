@@ -251,6 +251,19 @@ module ApplicationHelper
     coverages.flat_map { |coverage| detail_map[coverage.content_id] || [] }.uniq.size
   end
 
+  # Builds a sortable column header link. Keeps the current query params
+  # (e.g. the tab) and toggles the direction on repeat clicks; the first
+  # click sorts ascending. The active column shows an arrow indicator.
+  def sort_link(key, label)
+    key = key.to_s
+    current_direction = params[:direction].to_s == "desc" ? "desc" : "asc"
+    active = params[:sort].to_s == key
+    direction = active && current_direction == "asc" ? "desc" : "asc"
+    indicator = active ? (current_direction == "desc" ? " ▼" : " ▲") : ""
+    query = request.query_parameters.merge(sort: key, direction: direction).to_query
+    link_to "#{label}#{indicator}", "?#{query}", class: "link link-hover"
+  end
+
   # Percent (0-100) for a covered/total pair; empty totals show 0%.
   def user_progress_percent(covered, total)
     return 0 if total.zero?

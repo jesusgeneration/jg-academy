@@ -4,7 +4,13 @@ class UsersController < BaseController
 
   def index
     authorize User
-    @users = policy_scope(User).order(:email)
+    scope = policy_scope(User)
+    @users = case sort_key(%w[email role confirmed])
+    when "email" then scope.order(email: sort_direction)
+    when "role" then scope.order(role: sort_direction, email: :asc)
+    when "confirmed" then scope.order(confirmed_at: sort_direction, email: :asc)
+    else scope.order(:email)
+    end
   end
 
   def show

@@ -9,7 +9,7 @@
   <div class="card bg-base-100 shadow">
     <table class="table">
       <thead>
-        <tr><th><%= t(".table.name") %></th><th><%= t(".table.members") %></th><th><%= t(".table.programs") %></th><th class="text-right"><%= t(".table.actions") %></th></tr>
+        <tr><th><%= sort_link("name", t(".table.name")) %></th><th><%= sort_link("members", t(".table.members")) %></th><th><%= sort_link("programs", t(".table.programs")) %></th><th class="text-right"><%= t(".table.actions") %></th></tr>
       </thead>
       <tbody>
         <% @organizations.each do |organization| %>

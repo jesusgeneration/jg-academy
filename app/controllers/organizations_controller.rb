@@ -3,7 +3,13 @@ class OrganizationsController < BaseController
 
   def index
     authorize Organization
-    @organizations = policy_scope(Organization).order(:name)
+    scope = policy_scope(Organization).with_counts
+    @organizations = case sort_key(%w[name programs members])
+    when "name" then scope.order(name: sort_direction)
+    when "programs" then scope.order(programs_count: sort_direction, name: :asc)
+    when "members" then scope.order(members_count: sort_direction, name: :asc)
+    else scope.order(programs_count: :desc, members_count: :desc, name: :asc)
+    end
   end
 
   def show
