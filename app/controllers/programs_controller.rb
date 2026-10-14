@@ -3,7 +3,14 @@ class ProgramsController < BaseController
 
   def index
     authorize Program
-    @programs = policy_scope(Program).includes(:organization, :units).order(:name)
+    scope = policy_scope(Program).includes(:organization, :units)
+    @tab = %w[upcoming past planned all].include?(params[:tab]) ? params[:tab] : "upcoming"
+    @programs = case @tab
+    when "past" then scope.past
+    when "planned" then scope.planned
+    when "all" then scope
+    else scope.upcoming
+    end.order(:name)
   end
 
   def show

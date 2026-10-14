@@ -179,6 +179,11 @@ en:
         organization: Organization
         program: Program
         units: Units
+      tabs:
+        all: All
+        past: Past
+        planned: Planned
+        upcoming: Upcoming
       title: Programs
     new:
       breadcrumb_current: New

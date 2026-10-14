@@ -15,12 +15,90 @@ RSpec.describe "Programs" do
     it "allows plain users to browse programs" do
       sign_in create(:user)
       program = create(:program, organization: organization)
+      create(:unit, program: program)
 
       get programs_path
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(program.name)
+      end
+    end
+
+    it "defaults to the upcoming tab" do
+      sign_in create(:user)
+      upcoming_program = create(:program, organization: organization, name: "Upcoming Program")
+      create(:unit, program: upcoming_program)
+      past_program = create(:program, organization: organization, name: "Past Program")
+      create(:unit, :past, program: past_program)
+
+      get programs_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("programs.index.tabs.upcoming"))
+        expect(response.body).to include(upcoming_program.name)
+        expect(response.body).not_to include(past_program.name)
+      end
+    end
+
+    it "supports the past tab" do
+      sign_in create(:user)
+      past_program = create(:program, organization: organization, name: "Past Program")
+      create(:unit, :past, program: past_program)
+      upcoming_program = create(:program, organization: organization, name: "Upcoming Program")
+      create(:unit, program: upcoming_program)
+
+      get programs_path, params: { tab: "past" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(past_program.name)
+        expect(response.body).not_to include(upcoming_program.name)
+      end
+    end
+
+    it "supports the planned tab including programs without units" do
+      sign_in create(:user)
+      empty_program = create(:program, organization: organization, name: "Empty Program")
+      scheduled_program = create(:program, organization: organization, name: "Scheduled Program")
+      create(:unit, program: scheduled_program)
+
+      get programs_path, params: { tab: "planned" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("programs.index.tabs.planned"))
+        expect(response.body).to include(empty_program.name)
+        expect(response.body).not_to include(scheduled_program.name)
+      end
+    end
+
+    it "supports the all tab" do
+      sign_in create(:user)
+      upcoming_program = create(:program, organization: organization, name: "Upcoming Program")
+      create(:unit, program: upcoming_program)
+      empty_program = create(:program, organization: organization, name: "Empty Program")
+
+      get programs_path, params: { tab: "all" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(upcoming_program.name)
+        expect(response.body).to include(empty_program.name)
+      end
+    end
+
+    it "falls back to upcoming for unknown tabs" do
+      sign_in create(:user)
+      past_program = create(:program, organization: organization, name: "Past Program")
+      create(:unit, :past, program: past_program)
+
+      get programs_path, params: { tab: "bogus" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).not_to include(past_program.name)
       end
     end
   end

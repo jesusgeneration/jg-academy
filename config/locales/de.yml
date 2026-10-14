@@ -179,6 +179,11 @@ de:
         organization: Veranstalter
         program: Veranstaltung
         units: Einheiten
+      tabs:
+        all: Alle
+        past: Vergangen
+        planned: Geplant
+        upcoming: Bevorstehend
       title: Veranstaltungen
     new:
       breadcrumb_current: Neu
