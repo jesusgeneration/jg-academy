@@ -40,8 +40,8 @@ de:
       content:
         content_type:
           detail: Detail
-          level: Ebene
-          section: Abschnitt
+          level: Themenbereich
+          section: Thema
       organization_membership:
         role:
           member: Mitglied

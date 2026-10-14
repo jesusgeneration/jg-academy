@@ -40,8 +40,8 @@ en:
       content:
         content_type:
           detail: detail
-          level: level
-          section: section
+          level: topic area
+          section: topic
       organization_membership:
         role:
           member: member
