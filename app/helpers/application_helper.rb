@@ -1,4 +1,6 @@
 module ApplicationHelper
+  # Training-hours goal (100%) for user progress, in hours.
+  USER_TRAINING_HOURS_GOAL = 50
   def portal_nav_items
     items = []
     if current_user.staff?
@@ -192,6 +194,50 @@ module ApplicationHelper
   # or level ancestor.
   def detail_covered?(detail, coverages_by_content_id, ancestor_covered: false)
     ancestor_covered || coverages_by_content_id.key?(detail.id)
+  end
+
+  # User progress for a topic: [covered details, total details] as a pure
+  # detail ratio. Direct topic coverage or an ancestor topic-area coverage
+  # counts all details as covered.
+  def user_topic_progress(section, covered_ids, ancestor_covered: false)
+    details = section.children.to_a
+    return [ 0, 0 ] if details.empty?
+    return [ details.size, details.size ] if ancestor_covered || covered_ids.include?(section.id)
+
+    [ details.count { |detail| covered_ids.include?(detail.id) }, details.size ]
+  end
+
+  # User progress for a topic area: [covered details, total details] as a
+  # pure detail ratio across all its topics. No partial-topic weighting.
+  def user_topic_area_progress(level, covered_ids)
+    sections = level.children.to_a
+    details = sections.flat_map { |section| section.children.to_a }
+    return [ 0, 0 ] if details.empty?
+    return [ details.size, details.size ] if covered_ids.include?(level.id)
+
+    covered = sections.sum do |section|
+      section_details = section.children.to_a
+      if covered_ids.include?(section.id)
+        section_details.size
+      else
+        section_details.count { |detail| covered_ids.include?(detail.id) }
+      end
+    end
+    [ covered, details.size ]
+  end
+
+  # Percent (0-100) for a covered/total pair; empty totals show 0%.
+  def user_progress_percent(covered, total)
+    return 0 if total.zero?
+
+    [ (covered.to_f / total * 100).round, 100 ].min
+  end
+
+  # Percent (0-100) of training hours toward the goal; capped at 100%.
+  def training_hours_percent(hours, goal = USER_TRAINING_HOURS_GOAL)
+    return 0 if goal.to_f <= 0
+
+    [ (hours.to_f / goal * 100).round, 100 ].min
   end
 
   # Content-type badge with a progress-bar style fill for coverage.

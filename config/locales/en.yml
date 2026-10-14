@@ -386,8 +386,14 @@ en:
       edit: Edit
       no_attendance: No completed trainings yet.
       no_organization: No organization
+      progress_count: "%{covered} of %{total}"
+      progress_hint: Covered details versus all details, from attended units.
+      progress_title: Content progress
       table:
         status: Status
         unit: Unit
+      training_hint: Attended units toward a goal of %{goal} hours.
+      training_title: Training hours
+      training_value: "%{hours} of %{goal} hours"
     update:
       updated: User was successfully updated.
