@@ -387,7 +387,7 @@ de:
       no_attendance: Noch keine Schulungen absolviert.
       no_organization: Kein Veranstalter
       progress_count: "%{covered} von %{total}"
-      progress_hint: Abgedeckte Details im Verhältnis zu allen Details, aus teilgenommenen Einheiten.
+      progress_hint: Abgedeckte Details im Verhältnis zu allen Details, aus teilgenommenen Einheiten. Themen ohne Details zählen als abgehakt, sobald sie selbst abgedeckt sind.
       progress_title: Inhaltsfortschritt
       table:
         status: Status

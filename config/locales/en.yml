@@ -387,7 +387,7 @@ en:
       no_attendance: No completed trainings yet.
       no_organization: No organization
       progress_count: "%{covered} of %{total}"
-      progress_hint: Covered details versus all details, from attended units.
+      progress_hint: Covered details versus all details, from attended units. Topics without details count as checked off once the topic itself is covered.
       progress_title: Content progress
       table:
         status: Status
