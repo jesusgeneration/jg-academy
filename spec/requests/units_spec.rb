@@ -47,6 +47,68 @@ RSpec.describe "Units" do
         expect(response.body).not_to include(scheduled_unit.name)
       end
     end
+
+    it "groups units under their program" do
+      sign_in create(:user)
+      other = create(:program, organization: organization, name: "Other Program")
+      unit = create(:unit, program: program, name: "Alpha Unit")
+      other_unit = create(:unit, program: other, name: "Zulu Unit")
+
+      get units_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(program.name)
+        expect(response.body).to include(other.name)
+        expect(response.body.index(program.name)).to be < response.body.index(unit.name)
+        expect(response.body.index(other.name)).to be < response.body.index(other_unit.name)
+      end
+    end
+
+    it "shows the covered detail count instead of the location" do
+      sign_in create(:user)
+      level = create(:content, :level)
+      section = create(:content, :section, parent: level)
+      details = create_list(:content, 2, :detail, parent: section)
+      unit = create(:unit, program: program)
+      create(:unit_coverage, unit: unit, content: level)
+
+      get units_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.index.table.coverage"))
+        expect(response.body).to include(I18n.t("units.index.details_covered", count: details.size))
+        expect(response.body).not_to include(unit.location)
+      end
+    end
+
+    it "counts a single directly covered detail with singular label" do
+      sign_in create(:user)
+      detail = create(:content, :detail)
+      unit = create(:unit, program: program)
+      create(:unit_coverage, unit: unit, content: detail)
+
+      get units_path
+
+      expect(response.body).to include(I18n.t("units.index.details_covered", count: 1))
+    end
+
+    it "expands only the first program group" do
+      sign_in create(:user)
+      other = create(:program, organization: organization, name: "Other Program")
+      create(:unit, program: program, name: "Alpha Unit")
+      create(:unit, program: other, name: "Zulu Unit")
+
+      get units_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.scan(/<input[^>]*type="checkbox"[^>]*checked[^>]*>/).size).to eq(1)
+        expect(response.body).to include("Alpha Unit")
+        expect(response.body).to include("Zulu Unit")
+      end
+    end
   end
 
   describe "GET /units/:id" do

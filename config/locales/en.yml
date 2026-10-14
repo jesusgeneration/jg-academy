@@ -273,15 +273,16 @@ en:
       valid_until_hint: Leave blank for unlimited validity. For mandatory courses the date is prefilled from the course end plus the validity period and can be adjusted.
     index:
       attended_count: "%{count} attended"
+      details_covered:
+        one: 1 detail
+        other: "%{count} details"
       empty: No units in this view yet.
       new: New unit
       page_title: Units
       table:
         attendees: Attendees
+        coverage: Coverage
         date: Date
-        location: Location
-        organization: Organization
-        program: Program
         unit: Unit
       tabs:
         all: All
@@ -289,6 +290,9 @@ en:
         planned: Planned
         upcoming: Upcoming
       title: Units
+      unit_count:
+        one: 1 unit
+        other: "%{count} units"
     new:
       breadcrumb_current: New
       breadcrumb_root: Units

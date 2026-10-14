@@ -245,6 +245,12 @@ module ApplicationHelper
     [ covered, total ]
   end
 
+  # Number of distinct details a unit covers, inherited links included.
+  def unit_detail_coverage_count(unit, coverages_by_unit_id, detail_map)
+    coverages = coverages_by_unit_id[unit.id] || []
+    coverages.flat_map { |coverage| detail_map[coverage.content_id] || [] }.uniq.size
+  end
+
   # Percent (0-100) for a covered/total pair; empty totals show 0%.
   def user_progress_percent(covered, total)
     return 0 if total.zero?
