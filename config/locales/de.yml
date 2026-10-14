@@ -386,8 +386,14 @@ de:
       edit: Bearbeiten
       no_attendance: Noch keine Schulungen absolviert.
       no_organization: Kein Veranstalter
+      progress_count: "%{covered} von %{total}"
+      progress_hint: Abgedeckte Details im Verhältnis zu allen Details, aus teilgenommenen Einheiten.
+      progress_title: Inhaltsfortschritt
       table:
         status: Status
         unit: Einheit
+      training_hint: Teilgenommene Einheiten mit Ziel %{goal} Stunden.
+      training_title: Schulungsstunden
+      training_value: "%{hours} von %{goal} Stunden"
     update:
       updated: Benutzer wurde erfolgreich aktualisiert.

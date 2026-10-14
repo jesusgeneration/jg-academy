@@ -27,6 +27,57 @@
   </div>
 </div>
 
+<div class="card bg-base-100 shadow mb-6">
+  <div class="card-body">
+    <h2 class="card-title"><%= t(".training_title") %></h2>
+    <p class="text-sm opacity-60"><%= t(".training_hint", goal: ApplicationHelper::USER_TRAINING_HOURS_GOAL) %></p>
+    <% training_percent = training_hours_percent(@training_hours) %>
+    <% training_hours_label = number_with_precision(@training_hours, precision: 1, strip_insignificant_zeros: true) %>
+    <progress class="progress progress-primary w-full" value="<%= training_percent %>" max="100" aria-label="<%= t(".training_value", hours: training_hours_label, goal: ApplicationHelper::USER_TRAINING_HOURS_GOAL) %>"></progress>
+    <p class="text-sm opacity-70"><%= t(".training_value", hours: training_hours_label, goal: ApplicationHelper::USER_TRAINING_HOURS_GOAL) %> · <%= training_percent %> %</p>
+  </div>
+</div>
+
+<% if @progress_tree.any? %>
+  <div class="card bg-base-100 shadow mb-6">
+    <div class="card-body">
+      <h2 class="card-title"><%= t(".progress_title") %></h2>
+      <p class="text-sm opacity-60"><%= t(".progress_hint") %></p>
+      <div class="space-y-2 mt-2">
+        <% @progress_tree.each do |level| %>
+          <% covered, total = user_topic_area_progress(level, @progress_coverage_ids) %>
+          <% percent = user_progress_percent(covered, total) %>
+          <div class="collapse collapse-arrow bg-base-200">
+            <input type="checkbox" />
+            <div class="collapse-title text-sm font-medium">
+              <span class="badge badge-primary badge-outline badge-sm mr-1"><%= human_enum_label("content", "content_type", level.content_type) %></span>
+              <%= level.title %>
+              <span class="text-xs opacity-60 ml-1"><%= t(".progress_count", covered: covered, total: total) %></span>
+              <progress class="progress progress-primary w-full mt-1" value="<%= percent %>" max="100" aria-label="<%= t(".progress_count", covered: covered, total: total) %>"></progress>
+            </div>
+            <div class="collapse-content">
+              <% if level.children.any? %>
+                <div class="space-y-2">
+                  <% level.children.each do |section| %>
+                    <% section_covered, section_total = user_topic_progress(section, @progress_coverage_ids, ancestor_covered: @progress_coverage_ids.include?(level.id)) %>
+                    <% section_percent = user_progress_percent(section_covered, section_total) %>
+                    <div class="bg-base-100 rounded-box p-2">
+                      <span class="badge badge-secondary badge-outline badge-sm mr-1"><%= human_enum_label("content", "content_type", section.content_type) %></span>
+                      <%= section.title %>
+                      <span class="text-xs opacity-60 ml-1"><%= t(".progress_count", covered: section_covered, total: section_total) %></span>
+                      <progress class="progress progress-secondary w-full mt-1" value="<%= section_percent %>" max="100" aria-label="<%= t(".progress_count", covered: section_covered, total: section_total) %>"></progress>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
 <div class="card bg-base-100 shadow">
   <div class="card-body">
     <h2 class="card-title"><%= t(".attendance_title") %></h2>

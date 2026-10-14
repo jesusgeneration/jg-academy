@@ -9,6 +9,14 @@ class UsersController < BaseController
 
   def show
     authorize @user
+    @progress_tree = Content.includes(children: :children).where(parent_id: nil).ordered
+    attended_unit_ids = @user.unit_attendances.attended.select(:unit_id)
+    @progress_coverage_ids = UnitCoverage.where(unit_id: attended_unit_ids).pluck(:content_id).to_set
+    @training_hours = @user.unit_attendances.attended.includes(:unit).sum do |attendance|
+      starts_at = attendance.unit.starts_at
+      ends_at = attendance.unit.ends_at
+      starts_at && ends_at ? (ends_at - starts_at) / 3600.0 : 0.0
+    end
   end
 
   def new

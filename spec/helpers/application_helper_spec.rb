@@ -101,6 +101,54 @@ RSpec.describe ApplicationHelper, type: :helper do
     end
   end
 
+  describe "#user_topic_progress" do
+    it "returns a pure detail ratio without partial weighting" do
+      section = create(:content, :section)
+      details = create_list(:content, 3, :detail, parent: section)
+
+      expect(helper.user_topic_progress(section, Set[details.first.id])).to eq([ 1, 3 ])
+    end
+
+    it "counts direct topic coverage as complete" do
+      section = create(:content, :section)
+      create_list(:content, 2, :detail, parent: section)
+
+      expect(helper.user_topic_progress(section, Set[section.id])).to eq([ 2, 2 ])
+    end
+  end
+
+  describe "#user_topic_area_progress" do
+    it "sums covered details across topics without modification" do
+      level = create(:content, :level)
+      full = create(:content, :section, parent: level)
+      create_list(:content, 2, :detail, parent: full)
+      partial = create(:content, :section, parent: level)
+      partial_details = create_list(:content, 3, :detail, parent: partial)
+      covered = Set[full.children.first.id, full.children.second.id, partial_details.first.id]
+
+      expect(helper.user_topic_area_progress(level, covered)).to eq([ 3, 5 ])
+    end
+
+    it "counts direct topic-area coverage as complete" do
+      level = create(:content, :level)
+      section = create(:content, :section, parent: level)
+      create_list(:content, 2, :detail, parent: section)
+
+      expect(helper.user_topic_area_progress(level, Set[level.id])).to eq([ 2, 2 ])
+    end
+  end
+
+  describe "#training_hours_percent" do
+    it "caps at 100 percent" do
+      aggregate_failures do
+        expect(helper.training_hours_percent(25)).to eq(50)
+        expect(helper.training_hours_percent(75)).to eq(100)
+        expect(helper.user_progress_percent(1, 3)).to eq(33)
+        expect(helper.user_progress_percent(0, 0)).to eq(0)
+      end
+    end
+  end
+
   describe "#coverage_progress_badge" do
     it "renders a partial fill with a translated tooltip" do
       section = create(:content, :section)
