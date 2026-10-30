@@ -17,6 +17,12 @@ class User < ApplicationRecord
   has_many :unit_attendances, dependent: :destroy
   has_many :units, through: :unit_attendances
 
+  scope :eligible_instructors, -> {
+    where(role: :admin)
+      .or(where(id: OrganizationMembership.organisers.select(:user_id)))
+      .distinct.order(:email)
+  }
+
   validates :role, presence: true
   validates :locale, presence: true, inclusion: { in: LOCALES }
 
@@ -24,6 +30,10 @@ class User < ApplicationRecord
 
   def organiser?
     organised_organizations.any?
+  end
+
+  def eligible_instructor?
+    admin? || organiser?
   end
 
   def staff?

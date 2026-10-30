@@ -5,8 +5,8 @@ RSpec.describe "db/seeds_data/contents.json" do
     JSON.parse(File.read(Rails.root.join("db/seeds_data/contents.json")))
   end
 
-  it "contains seven levels" do
-    expect(items.size).to eq(7)
+  it "contains eight levels" do
+    expect(items.size).to eq(8)
   end
 
   it "has non-blank titles everywhere" do
@@ -17,26 +17,52 @@ RSpec.describe "db/seeds_data/contents.json" do
     expect(titles).to all(be_present.and(be_a(String)))
   end
 
-  it "gives every section at least one detail" do
+  it "gives every section at least one detail except the Pflichtkurse check-offs" do
     items.each do |level|
       level.fetch("sections").each do |section|
-        expect(section.fetch("details")).not_to be_empty
+        if level["title"] == "Pflichtkurse"
+          expect(section.fetch("details")).to be_empty
+        else
+          expect(section.fetch("details")).not_to be_empty
+        end
       end
     end
   end
 
-  it "holds 27 sections and 72 details" do
+  it "holds 29 sections and 72 details" do
     sections = items.sum { |level| level.fetch("sections").size }
     details = items.sum { |level| level.fetch("sections").sum { |s| s.fetch("details").size } }
 
     aggregate_failures do
-      expect(sections).to eq(27)
+      expect(sections).to eq(29)
       expect(details).to eq(72)
     end
   end
 
+  it "adds Pflichtkurse with Prävention sexualisierter Gewalt and Erste Hilfe as bare sections" do
+    pflichtkurse = items.find { |level| level["title"] == "Pflichtkurse" }
+
+    aggregate_failures do
+      expect(pflichtkurse).to be_present
+      expect(pflichtkurse.fetch("sections").map { |s| s["title"] }).to eq(
+        [ "Prävention sexualisierter Gewalt", "Erste Hilfe" ]
+      )
+    end
+  end
+
+  it "stores validity years on the Pflichtkurse sections only" do
+    pflichtkurse = items.find { |level| level["title"] == "Pflichtkurse" }
+    other_sections = items.reject { |level| level["title"] == "Pflichtkurse" }
+      .flat_map { |level| level.fetch("sections") }
+
+    aggregate_failures do
+      expect(pflichtkurse.fetch("sections").map { |s| s["validity_years"] }).to eq([ 5, 3 ])
+      expect(other_sections).to all(satisfy { |s| !s.key?("validity_years") })
+    end
+  end
+
   it "nests level 7 details in a section reusing the level title" do
-    level7 = items.last
+    level7 = items.find { |level| level["title"] == "Organisatorisches rund um die JuLeiCa-Ausbildung" }
 
     aggregate_failures do
       expect(level7["sections"].size).to eq(1)

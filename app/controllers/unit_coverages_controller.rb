@@ -5,6 +5,7 @@ class UnitCoveragesController < BaseController
     authorize @unit, :update?
     @coverage = @unit.unit_coverages.build(content_id: coverage_params[:content_id])
     if @coverage.save
+      @unit.fill_valid_until!
       redirect_to @unit, notice: t(".created", title: @coverage.content.title)
     else
       redirect_to @unit, alert: @coverage.errors.full_messages.to_sentence

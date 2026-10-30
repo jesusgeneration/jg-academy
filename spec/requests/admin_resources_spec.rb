@@ -111,6 +111,30 @@ RSpec.describe "Admin resources" do
       end
     end
 
+    it "sorts by email descending" do
+      create(:user, email: "anna@example.com")
+      create(:user, email: "zara@example.com")
+
+      get users_path, params: { sort: "email", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index("zara@example.com")).to be < response.body.index("anna@example.com")
+      end
+    end
+
+    it "falls back to email order for unknown sort keys" do
+      create(:user, email: "zara@example.com")
+      create(:user, email: "anna@example.com")
+
+      get users_path, params: { sort: "bogus", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index("anna@example.com")).to be < response.body.index("zara@example.com")
+      end
+    end
+
     it "creates a user with a system role and an organiser membership" do
       expect {
         post users_path, params: {
@@ -189,6 +213,33 @@ RSpec.describe "Admin resources" do
       end
     end
 
+    it "preselects not a member for every organization on the new form" do
+      organization
+      create(:organization, name: "Church B")
+
+      get new_user_path
+
+      expect(response.body.scan('<option selected="selected" value="">').size).to eq(2)
+    end
+
+    it "creates a user without memberships when no organization role is chosen" do
+      expect {
+        post users_path, params: {
+          user: {
+            email: "nomember@example.com",
+            password: "sup3rsecret!",
+            password_confirmation: "sup3rsecret!",
+            role: "user",
+            organization_memberships_attributes: {
+              "0" => { organization_id: organization.id, role: "" }
+            }
+          }
+        }
+      }.to change(User, :count).by(1)
+
+      expect(User.find_by!(email: "nomember@example.com").organization_memberships).to be_empty
+    end
+
     it "deletes another user" do
       user = create(:user)
 
@@ -227,6 +278,102 @@ RSpec.describe "Admin resources" do
       aggregate_failures do
         expect(user.reload).to be_admin
         expect(user.organizations).to be_empty
+      end
+    end
+
+    it "confirms a pending user" do
+      user = create(:user, :unconfirmed)
+
+      patch confirm_user_path(user)
+
+      aggregate_failures do
+        expect(response).to redirect_to(users_path)
+        expect(user.reload).to be_confirmed
+      end
+    end
+
+    it "reports already confirmed users" do
+      user = create(:user)
+
+      patch confirm_user_path(user)
+
+      aggregate_failures do
+        expect(response).to redirect_to(users_path)
+        follow_redirect!
+        expect(flash[:alert]).to include(I18n.t("users.confirm.already_confirmed", email: user.email))
+      end
+    end
+
+    it "shows a confirm button for pending users on the index" do
+      pending_user = create(:user, :unconfirmed)
+
+      get users_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("users.index.confirm"))
+        expect(response.body).to include(confirm_user_path(pending_user))
+      end
+    end
+
+    it "blocks non-admins from confirming users" do
+      sign_in create(:user)
+      pending_user = create(:user, :unconfirmed)
+
+      patch confirm_user_path(pending_user)
+
+      aggregate_failures do
+        expect(response).to redirect_to(root_path)
+        expect(pending_user.reload).not_to be_confirmed
+      end
+    end
+  end
+
+  describe "organizations ordering" do
+    before { sign_in create(:user, :admin) }
+
+    it "lists organizations with the most programs first, then most members" do
+      busy_few = create(:organization, name: "Busy Few Org")
+      create_list(:program, 2, organization: busy_few)
+      create(:organization_membership, organization: busy_few)
+      busy_many = create(:organization, name: "Busy Many Org")
+      create_list(:program, 2, organization: busy_many)
+      create_list(:organization_membership, 3, organization: busy_many)
+      quiet = create(:organization, name: "Quiet Org")
+      create(:program, organization: quiet)
+
+      get organizations_path
+
+      body = response.body
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(body.index(busy_many.name)).to be < body.index(busy_few.name)
+        expect(body.index(busy_few.name)).to be < body.index(quiet.name)
+      end
+    end
+
+    it "sorts by name descending" do
+      create(:organization, name: "Alpha Org")
+      create(:organization, name: "Zulu Org")
+
+      get organizations_path, params: { sort: "name", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index("Zulu Org")).to be < response.body.index("Alpha Org")
+      end
+    end
+
+    it "falls back to activity order for unknown sort keys" do
+      busy = create(:organization, name: "Busy Fallback Org")
+      create_list(:program, 2, organization: busy)
+      idle = create(:organization, name: "Idle Fallback Org")
+
+      get organizations_path, params: { sort: "bogus", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index(busy.name)).to be < response.body.index(idle.name)
       end
     end
   end

@@ -18,6 +18,15 @@ RSpec.describe Content do
       expect(build(:content, :level, position: -1)).not_to be_valid
     end
 
+    it "allows blank validity years but requires positive integers otherwise" do
+      aggregate_failures do
+        expect(build(:content, :section, validity_years: nil)).to be_valid
+        expect(build(:content, :section, validity_years: 3)).to be_valid
+        expect(build(:content, :section, validity_years: 0)).not_to be_valid
+        expect(build(:content, :section, validity_years: -2)).not_to be_valid
+      end
+    end
+
     it "orders children by position" do
       level = create(:content, :level)
       second = create(:content, :section, parent: level, position: 1, title: "B")

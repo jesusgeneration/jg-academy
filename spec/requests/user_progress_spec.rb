@@ -30,7 +30,7 @@ RSpec.describe "Users" do
 
     it "lists the user's attendance" do
       sign_in alice
-      unit = create(:unit, name: "Youth Leadership Weekend")
+      unit = create(:unit, name: "Youth Leadership Weekend", instructor: create(:user, :admin))
       create(:unit_attendance, :attended, unit: unit, user: alice)
 
       get user_path(alice)
@@ -39,6 +39,129 @@ RSpec.describe "Users" do
         expect(response.body).to include("Youth Leadership Weekend")
         expect(response.body).to include(I18n.t("activerecord.enums.unit_attendance.status.attended"))
       end
+    end
+
+    it "shows topic progress as covered details versus all details" do
+      sign_in alice
+      level = create(:content, :level, title: "Topic Area Progress")
+      section = create(:content, :section, parent: level, title: "Topic Progress")
+      details = create_list(:content, 3, :detail, parent: section)
+      unit = create(:unit, instructor: create(:user, :admin))
+      create(:unit_coverage, unit: unit, content: details.first)
+      create(:unit_attendance, :attended, unit: unit, user: alice)
+
+      get user_path(alice)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("users.show.progress_title"))
+        expect(response.body).to include("Topic Area Progress")
+        expect(response.body).to include("Topic Progress")
+        expect(response.body).to include(I18n.t("users.show.progress_count", covered: 1, total: 3))
+        expect(response.body).to include("collapse")
+      end
+    end
+
+    it "counts ancestor coverage as covered details without modification" do
+      sign_in alice
+      level = create(:content, :level)
+      full = create(:content, :section, parent: level)
+      create_list(:content, 2, :detail, parent: full)
+      partial = create(:content, :section, parent: level)
+      partial_details = create_list(:content, 3, :detail, parent: partial)
+      unit = create(:unit, instructor: create(:user, :admin))
+      create(:unit_coverage, unit: unit, content: full)
+      create(:unit_coverage, unit: unit, content: partial_details.first)
+      create(:unit_attendance, :attended, unit: unit, user: alice)
+
+      get user_path(alice)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("users.show.progress_count", covered: 3, total: 5))
+      end
+    end
+
+    it "shows mandatory courses without details as binary check-offs" do
+      sign_in alice
+      level = create(:content, :level, title: "Pflichtkurse")
+      prevention = create(:content, :section, parent: level, title: "Prävention sexualisierter Gewalt")
+      create(:content, :section, parent: level, title: "Erste Hilfe")
+      unit = create(:unit, instructor: create(:user, :admin))
+      create(:unit_coverage, unit: unit, content: prevention)
+      create(:unit_attendance, :attended, unit: unit, user: alice)
+
+      get user_path(alice)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Pflichtkurse")
+        expect(response.body).to include("Prävention sexualisierter Gewalt")
+        expect(response.body).to include("Erste Hilfe")
+        expect(response.body).to include(I18n.t("users.show.progress_count", covered: 1, total: 1))
+        expect(response.body).to include(I18n.t("users.show.progress_count", covered: 0, total: 1))
+        expect(response.body).to include(I18n.t("users.show.progress_count", covered: 1, total: 2))
+      end
+    end
+
+    it "does not fulfill mandatory courses through a level link alone" do
+      sign_in alice
+      level = create(:content, :level, title: "Pflichtkurse")
+      create(:content, :section, parent: level, title: "Prävention sexualisierter Gewalt")
+      create(:content, :section, parent: level, title: "Erste Hilfe")
+      unit = create(:unit, instructor: create(:user, :admin))
+      create(:unit_coverage, unit: unit, content: level)
+      create(:unit_attendance, :attended, unit: unit, user: alice)
+
+      get user_path(alice)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("users.show.progress_count", covered: 0, total: 2))
+        expect(response.body).to include(I18n.t("users.show.progress_count", covered: 0, total: 1))
+      end
+    end
+
+    it "ignores non-attended units for progress" do
+      sign_in alice
+      level = create(:content, :level)
+      section = create(:content, :section, parent: level)
+      detail = create(:content, :detail, parent: section)
+      unit = create(:unit, instructor: create(:user, :admin))
+      create(:unit_coverage, unit: unit, content: detail)
+      create(:unit_attendance, unit: unit, user: alice, status: :registered)
+
+      get user_path(alice)
+
+      expect(response.body).to include(I18n.t("users.show.progress_count", covered: 0, total: 1))
+    end
+
+    it "shows training hours toward the 50 hour goal" do
+      sign_in alice
+      unit = create(:unit,
+        instructor: create(:user, :admin),
+        starts_at: Time.zone.local(2026, 10, 10, 10, 0),
+        ends_at: Time.zone.local(2026, 10, 10, 12, 0))
+      create(:unit_attendance, :attended, unit: unit, user: alice)
+
+      get user_path(alice)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("users.show.training_title"))
+        expect(response.body).to include(I18n.t("users.show.training_value", hours: "2", goal: 50))
+        expect(response.body).to include('value="4"')
+      end
+    end
+
+    it "ignores units without durations for training hours" do
+      sign_in alice
+      unit = create(:unit, instructor: create(:user, :admin), starts_at: 2.weeks.from_now, ends_at: nil)
+      create(:unit_attendance, :attended, unit: unit, user: alice)
+
+      get user_path(alice)
+
+      expect(response.body).to include(I18n.t("users.show.training_value", hours: "0", goal: 50))
     end
 
     it "forbids participants from viewing other users" do

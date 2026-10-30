@@ -5,6 +5,7 @@ en:
       content:
         content_type: Type
         title: Title
+        validity_years: Validity in years
       organization:
         description: Description
         name: Name
@@ -15,13 +16,19 @@ en:
         kind: Kind
         name: Name
         organization: Organization
+      program_attendance:
+        program: Program
+        status: Status
+        user: User
       unit:
         description: Description
         ends_at: Ends at
+        instructor: Instructor
         location: Location
         name: Name
         program: Program
         starts_at: Starts at
+        valid_until: Valid until
       unit_attendance:
         status: Status
         user: User
@@ -35,8 +42,8 @@ en:
       content:
         content_type:
           detail: detail
-          level: level
-          section: section
+          level: topic area
+          section: topic
       organization_membership:
         role:
           member: member
@@ -45,6 +52,15 @@ en:
         kind:
           freizeit: freizeit
           schooling: schooling
+          seminar_day: seminar day
+          staff_preparation: staff preparation
+          youth_weekend: youth weekend
+      program_attendance:
+        status:
+          attended: Attended
+          cancelled: Cancelled
+          no_show: No show
+          registered: Registered
       unit_attendance:
         status:
           attended: Attended
@@ -61,11 +77,23 @@ en:
           attributes:
             ends_at:
               after_start_time: must be after the start time
+            instructor:
+              ineligible: must be an organiser or admin
+        unit_attendance:
+          attributes:
+            status:
+              requires_instructor: requires the unit to have an instructor
+              requires_start_time: requires the unit to have a start time
+        user:
+          attributes:
+            email:
+              jg_only: must end with @jesusgeneration.de
     models:
       content: Content
       organization: Organization
       organization_membership: Membership
       program: Program
+      program_attendance: Program attendance
       unit: Unit
       unit_attendance: Attendance
       unit_coverage: Coverage

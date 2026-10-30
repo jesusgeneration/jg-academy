@@ -12,6 +12,9 @@
 
   <body class="bg-base-200 min-h-screen flex items-center justify-center">
     <main class="w-full max-w-md px-4 py-10">
+      <div class="flex justify-center mb-2">
+        <%= image_tag "Logo.svg", alt: t("layouts.application.app_name"), class: "w-29 h-auto max-w-full" %>
+      </div>
       <h1 class="text-center text-2xl font-bold mb-6"><%= t("layouts.application.app_name") %></h1>
       <div class="flex justify-center mb-4">
         <div class="join" role="group" aria-label="<%= t("layouts.application.language") %>">

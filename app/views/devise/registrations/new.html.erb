@@ -4,7 +4,8 @@
   <%= render "devise/shared/error_messages", resource: resource %>
 
   <fieldset class="fieldset space-y-3">
-    <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: t("devise_views.registrations.new.email"), class: "input w-full", required: true %>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: t("devise_views.registrations.new.email"), value: resource.email.presence || "@jesusgeneration.de", class: "input w-full", required: true %>
+    <p class="label"><%= t("devise_views.registrations.new.email_hint") %></p>
     <%= f.password_field :password, autocomplete: "new-password", placeholder: @minimum_password_length ? t("devise_views.registrations.new.password_with_minimum", count: @minimum_password_length) : t("devise_views.registrations.new.password"), class: "input w-full", required: true %>
     <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: t("devise_views.registrations.new.confirm_password"), class: "input w-full", required: true %>
     <div>

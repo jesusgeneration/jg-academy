@@ -240,5 +240,20 @@
         ]
       }
     ]
+  },
+  {
+    "title": "Pflichtkurse",
+    "sections": [
+      {
+        "title": "Prävention sexualisierter Gewalt",
+        "validity_years": 5,
+        "details": []
+      },
+      {
+        "title": "Erste Hilfe",
+        "validity_years": 3,
+        "details": []
+      }
+    ]
   }
 ]

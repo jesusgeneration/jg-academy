@@ -22,8 +22,52 @@ RSpec.describe "Authentication" do
 
     get root_path
 
-    expect(response.body).to include("jg-academy")
-    expect(response.body).to include(I18n.t("layouts.application.nav.dashboard"))
+    aggregate_failures do
+      expect(response.body).to include("jg-academy")
+      expect(response.body).to include(I18n.t("layouts.application.nav.dashboard"))
+      expect(response.body).to match(%r{Logo(-\w+)?.svg})
+    end
+  end
+
+  describe "sign-up with jg email domain" do
+    let(:valid_params) do
+      { user: { email: "neu@jesusgeneration.de", password: "sup3rsecret!", password_confirmation: "sup3rsecret!", locale: "de" } }
+    end
+
+    it "shows the hint and prefilled domain on the sign-up page" do
+      get new_user_registration_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("devise_views.registrations.new.email_hint"))
+        expect(response.body).to include("@jesusgeneration.de")
+      end
+    end
+
+    it "registers a user with a jesusgeneration.de address" do
+      expect {
+        post user_registration_path, params: valid_params
+      }.to change(User, :count).by(1)
+
+      aggregate_failures do
+        expect(User.last.email).to eq("neu@jesusgeneration.de")
+        expect(User.last).not_to be_confirmed
+        expect(response).to have_http_status(:redirect)
+      end
+    end
+
+    it "rejects other email domains" do
+      expect {
+        post user_registration_path, params: {
+          user: valid_params[:user].merge(email: "neu@example.com")
+        }
+      }.not_to change(User, :count)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include(I18n.t("activerecord.errors.models.user.attributes.email.jg_only"))
+      end
+    end
   end
 
   describe "auth pages render through the devise layout" do
@@ -34,6 +78,7 @@ RSpec.describe "Authentication" do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(I18n.t("devise_views.sessions.new.title"))
         expect(response.body).to include("jg-academy")
+        expect(response.body).to match(%r{Logo(-\w+)?.svg})
       end
     end
 

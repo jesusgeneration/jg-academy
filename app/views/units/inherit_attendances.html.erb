@@ -1,0 +1,42 @@
+<nav aria-label="breadcrumbs" class="breadcrumbs mb-2">
+  <ul>
+    <li><%= link_to t("units.show.breadcrumb_programs"), programs_path %></li>
+    <li><%= link_to @unit.program.name, program_path(@unit.program) %></li>
+    <li><%= link_to @unit.name, unit_path(@unit) %></li>
+    <li><%= t("units.show.inherit_title") %></li>
+  </ul>
+</nav>
+
+<div class="card bg-base-100 shadow">
+  <div class="card-body">
+    <h1 class="card-title"><%= t("units.show.inherit_title") %></h1>
+    <p class="text-sm opacity-70 mt-2"><%= t("units.show.inherit_intro") %></p>
+    <p class="text-sm mt-2"><%= t("units.show.inherit_summary", added: @preview[:add].size, unchanged: @preview[:unchanged], conflicts: @preview[:conflicts].size) %></p>
+
+    <%= form_with url: inherit_attendances_unit_path(@unit), method: :post do %>
+      <% if @preview[:conflicts].any? %>
+        <p class="text-sm font-medium mt-4"><%= t("units.show.inherit_conflicts") %></p>
+        <ul class="mt-2 space-y-2">
+          <% @preview[:conflicts].each do |conflict| %>
+            <li class="flex items-center gap-2 text-sm">
+              <%= check_box_tag "import_user_ids[]", conflict[:user].id, false, id: "import_user_#{conflict[:user].id}", class: "checkbox checkbox-sm" %>
+              <label for="import_user_<%= conflict[:user].id %>">
+                <%= conflict[:user].email %> –
+                <%= t("units.show.inherit_import_label",
+                      program_status: human_enum_label("program_attendance", "status", conflict[:mapped_status]),
+                      unit_status: human_enum_label("unit_attendance", "status", conflict[:unit_attendance].status)) %>
+              </label>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-sm opacity-60 mt-4"><%= t("units.show.inherit_none") %></p>
+      <% end %>
+
+      <div class="flex gap-2 mt-6">
+        <%= submit_tag t("units.show.inherit_apply"), class: "btn btn-primary" %>
+        <%= link_to t("units.show.inherit_back"), unit_path(@unit), class: "btn btn-ghost" %>
+      </div>
+    <% end %>
+  </div>
+</div>
