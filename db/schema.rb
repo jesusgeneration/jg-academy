@@ -15,11 +15,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_000003) do
   enable_extension "pg_catalog.plpgsql"
 
   create_table "contents", force: :cascade do |t|
-    t.integer "content_type", null: false
-    t.datetime "created_at", null: false
     t.bigint "parent_id"
-    t.integer "position", default: 0, null: false
     t.string "title", null: false
+    t.integer "content_type", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "validity_years"
     t.index ["content_type"], name: "index_contents_on_content_type"
@@ -31,20 +31,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_000003) do
   end
 
   create_table "organization_memberships", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.bigint "organization_id", null: false
-    t.integer "role", default: 0, null: false
-    t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.bigint "organization_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "role", default: 0, null: false
     t.index ["organization_id"], name: "index_organization_memberships_on_organization_id"
     t.index ["user_id", "organization_id"], name: "index_organization_memberships_on_user_id_and_organization_id", unique: true
     t.index ["user_id"], name: "index_organization_memberships_on_user_id"
   end
 
   create_table "organizations", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.text "description"
     t.string "name", null: false
+    t.text "description"
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_organizations_on_name", unique: true
   end
@@ -72,19 +72,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_000003) do
   end
 
   create_table "unit_attendances", force: :cascade do |t|
-    t.bigint "unit_id", null: false
-    t.datetime "created_at", null: false
-    t.integer "status", default: 0, null: false
-    t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.bigint "unit_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["unit_id"], name: "index_unit_attendances_on_unit_id"
     t.index ["user_id", "unit_id"], name: "index_unit_attendances_on_user_and_unit", unique: true
     t.index ["user_id"], name: "index_unit_attendances_on_user_id"
   end
 
   create_table "unit_coverages", force: :cascade do |t|
-    t.bigint "content_id", null: false
     t.bigint "unit_id", null: false
+    t.bigint "content_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["content_id"], name: "index_unit_coverages_on_content_id"
@@ -93,12 +93,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_000003) do
   end
 
   create_table "units", force: :cascade do |t|
-    t.datetime "created_at", null: false
+    t.string "name", null: false
     t.text "description"
+    t.datetime "starts_at"
     t.datetime "ends_at"
     t.string "location"
-    t.string "name", null: false
-    t.datetime "starts_at"
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "program_id", null: false
     t.bigint "instructor_id"
@@ -108,18 +108,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_14_000003) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.datetime "confirmation_sent_at"
-    t.string "confirmation_token"
-    t.datetime "confirmed_at"
-    t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
-    t.datetime "remember_created_at"
-    t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
-    t.integer "role", default: 0, null: false
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.string "confirmation_token"
+    t.datetime "confirmed_at"
+    t.datetime "confirmation_sent_at"
     t.string "unconfirmed_email"
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "role", default: 0, null: false
     t.string "locale", default: "de", null: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
