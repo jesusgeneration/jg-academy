@@ -7,12 +7,19 @@
   <% end %>
 </div>
 
+<div role="tablist" class="tabs tabs-box mb-4">
+  <% [["upcoming", t(".tabs.upcoming")], ["past", t(".tabs.past")], ["planned", t(".tabs.planned")], ["all", t(".tabs.all")]].each do |tab, label| %>
+    <%= link_to label, programs_path(tab: tab), role: "tab",
+          class: "tab #{'tab-active' if @tab == tab}" %>
+  <% end %>
+</div>
+
 <% if @programs.any? %>
   <div class="card bg-base-100 shadow">
     <table class="table">
       <thead>
         <tr>
-          <th><%= t(".table.program") %></th><th><%= t(".table.kind") %></th><th><%= t(".table.organization") %></th><th><%= t(".table.units") %></th>
+          <th><%= sort_link("name", t(".table.program")) %></th><th><%= sort_link("kind", t(".table.kind")) %></th><th><%= sort_link("organization", t(".table.organization")) %></th><th><%= sort_link("units", t(".table.units")) %></th>
         </tr>
       </thead>
       <tbody>

@@ -5,6 +5,7 @@ de:
       content:
         content_type: Typ
         title: Titel
+        validity_years: Gültigkeit in Jahren
       organization:
         description: Beschreibung
         name: Name
@@ -14,14 +15,20 @@ de:
         description: Beschreibung
         kind: Art
         name: Name
-        organization: Organisation
+        organization: Veranstalter
+      program_attendance:
+        program: Veranstaltung
+        status: Status
+        user: Benutzer
       unit:
         description: Beschreibung
         ends_at: Ende
+        instructor: Referent
         location: Ort
         name: Name
-        program: Programm
+        program: Veranstaltung
         starts_at: Beginn
+        valid_until: Gültig bis
       unit_attendance:
         status: Status
         user: Benutzer
@@ -35,8 +42,8 @@ de:
       content:
         content_type:
           detail: Detail
-          level: Ebene
-          section: Abschnitt
+          level: Themenbereich
+          section: Thema
       organization_membership:
         role:
           member: Mitglied
@@ -45,6 +52,15 @@ de:
         kind:
           freizeit: Freizeit
           schooling: Schulung
+          seminar_day: Seminartag
+          staff_preparation: MA Vorbereitung
+          youth_weekend: Jugendwochenende
+      program_attendance:
+        status:
+          attended: Teilgenommen
+          cancelled: Abgesagt
+          no_show: Nicht erschienen
+          registered: Registriert
       unit_attendance:
         status:
           attended: Teilgenommen
@@ -61,11 +77,23 @@ de:
           attributes:
             ends_at:
               after_start_time: muss nach dem Beginn liegen
+            instructor:
+              ineligible: muss ein Organisator oder Admin sein
+        unit_attendance:
+          attributes:
+            status:
+              requires_instructor: erfordert einen eingetragenen Referenten der Einheit
+              requires_start_time: erfordert einen festgelegten Beginn der Einheit
+        user:
+          attributes:
+            email:
+              jg_only: muss auf @jesusgeneration.de enden
     models:
       content: Inhalt
-      organization: Organisation
+      organization: Veranstalter
       organization_membership: Mitgliedschaft
-      program: Programm
+      program: Veranstaltung
+      program_attendance: Programmteilnahme
       unit: Einheit
       unit_attendance: Teilnahme
       unit_coverage: Abdeckung

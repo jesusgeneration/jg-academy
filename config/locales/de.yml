@@ -2,13 +2,16 @@
 de:
   dashboards:
     show:
+      all_programs: Alle Veranstaltungen
       all_units: Alle Einheiten
       empty: Noch keine Einheiten.
+      empty_programs: Noch keine bevorstehenden Veranstaltungen.
       page_title: Dashboard
+      recent_programs: Aktuelle Veranstaltungen
       recent_units: Aktuelle Einheiten
       stats:
         content_items: Inhalte
-        levels_sections_details: Ebenen, Abschnitte und Details
+        levels_sections_details: Themenbereiche, Themen und Details
         registered_accounts: registrierte Konten
         upcoming_units: Bevorstehende Einheiten
         users: Benutzer
@@ -16,7 +19,9 @@ de:
       table:
         attendees: Teilnehmende
         date: Datum
+        program: Veranstaltung
         unit: Einheit
+        units: Einheiten
   devise_views:
     confirmations:
       new:
@@ -48,6 +53,7 @@ de:
       new:
         confirm_password: Passwort bestätigen
         email: E-Mail
+        email_hint: Bitte ausschließlich jg-Mailadresse verwenden.
         password: Passwort
         password_with_minimum: Passwort (mindestens %{count} Zeichen)
         submit: Registrieren
@@ -79,9 +85,9 @@ de:
       language: Sprache
       nav:
         dashboard: Dashboard
-        my_account: Mein Konto
-        organizations: Organisationen
-        programs: Programme
+        my_account: Mein Fortschritt
+        organizations: Veranstalter (Organisation)
+        programs: Veranstaltungen
         units: Einheiten
         users: Benutzer
       open_sidebar: Seitenleiste öffnen
@@ -91,100 +97,123 @@ de:
         sign_out: Abmelden
   organizations:
     create:
-      created: Organisation wurde erfolgreich erstellt.
+      created: Veranstalter wurde erfolgreich erstellt.
     destroy:
-      destroyed: Organisation wurde erfolgreich gelöscht.
+      destroyed: Veranstalter wurde erfolgreich gelöscht.
     edit:
       breadcrumb_current: 'Bearbeiten: %{name}'
-      breadcrumb_root: Organisationen
-      page_title: Organisation bearbeiten
+      breadcrumb_root: Veranstalter
+      page_title: Veranstalter bearbeiten
     form:
       cancel: Abbrechen
-      create: Organisation erstellen
+      create: Veranstalter erstellen
       description: Beschreibung
       errors_prevented:
         one: '1 Fehler hat das Speichern verhindert:'
         other: "%{count} Fehler haben das Speichern verhindert:"
       name: Name
-      update: Organisation aktualisieren
+      update: Veranstalter aktualisieren
     index:
       confirm_delete: "%{name} löschen?"
       delete: Löschen
       edit: Bearbeiten
-      empty: Noch keine Organisationen. Erstelle die erste.
-      new: Neue Organisation
-      page_title: Organisationen
+      empty: Noch keine Veranstalter. Erstelle den ersten.
+      new: Neuer Veranstalter
+      page_title: Veranstalter
       table:
         actions: Aktionen
         members: Mitglieder
         name: Name
-        programs: Programme
-      title: Organisationen
+        programs: Veranstaltungen
+      title: Veranstalter
     new:
       breadcrumb_current: Neu
-      breadcrumb_root: Organisationen
-      page_title: Neue Organisation
+      breadcrumb_root: Veranstalter
+      page_title: Neuer Veranstalter
     show:
-      breadcrumb_root: Organisationen
+      breadcrumb_root: Veranstalter
       members: Mitglieder
       no_members: Keine Mitglieder.
-      no_programs: Noch keine Programme.
-      page_title: Organisation
-      programs: Programme
+      no_programs: Noch keine Veranstaltungen.
+      page_title: Veranstalter
+      programs: Veranstaltungen
       table:
         kind: Art
-        program: Programm
+        program: Veranstaltung
     update:
-      updated: Organisation wurde erfolgreich aktualisiert.
+      updated: Veranstalter wurde erfolgreich aktualisiert.
+  program_attendances:
+    create:
+      created: "%{email} wurde für diese Veranstaltung registriert."
+    destroy:
+      destroyed: Teilnahme wurde entfernt.
+    update:
+      updated: Teilnahme wurde aktualisiert.
   programs:
     create:
-      created: Programm wurde erfolgreich erstellt.
+      created: Veranstaltung wurde erfolgreich erstellt.
     destroy:
-      destroyed: Programm wurde erfolgreich gelöscht.
+      destroyed: Veranstaltung wurde erfolgreich gelöscht.
     edit:
       breadcrumb_current: 'Bearbeiten: %{name}'
-      breadcrumb_root: Programme
-      page_title: Programm bearbeiten
+      breadcrumb_root: Veranstaltungen
+      page_title: Veranstaltung bearbeiten
     form:
       cancel: Abbrechen
-      create: Programm erstellen
+      create: Veranstaltung erstellen
       description: Beschreibung
       errors_prevented:
         one: '1 Fehler hat das Speichern verhindert:'
         other: "%{count} Fehler haben das Speichern verhindert:"
       kind: Art
       name: Name
-      organization: Organisation
-      select_organization: Organisation wählen
-      update: Programm aktualisieren
+      organization: Veranstalter
+      select_organization: Veranstalter wählen
+      update: Veranstaltung aktualisieren
     index:
-      empty: Noch keine Programme.
-      new: Neues Programm
-      page_title: Programme
+      empty: Noch keine Veranstaltungen.
+      new: Neue Veranstaltung
+      page_title: Veranstaltungen
       table:
         kind: Art
-        organization: Organisation
-        program: Programm
+        organization: Veranstalter
+        program: Veranstaltung
         units: Einheiten
-      title: Programme
+      tabs:
+        all: Alle
+        past: Vergangen
+        planned: Geplant
+        upcoming: Bevorstehend
+      title: Veranstaltungen
     new:
       breadcrumb_current: Neu
-      breadcrumb_root: Programme
-      page_title: Neues Programm
+      breadcrumb_root: Veranstaltungen
+      page_title: Neue Veranstaltung
     show:
-      breadcrumb_root: Programme
-      confirm_delete: Dieses Programm löschen?
+      all_registered: Alle Benutzer sind bereits für diese Veranstaltung registriert.
+      attendees: Teilnehmende
+      breadcrumb_root: Veranstaltungen
+      confirm_delete: Diese Veranstaltung löschen?
+      confirm_remove_attendance: Teilnahme entfernen?
       delete: Löschen
       edit: Bearbeiten
       new_unit: Neue Einheit
-      no_units: Noch keine Einheiten in diesem Programm.
+      no_attendees: Noch keine Teilnehmenden registriert.
+      no_units: Noch keine Einheiten in dieser Veranstaltung.
+      register: Registrieren
+      register_attendee: Teilnehmer registrieren
+      remove: Entfernen
+      select_user: Benutzer wählen
       table:
+        actions: Aktionen
         date: Datum
         location: Ort
+        status: Status
         unit: Einheit
+        user: Benutzer
       units: Einheiten
     update:
-      updated: Programm wurde erfolgreich aktualisiert.
+      updated: Veranstaltung wurde erfolgreich aktualisiert.
   pundit:
     default: Du bist nicht berechtigt, diese Aktion auszuführen.
   time:
@@ -203,6 +232,8 @@ de:
     destroy:
       destroyed: Abdeckung wurde entfernt.
   units:
+    apply_attendances:
+      inherited: 'Übernommen: %{added}, behalten: %{kept}, Konflikte gelöst: %{resolved} – bitte die Liste prüfen und ggf. anpassen.'
     create:
       created: Einheit wurde erfolgreich erstellt.
     destroy:
@@ -216,35 +247,52 @@ de:
       coverage_hint: Die Abdeckung wird separat über Unit-Coverages verwaltet.
       coverage_title: Inhaltsabdeckung
       create: Einheit erstellen
+      date: Datum
       description: Beschreibung
-      ends_at: Ende
+      duration: Dauer
       errors_prevented:
         one: '1 Fehler hat das Speichern verhindert:'
         other: "%{count} Fehler haben das Speichern verhindert:"
+      instructor: Referent
+      instructor_hint: Erforderlich, bevor Teilnehmende als teilgenommen markiert werden.
       location: Ort
+      manage_coverage: Abdeckung verwalten
+      manage_coverage_hint: Wähle die Inhalte, die diese Einheit abdeckt. Themenbereiche und Themen schließen alles darunter ein.
       name: Name
       no_coverage: Noch keine Inhalte abgedeckt.
-      program: Programm
-      select_program: Programm wählen
+      program: Veranstaltung
+      select_duration: Dauer wählen
+      select_instructor: Referent wählen
+      select_program: Veranstaltung wählen
+      select_time: Uhrzeit wählen
       starts_at: Beginn
+      starts_at_hint: Erforderlich, bevor Teilnehmende als teilgenommen markiert werden.
+      time: Uhrzeit
       update: Einheit aktualisieren
+      valid_until: Gültig bis
+      valid_until_hint: Leer lassen für unbegrenzte Gültigkeit. Bei Pflichtkursen wird das Datum aus Kursende plus Frist vorbelegt und kann angepasst werden.
     index:
       attended_count: "%{count} teilgenommen"
+      details_covered:
+        one: 1 Detail
+        other: "%{count} Details"
       empty: Keine Einheiten in dieser Ansicht.
       new: Neue Einheit
       page_title: Einheiten
       table:
         attendees: Teilnehmende
+        coverage: Abdeckung
         date: Datum
-        location: Ort
-        organization: Organisation
-        program: Programm
         unit: Einheit
       tabs:
         all: Alle
         past: Vergangen
+        planned: Geplant
         upcoming: Bevorstehend
       title: Einheiten
+      unit_count:
+        one: 1 Einheit
+        other: "%{count} Einheiten"
     new:
       breadcrumb_current: Neu
       breadcrumb_root: Einheiten
@@ -252,20 +300,32 @@ de:
     show:
       all_registered: Alle Benutzer sind bereits für diese Einheit registriert.
       attendees: Teilnehmende
-      breadcrumb_programs: Programme
+      breadcrumb_programs: Veranstaltungen
       confirm_delete: Diese Einheit löschen?
       confirm_remove_attendance: Teilnahme entfernen?
+      coverage_progress: "%{percent} % abgedeckt"
       covered_via: abgedeckt über %{title}
       covers: Abdeckung
-      covers_hint: Wird eine Ebene oder ein Abschnitt abgedeckt, gilt automatisch alles darunter als abgedeckt.
+      covers_hint: Wird ein Themenbereich oder ein Thema abgedeckt, gilt automatisch alles darunter als abgedeckt.
       delete: Löschen
       edit: Bearbeiten
       ends: Ende
+      inherit_apply: Übernehmen
+      inherit_back: Zurück
+      inherit_button: Teilnehmende übernehmen
+      inherit_conflicts: Folgende Teilnehmende sind bereits mit abweichendem Status eingetragen. Wähle, welche Einträge aus der Veranstaltung übernommen werden sollen.
+      inherit_import_label: 'Übernehmen: %{program_status} (Einheit derzeit: %{unit_status})'
+      inherit_intro: 'Teilnehmende der Veranstaltung werden mit demselben Status in diese Einheit übernommen. Ausnahme: „Teilgenommen“ wird als „Registriert“ übernommen. Bereits eingetragene Teilnehmende bleiben erhalten.'
+      inherit_none: Alle Teilnehmenden der Veranstaltung sind bereits aktuell in dieser Einheit eingetragen.
+      inherit_summary: 'Neu: %{added} · Unverändert: %{unchanged} · Konflikte: %{conflicts}'
+      inherit_title: Teilnehmende aus der Veranstaltung übernehmen
+      instructor: Referent
       manage_coverage: Abdeckung verwalten
       manage_coverage_hint: Lege fest, an welchen Punkten der Hierarchie die Abdeckung beginnt. Untergeordnete Punkte gelten automatisch als abgedeckt.
       no_attendees: Noch keine Teilnehmenden registriert.
       no_content: Noch keine Inhalte vorhanden.
       no_coverage: Diese Einheit deckt noch keine Inhalte ab.
+      no_instructor: Noch kein Referent eingetragen.
       register: Registrieren
       register_attendee: Teilnehmer registrieren
       remove: Entfernen
@@ -273,14 +333,20 @@ de:
       starts: Beginn
       status:
         past: Vergangen
+        unscheduled: Noch nicht terminiert
         upcoming: Bevorstehend
       table:
         actions: Aktionen
         status: Status
         user: Benutzer
+      unlimited: Unbegrenzt gültig
     update:
       updated: Einheit wurde erfolgreich aktualisiert.
   users:
+    confirm:
+      already_confirmed: "%{email} war bereits bestätigt."
+      confirmed: "%{email} wurde bestätigt."
+      failed: "%{email} konnte nicht bestätigt werden."
     create:
       created: Benutzer wurde erfolgreich erstellt.
     destroy:
@@ -302,11 +368,12 @@ de:
       keep_password: Leer lassen, um das aktuelle Passwort zu behalten
       language: Sprache
       not_a_member: Kein Mitglied
-      organizations: Organisationen
+      organizations: Veranstalter
       password: Passwort
       role: Rolle
       update: Benutzer aktualisieren
     index:
+      confirm: Bestätigen
       confirm_delete: "%{email} löschen?"
       confirmed_pending: ausstehend
       confirmed_yes: ja
@@ -326,13 +393,19 @@ de:
       breadcrumb_root: Benutzer
       page_title: Neuer Benutzer
     show:
-      attendance_title: Einheitenteilnahmen
+      attendance_title: Absolvierte Schulungen
       breadcrumb_root: Benutzer
       edit: Bearbeiten
-      no_attendance: Noch keine Einheitenteilnahmen erfasst.
-      no_organization: Keine Organisation
+      no_attendance: Noch keine Schulungen absolviert.
+      no_organization: Kein Veranstalter
+      progress_count: "%{covered} von %{total}"
+      progress_hint: Abgedeckte Details im Verhältnis zu allen Details, aus teilgenommenen Einheiten. Themen ohne Details zählen als abgehakt, sobald sie selbst abgedeckt sind.
+      progress_title: Inhaltsfortschritt
       table:
         status: Status
         unit: Einheit
+      training_hint: Teilgenommene Einheiten mit Ziel %{goal} Stunden.
+      training_title: Schulungsstunden
+      training_value: "%{hours} von %{goal} Stunden"
     update:
       updated: Benutzer wurde erfolgreich aktualisiert.

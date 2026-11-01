@@ -15,12 +15,135 @@ RSpec.describe "Programs" do
     it "allows plain users to browse programs" do
       sign_in create(:user)
       program = create(:program, organization: organization)
+      create(:unit, program: program)
 
       get programs_path
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(program.name)
+      end
+    end
+
+    it "defaults to the upcoming tab" do
+      sign_in create(:user)
+      upcoming_program = create(:program, organization: organization, name: "Upcoming Program")
+      create(:unit, program: upcoming_program)
+      past_program = create(:program, organization: organization, name: "Past Program")
+      create(:unit, :past, program: past_program)
+
+      get programs_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("programs.index.tabs.upcoming"))
+        expect(response.body).to include(upcoming_program.name)
+        expect(response.body).not_to include(past_program.name)
+      end
+    end
+
+    it "supports the past tab" do
+      sign_in create(:user)
+      past_program = create(:program, organization: organization, name: "Past Program")
+      create(:unit, :past, program: past_program)
+      upcoming_program = create(:program, organization: organization, name: "Upcoming Program")
+      create(:unit, program: upcoming_program)
+
+      get programs_path, params: { tab: "past" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(past_program.name)
+        expect(response.body).not_to include(upcoming_program.name)
+      end
+    end
+
+    it "supports the planned tab including programs without units" do
+      sign_in create(:user)
+      empty_program = create(:program, organization: organization, name: "Empty Program")
+      scheduled_program = create(:program, organization: organization, name: "Scheduled Program")
+      create(:unit, program: scheduled_program)
+
+      get programs_path, params: { tab: "planned" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("programs.index.tabs.planned"))
+        expect(response.body).to include(empty_program.name)
+        expect(response.body).not_to include(scheduled_program.name)
+      end
+    end
+
+    it "supports the all tab" do
+      sign_in create(:user)
+      upcoming_program = create(:program, organization: organization, name: "Upcoming Program")
+      create(:unit, program: upcoming_program)
+      empty_program = create(:program, organization: organization, name: "Empty Program")
+
+      get programs_path, params: { tab: "all" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(upcoming_program.name)
+        expect(response.body).to include(empty_program.name)
+      end
+    end
+
+    it "falls back to upcoming for unknown tabs" do
+      sign_in create(:user)
+      past_program = create(:program, organization: organization, name: "Past Program")
+      create(:unit, :past, program: past_program)
+
+      get programs_path, params: { tab: "bogus" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).not_to include(past_program.name)
+      end
+    end
+
+    it "sorts by name descending" do
+      sign_in create(:user)
+      create(:unit, program: create(:program, organization: organization, name: "Alpha Program"))
+      create(:unit, program: create(:program, organization: organization, name: "Zulu Program"))
+
+      get programs_path, params: { sort: "name", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index("Zulu Program")).to be < response.body.index("Alpha Program")
+      end
+    end
+
+    it "sorts by unit count" do
+      sign_in create(:user)
+      single = create(:program, organization: organization, name: "Single Program")
+      create(:unit, program: single)
+      triple = create(:program, organization: organization, name: "Triple Program")
+      create_list(:unit, 3, program: triple)
+
+      get programs_path, params: { tab: "all", sort: "units", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index(triple.name)).to be < response.body.index(single.name)
+      end
+    end
+
+    it "keeps the tab in sort links and falls back for unknown keys" do
+      sign_in create(:user)
+      beta_program = create(:program, organization: organization, name: "Beta Program")
+      create(:unit, program: beta_program)
+      alpha_program = create(:program, organization: organization, name: "Alpha Program")
+      create(:unit, program: alpha_program)
+
+      get programs_path, params: { tab: "upcoming", sort: "bogus" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("tab=upcoming")
+        expect(response.body).to include("sort=name")
+        expect(response.body.index(alpha_program.name)).to be < response.body.index(beta_program.name)
       end
     end
   end
@@ -97,6 +220,23 @@ RSpec.describe "Programs" do
       end
     end
 
+    it "lets an admin create a program with a new kind" do
+      sign_in create(:user, :admin)
+
+      expect {
+        post programs_path, params: {
+          program: { name: "Seminartag", kind: "seminar_day", organization_id: organization.id }
+        }
+      }.to change(Program, :count).by(1)
+
+      aggregate_failures do
+        expect(Program.last).to be_seminar_day
+        expect(response).to redirect_to(program_path(Program.last))
+        follow_redirect!
+        expect(response.body).to include("Seminartag")
+      end
+    end
+
     it "rejects invalid submissions" do
       sign_in create(:user, :admin)
 
@@ -137,6 +277,86 @@ RSpec.describe "Programs" do
 
       expect(program.reload.name).not_to eq("Hijacked")
       expect(response).to redirect_to(root_path)
+    end
+  end
+
+  describe "program attendance management" do
+    let!(:program) { create(:program, organization: organization) }
+    let!(:participant) { create(:user) }
+
+    before { sign_in_organiser_for(organization) }
+
+    it "registers a user and marks them attended" do
+      expect {
+        post program_program_attendances_path(program), params: { program_attendance: { user_id: participant.id } }
+      }.to change(ProgramAttendance, :count).by(1)
+
+      attendance = ProgramAttendance.sole
+      expect(attendance.status).to eq("registered")
+
+      patch program_program_attendance_path(program, attendance),
+            params: { program_attendance: { status: "attended" } }
+
+      expect(attendance.reload.status).to eq("attended")
+      expect(response).to redirect_to(program_path(program))
+    end
+
+    it "refuses duplicate registrations" do
+      create(:program_attendance, program: program, user: participant)
+
+      expect {
+        post program_program_attendances_path(program), params: { program_attendance: { user_id: participant.id } }
+      }.not_to change(ProgramAttendance, :count)
+
+      expect(response).to redirect_to(program_path(program))
+      follow_redirect!
+      expect(flash[:alert]).to be_present
+    end
+
+    it "shows attendees on the program page for the organizing church" do
+      create(:program_attendance, :attended, program: program, user: participant)
+
+      get program_path(program)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(participant.email)
+        expect(response.body).to include(I18n.t("activerecord.enums.program_attendance.status.attended"))
+      end
+    end
+
+    it "removes an attendance record" do
+      attendance = create(:program_attendance, program: program, user: participant)
+
+      expect {
+        delete program_program_attendance_path(program, attendance)
+      }.to change(ProgramAttendance, :count).by(-1)
+
+      expect(response).to redirect_to(program_path(program))
+    end
+
+    it "hides attendees from organisers of another organization" do
+      other_participant = create(:user, email: "otherchurch@example.com")
+      create(:program_attendance, :attended, program: program, user: other_participant)
+      sign_in_organiser_for(other_organization)
+
+      get program_path(program)
+
+      aggregate_failures do
+        expect(response.body).not_to include(I18n.t("programs.show.attendees"))
+        expect(response.body).not_to include("otherchurch@example.com")
+      end
+    end
+
+    it "forbids plain users from changing attendance" do
+      sign_in create(:user)
+      attendance = create(:program_attendance, program: program)
+
+      patch program_program_attendance_path(program, attendance),
+            params: { program_attendance: { status: "attended" } }
+
+      expect(response).to redirect_to(root_path)
+      expect(attendance.reload.status).not_to eq("attended")
     end
   end
 

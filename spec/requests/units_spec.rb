@@ -32,6 +32,130 @@ RSpec.describe "Units" do
 
       expect(response.body).to include(past_unit.name)
     end
+
+    it "supports the planned tab for units without dates" do
+      sign_in create(:user)
+      planned_unit = create(:unit, program: program, name: "Planned Vision", starts_at: nil, ends_at: nil)
+      scheduled_unit = create(:unit, program: program)
+
+      get units_path, params: { tab: "planned" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.index.tabs.planned"))
+        expect(response.body).to include(planned_unit.name)
+        expect(response.body).not_to include(scheduled_unit.name)
+      end
+    end
+
+    it "groups units under their program" do
+      sign_in create(:user)
+      other = create(:program, organization: organization, name: "Other Program")
+      unit = create(:unit, program: program, name: "Alpha Unit")
+      other_unit = create(:unit, program: other, name: "Zulu Unit")
+
+      get units_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(program.name)
+        expect(response.body).to include(other.name)
+        expect(response.body.index(program.name)).to be < response.body.index(unit.name)
+        expect(response.body.index(other.name)).to be < response.body.index(other_unit.name)
+      end
+    end
+
+    it "shows the covered detail count instead of the location" do
+      sign_in create(:user)
+      level = create(:content, :level)
+      section = create(:content, :section, parent: level)
+      details = create_list(:content, 2, :detail, parent: section)
+      unit = create(:unit, program: program)
+      create(:unit_coverage, unit: unit, content: level)
+
+      get units_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.index.table.coverage"))
+        expect(response.body).to include(I18n.t("units.index.details_covered", count: details.size))
+        expect(response.body).not_to include(unit.location)
+      end
+    end
+
+    it "counts a single directly covered detail with singular label" do
+      sign_in create(:user)
+      detail = create(:content, :detail)
+      unit = create(:unit, program: program)
+      create(:unit_coverage, unit: unit, content: detail)
+
+      get units_path
+
+      expect(response.body).to include(I18n.t("units.index.details_covered", count: 1))
+    end
+
+    it "expands only the first program group" do
+      sign_in create(:user)
+      other = create(:program, organization: organization, name: "Other Program")
+      create(:unit, program: program, name: "Alpha Unit")
+      create(:unit, program: other, name: "Zulu Unit")
+
+      get units_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.scan(/<input[^>]*type="checkbox"[^>]*checked[^>]*>/).size).to eq(1)
+        expect(response.body).to include("Alpha Unit")
+        expect(response.body).to include("Zulu Unit")
+      end
+    end
+
+    it "sorts units by date within their program group" do
+      sign_in create(:user)
+      early_unit = create(:unit, program: program, name: "Early Unit",
+        starts_at: Time.zone.local(2026, 10, 10, 18, 0), ends_at: Time.zone.local(2026, 10, 11, 17, 0))
+      late_unit = create(:unit, program: program, name: "Late Unit",
+        starts_at: Time.zone.local(2026, 11, 10, 18, 0), ends_at: Time.zone.local(2026, 11, 11, 17, 0))
+
+      get units_path, params: { tab: "all", sort: "date", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index(late_unit.name)).to be < response.body.index(early_unit.name)
+      end
+    end
+
+    it "sorts units by coverage within their program group" do
+      sign_in create(:user)
+      level = create(:content, :level)
+      section = create(:content, :section, parent: level)
+      create_list(:content, 3, :detail, parent: section)
+      bare_unit = create(:unit, program: program, name: "Bare Unit")
+      covered_unit = create(:unit, program: program, name: "Covered Unit")
+      create(:unit_coverage, unit: covered_unit, content: level)
+
+      get units_path, params: { tab: "all", sort: "coverage", direction: "desc" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index(covered_unit.name)).to be < response.body.index(bare_unit.name)
+      end
+    end
+
+    it "falls back to tab order for unknown sort keys" do
+      sign_in create(:user)
+      early_unit = create(:unit, program: program, name: "Early Unit",
+        starts_at: Time.zone.local(2026, 10, 10, 18, 0), ends_at: Time.zone.local(2026, 10, 11, 17, 0))
+      late_unit = create(:unit, program: program, name: "Late Unit",
+        starts_at: Time.zone.local(2026, 11, 10, 18, 0), ends_at: Time.zone.local(2026, 11, 11, 17, 0))
+
+      get units_path, params: { tab: "all", sort: "bogus" }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body.index(late_unit.name)).to be < response.body.index(early_unit.name)
+      end
+    end
   end
 
   describe "GET /units/:id" do
@@ -44,6 +168,30 @@ RSpec.describe "Units" do
       aggregate_failures do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(unit.name)
+      end
+    end
+
+    it "shows the valid_until date when present" do
+      sign_in create(:user)
+      unit = create(:unit, program: program, valid_until: Date.new(2029, 10, 10))
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.l(Date.new(2029, 10, 10)))
+      end
+    end
+
+    it "shows unlimited validity when valid_until is blank" do
+      sign_in create(:user)
+      unit = create(:unit, program: program, valid_until: nil)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.unlimited"))
       end
     end
   end
@@ -59,8 +207,9 @@ RSpec.describe "Units" do
           name: "Youth Leadership Unit 2026",
           description: "A leadership unit.",
           location: "Parish Hall",
-          starts_at: "2026-10-10T18:00",
-          ends_at: "2026-10-11T17:00",
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "60",
           program_id: program.id
         }
       }
@@ -69,6 +218,8 @@ RSpec.describe "Units" do
       aggregate_failures do
         expect(response).to redirect_to(unit_path(unit))
         expect(unit.program).to eq(program)
+        expect(unit.starts_at).to eq(Time.zone.local(2026, 10, 10, 18, 0))
+        expect(unit.ends_at).to eq(Time.zone.local(2026, 10, 10, 19, 0))
       end
     end
 
@@ -76,6 +227,260 @@ RSpec.describe "Units" do
       get new_unit_path
 
       expect(response).to have_http_status(:ok)
+    end
+
+    it "shows the coverage tree on the new form" do
+      level = create(:content, :level, title: "Level Tree")
+
+      get new_unit_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.form.manage_coverage"))
+        expect(response.body).to include("Level Tree")
+        expect(response.body).to include("coverage_content_ids[]")
+      end
+    end
+
+    it "creates coverages for selected contents" do
+      level = create(:content, :level)
+      detail = create(:content, :detail)
+
+      expect {
+        post units_path, params: {
+          unit: {
+            name: "Covered Unit",
+            start_date: "2026-10-10",
+            start_time: "18:00",
+            duration_minutes: "60",
+            program_id: program.id
+          },
+          coverage_content_ids: [ level.id.to_s, detail.id.to_s ]
+        }
+      }.to change(UnitCoverage, :count).by(2)
+
+      unit = Unit.find_by!(name: "Covered Unit")
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.covered_contents).to contain_exactly(level, detail)
+      end
+    end
+
+    it "ignores invalid coverage ids" do
+      expect {
+        post units_path, params: {
+          unit: {
+            name: "Plain Unit",
+            start_date: "2026-10-10",
+            start_time: "18:00",
+            program_id: program.id
+          },
+          coverage_content_ids: [ "999999" ]
+        }
+      }.to change(UnitCoverage, :count).by(0)
+
+      expect(response).to redirect_to(unit_path(Unit.find_by!(name: "Plain Unit")))
+    end
+
+    it "renders the valid_until field with validity data on the new form" do
+      create(:content, :section, title: "First Aid", validity_years: 3)
+
+      get new_unit_path
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.form.valid_until"))
+        expect(response.body).to include(I18n.t("units.form.valid_until_hint"))
+        expect(response.body).to include('name="unit[valid_until]"')
+        expect(response.body).to include('data-validity-years="3"')
+      end
+    end
+
+    it "persists a manually entered valid_until" do
+      post units_path, params: {
+        unit: {
+          name: "Limited Unit",
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "60",
+          program_id: program.id,
+          valid_until: "2030-05-01"
+        }
+      }
+
+      expect(Unit.find_by!(name: "Limited Unit").valid_until).to eq(Date.new(2030, 5, 1))
+    end
+
+    it "prefills a blank valid_until from coverage validity on create" do
+      section = create(:content, :section, validity_years: 3)
+
+      post units_path, params: {
+        unit: {
+          name: "First Aid Unit",
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "60",
+          program_id: program.id
+        },
+        coverage_content_ids: [ section.id.to_s ]
+      }
+
+      expect(Unit.find_by!(name: "First Aid Unit").valid_until).to eq(Date.new(2029, 10, 10))
+    end
+
+    it "uses the shortest validity when several coverages apply" do
+      prevention = create(:content, :section, validity_years: 5)
+      first_aid = create(:content, :section, validity_years: 3)
+
+      post units_path, params: {
+        unit: {
+          name: "Combined Unit",
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "60",
+          program_id: program.id
+        },
+        coverage_content_ids: [ prevention.id.to_s, first_aid.id.to_s ]
+      }
+
+      expect(Unit.find_by!(name: "Combined Unit").valid_until).to eq(Date.new(2029, 10, 10))
+    end
+
+    it "re-renders the coverage tree on invalid submissions" do
+      level = create(:content, :level, title: "Level Rerender")
+
+      post units_path, params: {
+        unit: { name: "", program_id: program.id },
+        coverage_content_ids: [ level.id.to_s ]
+      }
+
+      aggregate_failures do
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include("Level Rerender")
+        expect(response.body).to include("checked=\"checked\"")
+      end
+    end
+
+    it "renders the new form without a preselected program" do
+      get new_unit_path
+
+      program_select = response.body[/<select[^>]*name="unit\[program_id\]"[^>]*>.*?<\/select>/m]
+
+      aggregate_failures do
+        expect(program_select).to include(I18n.t("units.form.select_program"))
+        expect(program_select.scan(/selected="selected"/).size).to eq(0)
+      end
+    end
+
+    it "offers split date and time fields without free time entry" do
+      get new_unit_path
+
+      time_select = response.body[/<select[^>]*name="unit\[start_time\]"[^>]*>.*?<\/select>/m]
+
+      aggregate_failures do
+        expect(response.body).not_to include('type="datetime-local"')
+        expect(response.body).not_to include("unit[end_date]")
+        expect(response.body).to include(I18n.t("units.form.time"))
+        expect(response.body).to include("sm:col-span-2")
+        expect(response.body).to include("fieldset min-w-0")
+        expect(response.body).to include("grid-cols-[1fr_auto]")
+        expect(time_select).to include("max-w-40")
+        expect(time_select.scan(/<option value="(\d\d:\d\d)"/).flatten.size).to eq(68)
+        expect(time_select).to include('<option value="07:00">07:00</option>')
+        expect(time_select).to include('<option value="23:45">23:45</option>')
+      end
+    end
+
+    it "rounds legacy times to the nearest quarter hour on the edit form" do
+      sign_in create(:user, :admin)
+      unit = create(:unit, program: program,
+        starts_at: Time.zone.local(2026, 10, 10, 18, 10),
+        ends_at: Time.zone.local(2026, 10, 10, 20, 0))
+
+      get edit_unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include('<option selected="selected" value="18:15">18:15</option>')
+      end
+    end
+
+    it "keeps legacy hours outside 7-23 selectable on the edit form" do
+      sign_in create(:user, :admin)
+      unit = create(:unit, program: program,
+        starts_at: Time.zone.local(2026, 10, 10, 6, 15),
+        ends_at: Time.zone.local(2026, 10, 10, 20, 0))
+
+      get edit_unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include('<option selected="selected" value="06:15">06:15</option>')
+      end
+    end
+
+    it "creates a unit from start date, time and duration" do
+      post units_path, params: {
+        unit: {
+          name: "Split Unit",
+          start_date: "2026-10-10",
+          start_time: "18:15",
+          duration_minutes: "75",
+          program_id: program.id
+        }
+      }
+
+      unit = Unit.find_by!(name: "Split Unit")
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.starts_at).to eq(Time.zone.local(2026, 10, 10, 18, 15))
+        expect(unit.ends_at).to eq(Time.zone.local(2026, 10, 10, 19, 30))
+      end
+    end
+
+    it "creates an unscheduled unit without dates" do
+      post units_path, params: {
+        unit: {
+          name: "Planned Unit",
+          program_id: program.id
+        }
+      }
+
+      unit = Unit.find_by!(name: "Planned Unit")
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.starts_at).to be_nil
+        expect(unit.ends_at).to be_nil
+      end
+    end
+
+    it "flags unscheduled units on the unit page" do
+      unit = create(:unit, program: program, starts_at: nil, ends_at: nil)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.status.unscheduled"))
+      end
+    end
+
+    it "creates a unit from start plus duration" do
+      post units_path, params: {
+        unit: {
+          name: "Evening Unit",
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "75",
+          program_id: program.id
+        }
+      }
+
+      unit = Unit.find_by!(name: "Evening Unit")
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.ends_at).to eq(Time.zone.local(2026, 10, 10, 19, 15))
+      end
     end
 
     it "rejects invalid submissions" do
@@ -113,8 +518,9 @@ RSpec.describe "Units" do
       patch unit_path(unit), params: {
         unit: {
           name: "Renamed Unit",
-          starts_at: "2026-10-10T18:00",
-          ends_at: "2026-10-11T17:00",
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "60",
           program_id: program.id
         }
       }
@@ -164,6 +570,24 @@ RSpec.describe "Units" do
       expect(unit.reload.program).to eq(program)
     end
 
+    it "updates a unit from duration" do
+      sign_in_organiser_for(organization)
+
+      patch unit_path(unit), params: {
+        unit: {
+          start_date: "2026-10-10",
+          start_time: "18:00",
+          duration_minutes: "60",
+          program_id: program.id
+        }
+      }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.reload.ends_at).to eq(Time.zone.local(2026, 10, 10, 19, 0))
+      end
+    end
+
     it "prevents organisers of another organization from editing its units" do
       sign_in_organiser_for(other_organization)
 
@@ -188,15 +612,16 @@ RSpec.describe "Units" do
     def unit_params_for(tampered_program_id)
       {
         name: "Organiser Unit",
-        starts_at: "2026-10-10T18:00",
-        ends_at: "2026-10-11T17:00",
+        start_date: "2026-10-10",
+        start_time: "18:00",
+        duration_minutes: "60",
         program_id: tampered_program_id
       }
     end
   end
 
   describe "attendance management" do
-    let!(:unit) { create(:unit, program: program) }
+    let!(:unit) { create(:unit, program: program, instructor: create(:user, :admin)) }
     let!(:participant) { create(:user) }
 
     before { sign_in_organiser_for(organization) }
@@ -261,6 +686,304 @@ RSpec.describe "Units" do
     end
   end
 
+  describe "instructor management" do
+    let!(:unit) { create(:unit, program: program) }
+
+    def eligible_organiser(email)
+      user = create(:user, email: email)
+      create(:organization_membership, :organiser, user: user, organization: organization)
+      user
+    end
+
+    it "offers only eligible instructors on the new form" do
+      sign_in_organiser_for(organization)
+      instructor = eligible_organiser("instructor@example.com")
+      admin = create(:user, :admin, email: "admin@example.com")
+      plain = create(:user, email: "plain@example.com")
+
+      get new_unit_path
+
+      select = response.body[/<select[^>]*name="unit\[instructor_id\]"[^>]*>.*?<\/select>/m]
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.form.instructor"))
+        expect(select).to include(I18n.t("units.form.select_instructor"))
+        expect(select).to include(instructor.email)
+        expect(select).to include(admin.email)
+        expect(select).not_to include(plain.email)
+      end
+    end
+
+    it "creates a unit with an instructor" do
+      instructor = eligible_organiser("instructor@example.com")
+      sign_in_organiser_for(organization)
+
+      post units_path, params: {
+        unit: { name: "Instructed Unit", program_id: program.id, instructor_id: instructor.id }
+      }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(Unit.find_by!(name: "Instructed Unit")))
+        expect(Unit.find_by!(name: "Instructed Unit").instructor).to eq(instructor)
+      end
+    end
+
+    it "rejects an ineligible instructor" do
+      sign_in_organiser_for(organization)
+
+      expect {
+        post units_path, params: {
+          unit: { name: "Bad Instructor Unit", program_id: program.id, instructor_id: create(:user).id }
+        }
+      }.not_to change(Unit, :count)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include(I18n.t("units.form.errors_prevented", count: 1))
+      end
+    end
+
+    it "shows the instructor on the unit page" do
+      instructor = eligible_organiser("instructor@example.com")
+      unit.update!(instructor: instructor)
+      sign_in instructor
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.instructor"))
+        expect(response.body).to include(instructor.email)
+      end
+    end
+
+    it "shows a placeholder without an instructor" do
+      sign_in_organiser_for(organization)
+
+      get unit_path(unit)
+
+      expect(response.body).to include(I18n.t("units.show.no_instructor"))
+    end
+
+    it "blocks attended without an instructor but allows it with one" do
+      sign_in_organiser_for(organization)
+      attendance = create(:unit_attendance, unit: unit, user: create(:user))
+
+      patch unit_unit_attendance_path(unit, attendance),
+            params: { unit_attendance: { status: "attended" } }
+      expect(attendance.reload.status).to eq("registered")
+
+      unit.update!(instructor: create(:user, :admin))
+      patch unit_unit_attendance_path(unit, attendance),
+            params: { unit_attendance: { status: "attended" } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(attendance.reload.status).to eq("attended")
+      end
+    end
+
+    it "lets a fellow organiser still edit other fields after attended" do
+      instructor = eligible_organiser("instructor@example.com")
+      unit.update!(instructor: instructor)
+      create(:unit_attendance, :attended, unit: unit, user: create(:user))
+      sign_in_organiser_for(organization)
+
+      patch unit_path(unit), params: { unit: { name: "Renamed After Attended" } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.reload.name).to eq("Renamed After Attended")
+      end
+    end
+
+    it "prevents a fellow organiser from changing the instructor after attended" do
+      instructor = eligible_organiser("instructor@example.com")
+      unit.update!(instructor: instructor)
+      create(:unit_attendance, :attended, unit: unit, user: create(:user))
+      replacement = eligible_organiser("replacement@example.com")
+      sign_in replacement
+
+      patch unit_path(unit), params: { unit: { instructor_id: replacement.id } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(root_path)
+        expect(unit.reload.instructor).to eq(instructor)
+      end
+    end
+
+    it "lets the instructor change the instructor after attended" do
+      instructor = eligible_organiser("instructor@example.com")
+      unit.update!(instructor: instructor)
+      create(:unit_attendance, :attended, unit: unit, user: create(:user))
+      replacement = eligible_organiser("replacement@example.com")
+      sign_in instructor
+
+      patch unit_path(unit), params: { unit: { instructor_id: replacement.id } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.reload.instructor).to eq(replacement)
+      end
+    end
+
+    it "lets an admin change the instructor after attended" do
+      instructor = eligible_organiser("instructor@example.com")
+      unit.update!(instructor: instructor)
+      create(:unit_attendance, :attended, unit: unit, user: create(:user))
+      replacement = create(:user, :admin)
+      sign_in replacement
+
+      patch unit_path(unit), params: { unit: { instructor_id: replacement.id } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unit))
+        expect(unit.reload.instructor).to eq(replacement)
+      end
+    end
+  end
+
+  describe "attendance inheritance" do
+    let!(:unit) { create(:unit, program: program) }
+
+    before { sign_in_organiser_for(organization) }
+
+    it "copies program participants with attended mapped to registered" do
+      newcomer = create(:user)
+      cancel_user = create(:user)
+      create(:program_attendance, :attended, program: program, user: newcomer)
+      create(:program_attendance, :cancelled, program: program, user: cancel_user)
+
+      expect {
+        post inherit_attendances_unit_path(unit)
+      }.to change(UnitAttendance, :count).by(2)
+
+      aggregate_failures do
+        expect(UnitAttendance.find_by!(unit: unit, user: newcomer).status).to eq("registered")
+        expect(UnitAttendance.find_by!(unit: unit, user: cancel_user).status).to eq("cancelled")
+        expect(response).to redirect_to(unit_path(unit, anchor: "attendees"))
+        follow_redirect!
+        expect(response.body).to include(I18n.t("units.show.attendees"))
+      end
+    end
+
+    it "keeps existing unit entries and only adds missing users" do
+      keeper = create(:user)
+      create(:unit_attendance, unit: unit, user: keeper, status: :cancelled)
+      create(:program_attendance, program: program, user: keeper, status: :cancelled)
+      newcomer = create(:user)
+      create(:program_attendance, program: program, user: newcomer)
+
+      expect {
+        post inherit_attendances_unit_path(unit)
+      }.to change(UnitAttendance, :count).by(1)
+
+      aggregate_failures do
+        expect(UnitAttendance.find_by!(unit: unit, user: keeper).status).to eq("cancelled")
+        expect(UnitAttendance.find_by!(unit: unit, user: newcomer).status).to eq("registered")
+      end
+    end
+
+    it "resolves conflicts only for explicitly imported users" do
+      imported = create(:user)
+      kept = create(:user)
+      create(:program_attendance, :attended, program: program, user: imported)
+      create(:unit_attendance, unit: unit, user: imported, status: :cancelled)
+      create(:program_attendance, :attended, program: program, user: kept)
+      create(:unit_attendance, unit: unit, user: kept, status: :no_show)
+
+      expect {
+        post inherit_attendances_unit_path(unit), params: { import_user_ids: [ imported.id ] }
+      }.not_to change(UnitAttendance, :count)
+
+      aggregate_failures do
+        expect(UnitAttendance.find_by!(unit: unit, user: imported).status).to eq("registered")
+        expect(UnitAttendance.find_by!(unit: unit, user: kept).status).to eq("no_show")
+      end
+    end
+
+    it "links to the inherit preview page from the unit page" do
+      conflict_user = create(:user)
+      create(:program_attendance, :attended, program: program, user: conflict_user)
+      create(:unit_attendance, unit: unit, user: conflict_user, status: :cancelled)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.inherit_button"))
+        expect(response.body).to include(inherit_attendances_unit_path(unit))
+      end
+    end
+
+    it "renders the inherit preview with conflict choices" do
+      conflict_user = create(:user)
+      create(:program_attendance, :attended, program: program, user: conflict_user)
+      create(:unit_attendance, unit: unit, user: conflict_user, status: :cancelled)
+      newcomer = create(:user)
+      create(:program_attendance, program: program, user: newcomer)
+
+      get inherit_attendances_unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.inherit_title"))
+        expect(response.body).to include(conflict_user.email)
+        expect(response.body).to include(I18n.t("units.show.inherit_apply"))
+        expect(response.body).to include(I18n.t("units.show.inherit_back"))
+      end
+    end
+
+    it "forbids plain users from viewing the inherit preview" do
+      sign_in create(:user)
+
+      get inherit_attendances_unit_path(unit)
+
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "forbids plain users from inheriting" do
+      sign_in create(:user)
+      newcomer = create(:user)
+      create(:program_attendance, program: program, user: newcomer)
+
+      expect {
+        post inherit_attendances_unit_path(unit)
+      }.not_to change(UnitAttendance, :count)
+
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "blocks attended on unscheduled units but allows registered" do
+      unscheduled = create(:unit, program: program, starts_at: nil, ends_at: nil)
+      attendance = create(:unit_attendance, unit: unscheduled, user: create(:user))
+
+      patch unit_unit_attendance_path(unscheduled, attendance),
+            params: { unit_attendance: { status: "attended" } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(unscheduled))
+        follow_redirect!
+        expect(flash[:alert]).to be_present
+        expect(attendance.reload.status).to eq("registered")
+      end
+    end
+
+    it "allows attended with only a start time" do
+      start_only = create(:unit, program: program, starts_at: 2.weeks.from_now, ends_at: nil,
+        instructor: create(:user, :admin))
+      attendance = create(:unit_attendance, unit: start_only, user: create(:user))
+
+      patch unit_unit_attendance_path(start_only, attendance),
+            params: { unit_attendance: { status: "attended" } }
+
+      aggregate_failures do
+        expect(response).to redirect_to(unit_path(start_only))
+        expect(attendance.reload.status).to eq("attended")
+      end
+    end
+  end
+
   describe "coverage management" do
     let!(:unit) { create(:unit, program: program) }
     let!(:level) { create(:content, :level, title: "Level 1") }
@@ -277,6 +1000,23 @@ RSpec.describe "Units" do
         expect(response).to redirect_to(unit_path(unit))
         expect(unit.reload.covers?(level)).to be(true)
       end
+    end
+
+    it "fills a blank valid_until when mandatory course coverage is added later" do
+      section = create(:content, :section, validity_years: 3)
+
+      post unit_unit_coverages_path(unit), params: { unit_coverage: { content_id: section.id } }
+
+      expect(unit.reload.valid_until).to eq(unit.ends_at.to_date.advance(years: 3))
+    end
+
+    it "never overwrites a manual valid_until when coverage is added" do
+      unit.update!(valid_until: Date.new(2030, 1, 1))
+      section = create(:content, :section, validity_years: 3)
+
+      post unit_unit_coverages_path(unit), params: { unit_coverage: { content_id: section.id } }
+
+      expect(unit.reload.valid_until).to eq(Date.new(2030, 1, 1))
     end
 
     it "refuses duplicate coverage" do
@@ -317,9 +1057,10 @@ RSpec.describe "Units" do
         expect(response.body).to include(I18n.t("units.show.covered_via", title: "Level 1"))
         expect(response.body).to include("collapse")
         expect(response.body).to include("checked")
-        # Covered level keeps Remove; its section and detail get no button.
-        # Only the 3 uncovered items of the other tree keep Add.
-        expect(response.body.scan(">#{(I18n.t("helpers.coverage.remove"))}</button>").size).to eq(1)
+        # Covered level keeps Remove; its section and detail show disabled
+        # Remove buttons. Only the 3 uncovered items of the other tree keep Add.
+        expect(response.body.scan(">#{(I18n.t("helpers.coverage.remove"))}</button>").size).to eq(3)
+        expect(response.body.scan(/<button[^>]*disabled[^>]*>#{(Regexp.escape(I18n.t("helpers.coverage.remove")))}<\/button>/).size).to eq(2)
         expect(response.body.scan(">#{(I18n.t("helpers.coverage.add"))}</button>").size).to eq(3)
       end
     end
@@ -334,9 +1075,85 @@ RSpec.describe "Units" do
       aggregate_failures do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(I18n.t("units.show.covered_via", title: "Level 1.1"))
-        # Level, section keep their buttons; the detail gets none.
-        expect(response.body.scan(">#{(I18n.t("helpers.coverage.remove"))}</button>").size).to eq(1)
+        # Level, section keep their buttons; the detail shows a disabled Remove.
+        expect(response.body.scan(">#{(I18n.t("helpers.coverage.remove"))}</button>").size).to eq(2)
+        expect(response.body.scan(/<button[^>]*disabled[^>]*>#{(Regexp.escape(I18n.t("helpers.coverage.remove")))}<\/button>/).size).to eq(1)
         expect(response.body.scan(">#{(I18n.t("helpers.coverage.add"))}</button>").size).to eq(4)
+      end
+    end
+
+    it "fills type badges proportionally to covered subtopics" do
+      section = create(:content, :section, parent: level, title: "Topic Alpha")
+      details = create_list(:content, 3, :detail, parent: section)
+      create(:unit_coverage, unit: unit, content: details.first)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("activerecord.enums.content.content_type.level"))
+        expect(response.body).to include(I18n.t("activerecord.enums.content.content_type.section"))
+        expect(response.body).to include("linear-gradient")
+        expect(response.body).to include(I18n.t("units.show.coverage_progress", percent: 33))
+      end
+    end
+
+    it "scores a partially covered section as half a section on its level" do
+      section = create(:content, :section, parent: level, title: "Topic Alpha")
+      details = create_list(:content, 3, :detail, parent: section)
+      create(:content, :section, parent: level, title: "Topic Beta")
+      create(:unit_coverage, unit: unit, content: details.first)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.coverage_progress", percent: 33))
+        expect(response.body).to include(I18n.t("units.show.coverage_progress", percent: 25))
+      end
+    end
+
+    it "fills the topic badge completely when the whole topic is covered" do
+      section = create(:content, :section, parent: level, title: "Topic Alpha")
+      create_list(:content, 2, :detail, parent: section)
+      create(:unit_coverage, unit: unit, content: section)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("units.show.coverage_progress", percent: 100))
+      end
+    end
+
+    it "fills the detail badge when the detail itself is covered" do
+      section = create(:content, :section, parent: level, title: "Topic Alpha")
+      detail = create(:content, :detail, parent: section, title: "Detail Alpha 1")
+      create(:unit_coverage, unit: unit, content: detail)
+
+      get unit_path(unit)
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Detail Alpha 1")
+        expect(response.body).to include(I18n.t("units.show.coverage_progress", percent: 100))
+      end
+    end
+
+    it "renders collapsible sections open by default with attendees above coverage" do
+      get unit_path(unit)
+
+      attendees_index = response.body.index(I18n.t("units.show.attendees"))
+      coverage_index = response.body.index(I18n.t("units.show.manage_coverage"))
+      covers_index = response.body.index(I18n.t("units.show.covers"))
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(attendees_index).not_to be_nil
+        expect(coverage_index).not_to be_nil
+        expect(covers_index).not_to be_nil
+        expect(attendees_index).to be < coverage_index
+        expect(response.body.scan(/<input type="checkbox" checked="checked" \/>/).size).to be >= 3
       end
     end
 
@@ -378,7 +1195,7 @@ RSpec.describe "Units" do
   end
 
   describe "attendee visibility" do
-    let!(:unit) { create(:unit, program: program) }
+    let!(:unit) { create(:unit, program: program, instructor: create(:user, :admin)) }
     let!(:attendee) { create(:user, email: "attendee@example.com") }
 
     before { create(:unit_attendance, :attended, unit: unit, user: attendee) }

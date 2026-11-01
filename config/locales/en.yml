@@ -2,13 +2,16 @@
 en:
   dashboards:
     show:
+      all_programs: All programs
       all_units: All units
       empty: No units yet.
+      empty_programs: No upcoming programs yet.
       page_title: Dashboard
+      recent_programs: Recent programs
       recent_units: Recent Units
       stats:
         content_items: Content Items
-        levels_sections_details: levels, sections and details
+        levels_sections_details: topic areas, topics and details
         registered_accounts: registered accounts
         upcoming_units: Upcoming Units
         users: Users
@@ -16,7 +19,9 @@ en:
       table:
         attendees: Attendees
         date: Date
+        program: Program
         unit: Unit
+        units: Units
   devise_views:
     confirmations:
       new:
@@ -48,6 +53,7 @@ en:
       new:
         confirm_password: Confirm password
         email: Email
+        email_hint: Please use your jg email address only.
         password: Password
         password_with_minimum: Password (%{count} characters minimum)
         submit: Sign up
@@ -79,7 +85,7 @@ en:
       language: Language
       nav:
         dashboard: Dashboard
-        my_account: My Account
+        my_account: My Progress
         organizations: Organizations
         programs: Programs
         units: Units
@@ -136,6 +142,13 @@ en:
         program: Program
     update:
       updated: Organization was successfully updated.
+  program_attendances:
+    create:
+      created: "%{email} was registered for this program."
+    destroy:
+      destroyed: Attendance record was removed.
+    update:
+      updated: Attendance was updated.
   programs:
     create:
       created: Program was successfully created.
@@ -166,22 +179,38 @@ en:
         organization: Organization
         program: Program
         units: Units
+      tabs:
+        all: All
+        past: Past
+        planned: Planned
+        upcoming: Upcoming
       title: Programs
     new:
       breadcrumb_current: New
       breadcrumb_root: Programs
       page_title: New Program
     show:
+      all_registered: All users are already registered for this program.
+      attendees: Attendees
       breadcrumb_root: Programs
       confirm_delete: Delete this program?
+      confirm_remove_attendance: Remove attendance record?
       delete: Delete
       edit: Edit
       new_unit: New unit
+      no_attendees: No attendees registered yet.
       no_units: No units in this program yet.
+      register: Register
+      register_attendee: Register attendee
+      remove: Remove
+      select_user: Select user
       table:
+        actions: Actions
         date: Date
         location: Location
+        status: Status
         unit: Unit
+        user: User
       units: Units
     update:
       updated: Program was successfully updated.
@@ -203,6 +232,8 @@ en:
     destroy:
       destroyed: Coverage was removed.
   units:
+    apply_attendances:
+      inherited: 'Inherited: %{added}, kept: %{kept}, conflicts resolved: %{resolved} – please review the list and adjust if needed.'
     create:
       created: Unit was successfully created.
     destroy:
@@ -216,35 +247,52 @@ en:
       coverage_hint: Coverage is managed separately via unit coverages.
       coverage_title: Content coverage
       create: Create unit
+      date: Date
       description: Description
-      ends_at: Ends at
+      duration: Duration
       errors_prevented:
         one: '1 error prevented saving:'
         other: "%{count} errors prevented saving:"
+      instructor: Instructor
+      instructor_hint: Required before participants can be marked as attended.
       location: Location
+      manage_coverage: Manage coverage
+      manage_coverage_hint: Select the contents this unit covers. Topic areas and topics include everything below them.
       name: Name
       no_coverage: No content covered yet.
       program: Program
+      select_duration: Select duration
+      select_instructor: Select instructor
       select_program: Select program
+      select_time: Select time
       starts_at: Starts at
+      starts_at_hint: Required before participants can be marked as attended.
+      time: Time
       update: Update unit
+      valid_until: Valid until
+      valid_until_hint: Leave blank for unlimited validity. For mandatory courses the date is prefilled from the course end plus the validity period and can be adjusted.
     index:
       attended_count: "%{count} attended"
+      details_covered:
+        one: 1 detail
+        other: "%{count} details"
       empty: No units in this view yet.
       new: New unit
       page_title: Units
       table:
         attendees: Attendees
+        coverage: Coverage
         date: Date
-        location: Location
-        organization: Organization
-        program: Program
         unit: Unit
       tabs:
         all: All
         past: Past
+        planned: Planned
         upcoming: Upcoming
       title: Units
+      unit_count:
+        one: 1 unit
+        other: "%{count} units"
     new:
       breadcrumb_current: New
       breadcrumb_root: Units
@@ -255,17 +303,29 @@ en:
       breadcrumb_programs: Programs
       confirm_delete: Delete this unit?
       confirm_remove_attendance: Remove attendance record?
+      coverage_progress: "%{percent}% covered"
       covered_via: covered via %{title}
       covers: Covers
-      covers_hint: Covering a level or section automatically covers everything below it.
+      covers_hint: Covering a topic area or topic automatically covers everything below it.
       delete: Delete
       edit: Edit
       ends: Ends
+      inherit_apply: Apply
+      inherit_back: Back
+      inherit_button: Inherit participants
+      inherit_conflicts: The following participants are already registered with a different status. Choose which entries to take over from the program.
+      inherit_import_label: 'Take over: %{program_status} (unit currently: %{unit_status})'
+      inherit_intro: 'Participants of the program are taken over into this unit with the same status. Exception: “Attended” is taken over as “Registered”. Participants already registered for the unit are kept.'
+      inherit_none: All participants of the program are already up to date in this unit.
+      inherit_summary: 'New: %{added} · Unchanged: %{unchanged} · Conflicts: %{conflicts}'
+      inherit_title: Inherit participants from the program
+      instructor: Instructor
       manage_coverage: Manage coverage
       manage_coverage_hint: Add or remove the points in the hierarchy where coverage starts. Descendants of a covered item are covered automatically.
       no_attendees: No attendees registered yet.
       no_content: No content items exist yet.
       no_coverage: This unit does not cover any content yet.
+      no_instructor: No instructor assigned yet.
       register: Register
       register_attendee: Register attendee
       remove: Remove
@@ -273,14 +333,20 @@ en:
       starts: Starts
       status:
         past: Past
+        unscheduled: Not scheduled yet
         upcoming: Upcoming
       table:
         actions: Actions
         status: Status
         user: User
+      unlimited: Valid without limitation
     update:
       updated: Unit was successfully updated.
   users:
+    confirm:
+      already_confirmed: "%{email} was already confirmed."
+      confirmed: "%{email} was confirmed."
+      failed: "%{email} could not be confirmed."
     create:
       created: User was successfully created.
     destroy:
@@ -307,6 +373,7 @@ en:
       role: Role
       update: Update user
     index:
+      confirm: Confirm
       confirm_delete: Delete %{email}?
       confirmed_pending: pending
       confirmed_yes: 'yes'
@@ -326,13 +393,19 @@ en:
       breadcrumb_root: Users
       page_title: New User
     show:
-      attendance_title: Unit Attendance
+      attendance_title: Completed trainings
       breadcrumb_root: Users
       edit: Edit
-      no_attendance: No unit attendance recorded yet.
+      no_attendance: No completed trainings yet.
       no_organization: No organization
+      progress_count: "%{covered} of %{total}"
+      progress_hint: Covered details versus all details, from attended units. Topics without details count as checked off once the topic itself is covered.
+      progress_title: Content progress
       table:
         status: Status
         unit: Unit
+      training_hint: Attended units toward a goal of %{goal} hours.
+      training_title: Training hours
+      training_value: "%{hours} of %{goal} hours"
     update:
       updated: User was successfully updated.

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_07_195419) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_14_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -21,6 +21,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_195419) do
     t.integer "position", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "validity_years"
     t.index ["content_type"], name: "index_contents_on_content_type"
     t.index ["parent_id"], name: "index_contents_on_parent_id"
     t.index ["position"], name: "index_contents_on_position"
@@ -46,6 +47,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_195419) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_organizations_on_name", unique: true
+  end
+
+  create_table "program_attendances", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "program_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["program_id"], name: "index_program_attendances_on_program_id"
+    t.index ["user_id", "program_id"], name: "index_program_attendances_on_user_id_and_program_id", unique: true
+    t.index ["user_id"], name: "index_program_attendances_on_user_id"
   end
 
   create_table "programs", force: :cascade do |t|
@@ -83,12 +95,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_195419) do
   create_table "units", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
-    t.datetime "starts_at", null: false
-    t.datetime "ends_at", null: false
+    t.datetime "starts_at"
+    t.datetime "ends_at"
     t.string "location"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "program_id", null: false
+    t.bigint "instructor_id"
+    t.date "valid_until"
+    t.index ["instructor_id"], name: "index_units_on_instructor_id"
     t.index ["program_id"], name: "index_units_on_program_id"
   end
 
@@ -115,10 +130,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_195419) do
   add_foreign_key "contents", "contents", column: "parent_id"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
+  add_foreign_key "program_attendances", "programs"
+  add_foreign_key "program_attendances", "users"
   add_foreign_key "programs", "organizations"
   add_foreign_key "unit_attendances", "units"
   add_foreign_key "unit_attendances", "users"
   add_foreign_key "unit_coverages", "contents"
   add_foreign_key "unit_coverages", "units"
   add_foreign_key "units", "programs"
+  add_foreign_key "units", "users", column: "instructor_id"
 end

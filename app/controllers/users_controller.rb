@@ -1,14 +1,28 @@
 class UsersController < BaseController
-  before_action :set_user, only: %i[show edit update destroy]
+  before_action :set_user, only: %i[show edit update destroy confirm]
   before_action :set_organizations, only: %i[new create edit update]
 
   def index
     authorize User
-    @users = policy_scope(User).order(:email)
+    scope = policy_scope(User)
+    @users = case sort_key(%w[email role confirmed])
+    when "email" then scope.order(email: sort_direction)
+    when "role" then scope.order(role: sort_direction, email: :asc)
+    when "confirmed" then scope.order(confirmed_at: sort_direction, email: :asc)
+    else scope.order(:email)
+    end
   end
 
   def show
     authorize @user
+    @progress_tree = Content.includes(children: :children).where(parent_id: nil).ordered
+    attended_unit_ids = @user.unit_attendances.attended.select(:unit_id)
+    @progress_coverage_ids = UnitCoverage.where(unit_id: attended_unit_ids).pluck(:content_id).to_set
+    @training_hours = @user.unit_attendances.attended.includes(:unit).sum do |attendance|
+      starts_at = attendance.unit.starts_at
+      ends_at = attendance.unit.ends_at
+      starts_at && ends_at ? (ends_at - starts_at) / 3600.0 : 0.0
+    end
   end
 
   def new
@@ -54,6 +68,17 @@ class UsersController < BaseController
     end
   end
 
+  def confirm
+    authorize @user
+    if @user.confirmed?
+      redirect_to users_path, alert: t(".already_confirmed", email: @user.email)
+    elsif @user.confirm
+      redirect_to users_path, notice: t(".confirmed", email: @user.email)
+    else
+      redirect_to users_path, alert: t(".failed", email: @user.email)
+    end
+  end
+
   private
 
   def set_user
@@ -65,10 +90,12 @@ class UsersController < BaseController
   end
 
   # One membership row per organization so every organization gets a role select.
+  # New rows default to no role ("Not a member") instead of the database
+  # default so blank rows are discarded on save.
   def build_membership_rows
     existing = @user.organization_memberships.index_by(&:organization_id)
     @membership_rows = @organizations.map do |organization|
-      existing[organization.id] || @user.organization_memberships.build(organization: organization)
+      existing[organization.id] || @user.organization_memberships.build(organization: organization, role: nil)
     end
   end
 
