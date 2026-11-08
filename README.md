@@ -81,6 +81,45 @@ programs, units with content coverage, and attendances):
 
 Sign in at `/auth/sign_in`.
 
+### Google sign-in
+
+Google SSO uses `omniauth-google-oauth2` alongside the existing password
+login. Set the OAuth client credentials in the environment (or Rails
+credentials under `google_oauth`):
+
+```bash
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+```
+
+By default only `jesusgeneration.de` email addresses are accepted, in every
+environment. Override the allowed domains for local experiments only:
+
+```bash
+GOOGLE_ALLOWED_EMAIL_DOMAINS=gmail.com,example.com
+```
+
+In the Google Cloud Console, create a **Web application** OAuth client and add
+these authorized redirect URIs:
+
+```text
+https://jesusgeneration.de/auth/google_oauth2/callback
+http://localhost:3000/auth/google_oauth2/callback
+```
+
+Use an **Internal** consent screen for the jg Workspace so only accounts in the
+organization can authorize. If the consent screen is still in testing mode, add
+the Google account you use locally as a test user. For local development, sign
+in with a `jesusgeneration.de` Google account; the seed/demo accounts above
+still use password login. If the app runs behind a reverse proxy, make sure Rails sees the
+original HTTPS scheme (for example with `config.assume_ssl`), otherwise Google
+receives an `http://` redirect URI and rejects the flow.
+
+The first Google sign-in links an existing account with the same email
+automatically. A user can also link Google explicitly from the profile page.
+New `jesusgeneration.de` accounts are created as confirmed users with a random
+password; they can use "forgot password" later to set a password.
+
 ## Testing
 
 RSpec with FactoryBot (model, policy, data and request specs):

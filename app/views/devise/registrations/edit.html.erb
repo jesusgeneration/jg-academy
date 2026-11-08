@@ -24,6 +24,31 @@
   </div>
 <% end %>
 
+<% if GoogleOauth.configured? %>
+  <div class="divider my-6"></div>
+  <h3 class="font-semibold mb-2"><%= t("devise_views.registrations.edit.connected_accounts") %></h3>
+
+  <% if resource.google_linked? %>
+    <div class="flex items-center justify-between gap-2">
+      <span class="flex items-center gap-2">
+        <%= render "devise/shared/google_icon", class: "h-5 w-5" %>
+        <%= t("devise_views.registrations.edit.google_account") %>
+      </span>
+      <span class="badge badge-success"><%= t("devise_views.registrations.edit.google_connected") %></span>
+    </div>
+    <p class="text-sm opacity-60 mt-1"><%= t("devise_views.registrations.edit.google_connected_hint") %></p>
+  <% else %>
+    <p class="text-sm opacity-60 mb-2"><%= t("devise_views.registrations.edit.google_not_connected") %></p>
+    <%= button_to user_google_oauth2_omniauth_authorize_path,
+          method: :post,
+          form: { data: { turbo: false } },
+          class: "btn btn-outline btn-sm w-full gap-2" do %>
+      <%= render "devise/shared/google_icon" %>
+      <%= t("devise_views.registrations.edit.connect_google") %>
+    <% end %>
+  <% end %>
+<% end %>
+
 <div class="mt-4">
   <%= link_to t("devise_views.registrations.edit.back"), :back, class: "btn btn-ghost btn-sm w-full" %>
 </div>

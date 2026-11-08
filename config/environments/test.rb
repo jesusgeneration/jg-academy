@@ -3,6 +3,10 @@
 # your test database is "scratch space" for the test suite and is wiped
 # and recreated between test runs. Don't rely on the data there!
 
+# Keep OmniAuth registered in the test suite without requiring real credentials.
+ENV["GOOGLE_CLIENT_ID"] ||= "test-google-client-id"
+ENV["GOOGLE_CLIENT_SECRET"] ||= "test-google-client-secret"
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 

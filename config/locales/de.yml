@@ -43,7 +43,13 @@ de:
       edit:
         back: Zurück
         confirm_new_password: Neues Passwort bestätigen
+        connect_google: Google-Konto verknüpfen
+        connected_accounts: Verknüpfte Konten
         current_password_required: Aktuelles Passwort (erforderlich)
+        google_account: Google-Konto
+        google_connected: Verbunden
+        google_connected_hint: Du kannst dich jetzt auch mit deinem Google-Konto anmelden.
+        google_not_connected: Dein Konto ist noch nicht mit Google verknüpft.
         language: Sprache
         new_password: Neues Passwort
         new_password_with_minimum: Neues Passwort (mindestens %{count} Zeichen)
@@ -61,6 +67,8 @@ de:
     sessions:
       new:
         email: E-Mail
+        google_sign_in: Mit Google anmelden
+        or: oder
         password: Passwort
         remember_me: Angemeldet bleiben
         submit: Anmelden
@@ -392,6 +400,16 @@ de:
       breadcrumb_current: Neu
       breadcrumb_root: Benutzer
       page_title: Neuer Benutzer
+    omniauth_callbacks:
+      failure:
+        failure: 'Die Anmeldung über Google ist fehlgeschlagen: %{reason}.'
+      google_oauth2:
+        already_linked: Dein Konto ist bereits mit einem anderen Google-Konto verknüpft.
+        domain_not_allowed: Bitte melde dich mit deinem Google-Konto bei @jesusgeneration.de an.
+        email_mismatch: Die Google-E-Mail-Adresse muss mit deiner Konto-E-Mail-Adresse übereinstimmen.
+        invalid_request: Die Google-Anmeldung konnte nicht verarbeitet werden.
+        linked: Dein Google-Konto wurde erfolgreich verknüpft.
+        unverified_email: Deine Google-E-Mail-Adresse konnte nicht verifiziert werden.
     show:
       attendance_title: Absolvierte Schulungen
       breadcrumb_root: Benutzer

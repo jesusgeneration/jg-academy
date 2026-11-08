@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require Rails.root.join("lib/google_oauth")
+
 # Assuming you have not yet modified this file, each configuration option below
 # is set to its default value. Note that some are commented out while others
 # are not: uncommented lines are intended to protect your configuration from
@@ -274,7 +276,19 @@ Devise.setup do |config|
   # ==> OmniAuth
   # Add a new OmniAuth provider. Check the wiki for more information on setting
   # up on your models and hooks.
-  # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
+  if GoogleOauth.configured?
+    config.omniauth :google_oauth2,
+      GoogleOauth.client_id,
+      GoogleOauth.client_secret,
+      scope: "email,profile",
+      access_type: "online",
+      prompt: "select_account",
+      hd: GoogleOauth.hosted_domain
+  end
+
+  # Devise is mounted at /auth, so this keeps the callback at
+  # /auth/google_oauth2/callback instead of /auth/auth/google_oauth2/callback.
+  config.omniauth_path_prefix = "/auth"
 
   # ==> Warden configuration
   # If you want to use other strategies, that are not supported by Devise, or
