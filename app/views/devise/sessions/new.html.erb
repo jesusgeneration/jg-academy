@@ -18,4 +18,16 @@
   </div>
 <% end %>
 
+<% if GoogleOauth.configured? %>
+  <div class="divider text-sm my-4"><%= t("devise_views.sessions.new.or") %></div>
+
+  <%= button_to user_google_oauth2_omniauth_authorize_path,
+        method: :post,
+        form: { data: { turbo: false } },
+        class: "btn btn-outline w-full gap-2" do %>
+    <%= render "devise/shared/google_icon" %>
+    <%= t("devise_views.sessions.new.google_sign_in") %>
+  <% end %>
+<% end %>
+
 <%= render "devise/shared/links" %>

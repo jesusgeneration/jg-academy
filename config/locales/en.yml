@@ -43,7 +43,13 @@ en:
       edit:
         back: Back
         confirm_new_password: Confirm new password
+        connect_google: Connect Google account
+        connected_accounts: Connected accounts
         current_password_required: Current password (required)
+        google_account: Google account
+        google_connected: Connected
+        google_connected_hint: You can now sign in with your Google account too.
+        google_not_connected: Your account is not connected to Google yet.
         language: Language
         new_password: New password
         new_password_with_minimum: New password (%{count} characters minimum)
@@ -61,6 +67,8 @@ en:
     sessions:
       new:
         email: Email
+        google_sign_in: Continue with Google
+        or: or
         password: Password
         remember_me: Remember me
         submit: Sign in
@@ -392,6 +400,16 @@ en:
       breadcrumb_current: New
       breadcrumb_root: Users
       page_title: New User
+    omniauth_callbacks:
+      failure:
+        failure: 'Google sign-in failed: %{reason}.'
+      google_oauth2:
+        already_linked: Your account is already connected to a different Google account.
+        domain_not_allowed: Please sign in with your @jesusgeneration.de Google account.
+        email_mismatch: The Google email address must match your account email address.
+        invalid_request: The Google sign-in request could not be processed.
+        linked: Your Google account was connected successfully.
+        unverified_email: Your Google email address could not be verified.
     show:
       attendance_title: Completed trainings
       breadcrumb_root: Users

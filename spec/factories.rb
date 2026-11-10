@@ -14,6 +14,11 @@ FactoryBot.define do
     trait :admin do
       role { :admin }
     end
+
+    trait :google do
+      provider { "google_oauth2" }
+      sequence(:uid) { |n| "google-uid-#{n}" }
+    end
   end
 
   factory :organization do
