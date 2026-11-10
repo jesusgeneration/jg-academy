@@ -103,7 +103,6 @@ In the Google Cloud Console, create a **Web application** OAuth client and add
 these authorized redirect URIs:
 
 ```text
-https://jesusgeneration.de/auth/google_oauth2/callback
 http://localhost:3000/auth/google_oauth2/callback
 ```
 
