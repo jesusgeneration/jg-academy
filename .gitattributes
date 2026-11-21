@@ -5,7 +5,6 @@
 
 # Scripts must always be LF — CRLF breaks shebang lines.
 bin/* text eol=lf
-.devcontainer/*.sh text eol=lf
 
 # Mark the database schema as having been generated.
 db/schema.rb linguist-generated
