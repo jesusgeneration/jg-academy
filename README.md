@@ -58,6 +58,12 @@ membership roles on the user edit form.
 
 ## Setup
 
+**Recommended:** [Development with T3 Code and the devcontainer](docs/ONBOARDING.md).
+Run Ruby, Rails, Git, and quality checks inside the container; the host only needs
+Docker, the Dev Container CLI, and T3 desktop. VS Code devcontainers still work.
+
+### Without a container
+
 Requirements: Ruby (see `.ruby-version`), PostgreSQL, Node not required
 (importmap + Propshaft).
 

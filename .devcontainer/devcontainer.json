@@ -3,20 +3,22 @@
   "dockerComposeFile": "compose.yml",
   "service": "jg-lead",
   "workspaceFolder": "/app",
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
+  "overrideCommand": false,
+  "shutdownAction": "stopCompose",
+  "waitFor": "postStartCommand",
 
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/rails/devcontainer/features/activestorage":  {},
     "ghcr.io/rails/devcontainer/features/postgres-client":  {},
-    "node": {
+    "ghcr.io/devcontainers/features/node:1": {
       "version": "lts",
       "nodeGypDependencies": true
     }
   },
-  "containerEnv": {
-    "DB_HOST": "postgres"
-  },
-  "forwardPorts": [3005, 5432],
+  "forwardPorts": [3005],
 
   "customizations": {
     "vscode": {
@@ -28,5 +30,6 @@
     }
   },
 
-  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.local/share/opencode && curl -fsSL https://opencode.ai/v2/install | bash"
+  "postCreateCommand": "bash /app/.devcontainer/container.sh prepare",
+  "postStartCommand": "bash /app/.devcontainer/container.sh ready"
 }
