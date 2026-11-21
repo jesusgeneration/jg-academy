@@ -15,14 +15,6 @@ Read before making architectural decisions:
 
 ## Commands
 
-Run these commands **inside the development container**, at `/app` (T3's
-container terminal or `devcontainer exec --workspace-folder . <command>` from
-the host). Start it with `devcontainer up --workspace-folder .`; do not use
-plain Compose to build/start it, which skips Dev Container features and lifecycle
-hooks. See `docs/ONBOARDING.md` for setup, pairing, persistence, and shutdown.
-The host needs no Ruby. Compose supplies separate development/test database URLs;
-never point `TEST_DATABASE_URL` at the development database.
-
 ```bash
 bin/rails db:test:prepare   # sync test database with schema
 bundle exec rspec           # run test suite (must pass before finishing work)
