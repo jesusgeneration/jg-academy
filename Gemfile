@@ -33,7 +33,7 @@ group :development, :test do
   gem "bundler-audit", require: false
   gem "brakeman", require: false
   gem "rubocop-rails-omakase", require: false
-  gem "rspec-rails", "~> 8.0.0"
+  gem "rspec-rails", "~> 8.1.0"
   gem "i18n-tasks", require: false
 end
 
