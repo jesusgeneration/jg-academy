@@ -1,0 +1,18 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Remote Code Execution",
+      "warning_code": 130,
+      "fingerprint": "b2ef9ca037e09c20a8a7b7aec14bd62b16fb830e3723adf3b6936529ed347bde",
+      "check_name": "Ruby2Shell",
+      "message": "Ruby 4.0.5 has a critical remote code execution vulnerability (CVE-2026-132825). Upgrade to Ruby 4.0.10 or later",
+      "file": ".ruby-version",
+      "line": 1,
+      "link": "https://www.ruby-lang.org/en/news/2026/11/18/multiple-vulnerabilities-in-regexp-and-string/",
+      "confidence": "High",
+      "note": "Temporary risk acceptance requested by the maintainer on 2026-11-21: retain Ruby 4.0.5 for now. This is not a false positive or a security fix. Remove this exception when upgrading Ruby to 4.0.10 or later."
+    }
+  ],
+  "updated": "2026-11-21 00:00:00 +0000",
+  "brakeman_version": "8.1.1"
+}
