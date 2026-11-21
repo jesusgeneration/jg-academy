@@ -9,31 +9,58 @@ services:
     volumes:
       - ..:/app:cached
       - opencode-data-jg-lead:/home/vscode/.local/share/opencode
+      - opencode-config-jg-lead:/home/vscode/.config/opencode
+      - opencode-install-jg-lead:/home/vscode/.opencode
+      - t3-data-jg-lead:/home/vscode/.t3
+      - github-config-jg-lead:/home/vscode/.config/gh
+      - git-config-jg-lead:/home/vscode/.config/git
 
-    command: sleep infinity
-
-    # override the default user to vscode, so that the container can write to the mounted volumes
-    # user: vscode
-    
-    # Use forwardPorts in devcontainer.json to forward ports from the container to the host
+    user: vscode
+    init: true
+    working_dir: /app
+    command: ["bash", "/app/.devcontainer/container.sh", "serve"]
+    stop_grace_period: 30s
+    environment:
+      T3CODE_HOME: /home/vscode/.t3
+      T3CODE_VERSION: ${T3CODE_VERSION:-0.1.11}
+      OPENCODE_VERSION: ${OPENCODE_VERSION:-2.0.18}
+      GIT_CONFIG_GLOBAL: /home/vscode/.config/git/config
+      DATABASE_URL: postgres://postgres:password@postgres:5432/jg_lead_development
+      TEST_DATABASE_URL: postgres://postgres:password@postgres:5432/jg_lead_test
+    ports:
+      - "127.0.0.1:${T3_HOST_PORT:-13773}:3773"
+      - "127.0.0.1:${RAILS_HOST_PORT:-3005}:3005"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
     depends_on:
       postgres:
-        condition: service_started
+        condition: service_healthy
 
   postgres:
     image: postgres:15
     restart: unless-stopped
-    ports:
-      - "5432:5432"
     volumes:
       - postgres-data-jg-lead:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
     networks:
     - default
 
 volumes:
   opencode-data-jg-lead:
   postgres-data-jg-lead:
+  opencode-config-jg-lead:
+  opencode-install-jg-lead:
+  t3-data-jg-lead:
+  github-config-jg-lead:
+  git-config-jg-lead:
